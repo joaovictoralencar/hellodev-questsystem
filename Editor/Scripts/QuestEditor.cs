@@ -1,4 +1,6 @@
 // filepath: com.hellodev.questsystem/Editor/Scripts/QuestEditor.cs
+
+using HelloDev.QuestSystem;
 using UnityEditor;
 using UnityEngine;
 

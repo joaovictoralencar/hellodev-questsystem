@@ -1,4 +1,6 @@
 // filepath: com.hellodev.questsystem/Editor/Scripts/QuestManagerEditor.cs
+
+using HelloDev.QuestSystem;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,24 +13,24 @@ public class QuestManagerEditor : Editor
 
         DrawDefaultInspector();
 
-        if (GUILayout.Button("Add Quest"))
-        {
-            questManager.AddQuest();
-        }
-
-        if (GUILayout.Button("Remove Quest"))
-        {
-            questManager.RemoveQuest();
-        }
-
-        if (GUILayout.Button("Save Quests"))
-        {
-            questManager.SaveQuests();
-        }
-
-        if (GUILayout.Button("Load Quests"))
-        {
-            questManager.LoadQuests();
-        }
+        // if (GUILayout.Button("Add Quest"))
+        // {
+        //     questManager.AddQuest();
+        // }
+        //
+        // if (GUILayout.Button("Remove Quest"))
+        // {
+        //     questManager.RemoveQuest();
+        // }
+        //
+        // if (GUILayout.Button("Save Quests"))
+        // {
+        //     questManager.SaveQuests();
+        // }
+        //
+        // if (GUILayout.Button("Load Quests"))
+        // {
+        //     questManager.LoadQuests();
+        // }
     }
 }

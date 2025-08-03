@@ -1,8 +1,9 @@
 using System;
+using UnityEngine;
 
 namespace HelloDev.QuestSystem
 {
-    public class Quest
+    public class Quest : MonoBehaviour
     {
         public string QuestName { get; set; }
         public string Description { get; set; }

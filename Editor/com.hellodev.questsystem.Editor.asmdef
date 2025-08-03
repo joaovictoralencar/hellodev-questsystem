@@ -2,7 +2,7 @@
     "name": "com.hellodev.questsystem.Editor",
     "rootNamespace": "HelloDev.QuestSystem.Editor",
     "references": [
-        "GUID:com.hellodev.questsystem.Runtime"
+        "GUID:27c8c7f0ff10ed54f95a60d70cec69f6"
     ],
     "includePlatforms": [
         "Editor"
