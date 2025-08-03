@@ -1,0 +1,31 @@
+{
+  "name": "com.hellodev.questsystem",
+  "version": "1.0.0",
+  "displayName": "Quest System",
+  "description": "A comprehensive quest system for Unity games with support for objectives, rewards, and progression tracking.",
+  "unity": "6000.1",
+  "unityRelease": "1f1",
+  "documentationUrl": "https://github.com/joaovictoralencar/unity-quest-system#readme",
+  "changelogUrl": "https://github.com/joaovictoralencar/unity-quest-system/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/joaovictoralencar/unity-quest-system/blob/main/LICENSE.md",
+  "keywords": [
+    "quest",
+    "rpg",
+    "game system",
+    "objectives",
+    "progression"
+  ],
+  "author": {
+    "name": "João Victor de Alencar Pascoal",
+    "email": "your.email@example.com",
+    "url": ""
+  },
+  "type": "library",
+  "samples": [
+    {
+      "displayName": "Basic Quest Example",
+      "description": "A simple example showing how to create and manage quests",
+      "path": "Samples~/BasicQuestExample"
+    }
+  ]
+}

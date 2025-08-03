@@ -1,0 +1,17 @@
+{
+    "name": "com.hellodev.questsystem.Editor.Tests",
+    "rootNamespace": "HelloDev.QuestSystem.Editor.Tests",
+    "references": [
+        "GUID:com.hellodev.questsystem.Editor",
+        "GUID:com.hellodev.questsystem.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
