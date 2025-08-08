@@ -1,6 +1,4 @@
-// filepath: com.hellodev.questsystem/Editor/Scripts/QuestEditor.cs
-
-using HelloDev.QuestSystem;
+using HelloDev.QuestSystem.Quests;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,7 +7,7 @@ public class QuestEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        Quest quest = (Quest)target;
+        // Quest quest = (Quest)target;
 
         // Draw default inspector
         DrawDefaultInspector();

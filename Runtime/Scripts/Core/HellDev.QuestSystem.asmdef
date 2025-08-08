@@ -1,8 +1,11 @@
 {
-    "name": "com.hellodev.questsystem.Runtime",
+    "name": "HelloDev.QuestSystem",
     "rootNamespace": "HelloDev.QuestSystem",
     "references": [
-        "GUID:620bfdb0605db474b995a1627821d4b8"
+        "GUID:c82afacc0a283da49bf182cd26e74014",
+        "GUID:eec0964c48f6f4e40bc3ec2257ccf8c5",
+        "GUID:e7633cea22d20b34bae4f4667f112124",
+        "GUID:77ab856d65a033b4296126f4fd267c0d"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
