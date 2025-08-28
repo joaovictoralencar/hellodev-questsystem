@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Quests Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Quests
+  m_TableCollectionNameGuidString: 05b8775364730764ab5bf1891aa1cb86
+  m_Entries:
+  - m_Id: 734280610267136
+    m_Key: QuestType_Completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735193919963136
+    m_Key: QuestType_Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735317442215936
+    m_Key: QuestType_Main
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735424451493888
+    m_Key: QuesType_Special
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735651774382080
+    m_Key: Location_Wasteland
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736137437036544
+    m_Key: MQ001_GoblinsBane
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736338700713984
+    m_Key: MQ001_GoblinsBane_Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815936309968896
+    m_Key: Task_Kill_Count_Target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3443382889267200
+    m_Key: Task_KillGoblins_Description
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1502424795670380644
+  references:
+    version: 2
+    RefIds:
+    - rid: 1502424795670380644
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1755566330962

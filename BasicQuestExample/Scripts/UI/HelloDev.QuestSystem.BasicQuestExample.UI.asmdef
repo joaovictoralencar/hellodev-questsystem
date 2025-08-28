@@ -1,0 +1,21 @@
+{
+    "name": "HelloDev.QuestSystem.BasicQuestExample.UI",
+    "rootNamespace": "HelloDev.QuestSystem.BasicQuestExample.UI",
+    "references": [
+        "GUID:ad560759137fbbc42ae0b8be19bda58c",
+        "GUID:1924f21e807566945b9552b7bd19f10a",
+        "GUID:e5b4c3e4ab8f025469eb50f7f4489925",
+        "GUID:eec0964c48f6f4e40bc3ec2257ccf8c5",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:e7633cea22d20b34bae4f4667f112124"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.QuestSystem.Conditions;
+using HelloDev.QuestSystem.Conditions.ScriptableObjects;
 using HelloDev.QuestSystem.ScriptableObjects;
 using UnityEngine.Localization;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
+using UnityEngine.Events;
 
 namespace HelloDev.QuestSystem.Tasks
 {
@@ -15,31 +18,30 @@ namespace HelloDev.QuestSystem.Tasks
     public abstract class Task
     {
         #region Events
-
         /// <summary>
         /// Fired when the task's state changes. Provides the task and the new state.
         /// </summary>
-        public Action<Task, TaskState> OnTaskStateChanged;
+        public UnityEvent<Task, TaskState> OnTaskStateChanged = new();
 
         /// <summary>
         /// Fired when the task's progress has changed. Provides the task and an update info object.
         /// </summary>
-        public Action<Task> OnTaskUpdated;
+        public UnityEvent<Task> OnTaskUpdated = new();
 
         /// <summary>
         /// Fired specifically when the task is started.
         /// </summary>
-        public Action<Task> OnTaskStarted;
+        public UnityEvent<Task> OnTaskStarted = new();
 
         /// <summary>
         /// Fired specifically when the task is completed.
         /// </summary>
-        public Action<Task> OnTaskCompleted;
+        public UnityEvent<Task> OnTaskCompleted = new();
 
         /// <summary>
         /// Fired specifically when the task fails.
         /// </summary>
-        public Action<Task> OnTaskFailed;
+        public UnityEvent<Task> OnTaskFailed = new();
 
         #endregion
 
@@ -69,16 +71,13 @@ namespace HelloDev.QuestSystem.Tasks
         /// The current state of the task (NotStarted, InProgress, Completed, Failed).
         /// </summary>
         public TaskState CurrentState { get; protected set; }
-
-        /// <summary>
-        /// A list of conditions that must be met to fail this task.
-        /// </summary>
-        protected List<ICondition> FailureConditions { get; private set; }
-
+        
         /// <summary>
         /// The ScriptableObject data that this task was created from.
         /// </summary>
         public Task_SO TaskData { get; private set; }
+        
+        public abstract float Progress { get; }
 
         #endregion
 
@@ -94,8 +93,6 @@ namespace HelloDev.QuestSystem.Tasks
             DisplayName = taskData.DisplayName;
             Description = taskData.TaskDescription;
             CurrentState = TaskState.NotStarted;
-
-            // FailureConditions = taskData.FailureConditions.Select(so => so.GetRuntimeCondition()).ToList();
         }
 
         /// <summary>
@@ -108,10 +105,10 @@ namespace HelloDev.QuestSystem.Tasks
                 CurrentState = TaskState.InProgress;
                 QuestLogger.Log($"Task '{DevName}' started. TaskId: {TaskId}");
 
-                SubscribeToFailureEvents();
+                SubscribeToEvents();
 
-                OnTaskStarted?.Invoke(this);
-                OnTaskStateChanged?.Invoke(this, CurrentState);
+                OnTaskStarted?.SafeInvoke(this);
+                OnTaskStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
 
@@ -125,26 +122,14 @@ namespace HelloDev.QuestSystem.Tasks
                 CurrentState = TaskState.Completed;
                 QuestLogger.Log($"Task '{DevName}' completed!");
 
-                UnsubscribeFromFailureEvents();
+                UnsubscribeFromEvents();
 
-                OnTaskCompleted?.Invoke(this);
-                OnTaskUpdated?.Invoke(this);
-                OnTaskStateChanged?.Invoke(this, CurrentState);
+                OnTaskUpdated?.SafeInvoke(this);
+                OnTaskCompleted?.SafeInvoke(this);
+                OnTaskStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
-
-        /// <summary>
-        /// Increments the step for the task.
-        /// </summary>
-        public void IncrementStep()
-        {
-            if (OnIncrementStep())
-            {
-                QuestLogger.Log($"Incrementing step for Task '{DevName}'");
-                //CheckForCompletion();
-            }
-        }
-
+        
         /// <summary>
         /// Increments the step for the task.
         /// </summary>
@@ -153,24 +138,30 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Increments the step for the task.
         /// </summary>
-        public void DecrementStep()
+        public abstract bool OnDecrementStep();
+        
+        /// <summary>
+        /// Increments the step for the task.
+        /// </summary>
+        public void IncrementStep()
         {
-            // if (CurrentState != TaskState.InProgress)
-            // {
-            //     return false;
-            // }
-            //
-            // QuestLogger.Log($"Incrementing step for Task '{DevName}'");
-            //
-            // return true;
+            if (OnIncrementStep())
+            {
+                QuestLogger.Log($"Incremented step for Task '{DevName}'");
+                OnTaskUpdated.SafeInvoke(this);
+            }
         }
 
         /// <summary>
         /// Increments the step for the task.
         /// </summary>
-        protected virtual bool OnDecrementStep()
+        public void DecrementStep()
         {
-            return true;
+            if (OnDecrementStep())
+            {
+                QuestLogger.Log($"Decremented step for Task '{DevName}'");
+                OnTaskUpdated.SafeInvoke(this);
+            }
         }
 
         /// <summary>
@@ -183,10 +174,10 @@ namespace HelloDev.QuestSystem.Tasks
                 CurrentState = TaskState.Failed;
                 QuestLogger.Log($"Task '{DevName}' failed.");
 
-                UnsubscribeFromFailureEvents();
+                UnsubscribeFromEvents();
 
-                OnTaskFailed?.Invoke(this);
-                OnTaskStateChanged?.Invoke(this, CurrentState);
+                OnTaskFailed?.SafeInvoke(this);
+                OnTaskStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
 
@@ -198,49 +189,35 @@ namespace HelloDev.QuestSystem.Tasks
             CurrentState = TaskState.NotStarted;
             QuestLogger.Log($"Task '{DevName}' reset.");
 
-            UnsubscribeFromFailureEvents();
+            UnsubscribeFromEvents();
 
-            OnTaskStateChanged?.Invoke(this, CurrentState);
+            OnTaskStateChanged?.SafeInvoke(this, CurrentState);
         }
-
-        /// <summary>
-        /// Evaluates all failure conditions for the task.
-        /// </summary>
-        protected virtual bool CheckFailure()
-        {
-            if (CurrentState != TaskState.InProgress)
-            {
-                return false;
-            }
-
-            foreach (var condition in FailureConditions)
-            {
-                if (condition.Evaluate())
-                {
-                    QuestLogger.Log($"Task '{DevName}' failure condition met. Failing task.");
-                    FailTask();
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
+        
         /// <summary>
         /// Subscribes to events that can trigger failure checks.
         /// This method should be implemented by concrete task types.
         /// </summary>
-        protected virtual void SubscribeToFailureEvents()
+        protected virtual void SubscribeToEvents()
         {
-            // Concrete tasks will implement this method to listen for relevant events.
+            foreach (Condition_SO condition in TaskData.FailureConditions)
+            {
+                if (condition is IEventDrivenCondition eventCondition)
+                {
+                    eventCondition.SubscribeToEvent(FailTask);
+                }
+            }
+
+            OnTaskUpdated.SafeSubscribe(CheckCompletion);
         }
+
+        protected abstract void CheckCompletion(Task task);
 
         /// <summary>
         /// Unsubscribes from events to prevent memory leaks.
         /// </summary>
-        protected virtual void UnsubscribeFromFailureEvents()
+        protected virtual void UnsubscribeFromEvents()
         {
-            // Concrete tasks will implement this method.
         }
     }
 }

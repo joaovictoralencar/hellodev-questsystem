@@ -1,17 +1,14 @@
 using System;
 using System.Collections.Generic;
-using HelloDev.QuestSystem.Utils;
+using HelloDev.QuestSystem;
 using UnityEngine;
 
 namespace HelloDev.Events
 {
-    public abstract class GameEvent<T> : ScriptableObject
+    public abstract class GameEvent<T> : RuntimeScriptableObject
     {
         private readonly List<Action<T>> _listeners = new List<Action<T>>();
-        
-        [SerializeField, TextArea] 
-        private string _description = "Describe what this event represents";
-        
+
 #if UNITY_EDITOR
         [SerializeField] private bool _logRaises = false;
         private readonly Stack<string> _callStack = new Stack<string>();
@@ -42,7 +39,7 @@ namespace HelloDev.Events
                 _callStack.Push(UnityEngine.StackTraceUtility.ExtractStackTrace());
             }
 #endif
-            
+
             for (int i = _listeners.Count - 1; i >= 0; i--)
             {
                 try
@@ -56,13 +53,18 @@ namespace HelloDev.Events
             }
         }
 
+        protected override void Reset()
+        {
+            RemoveAllListeners();
+        }
+
         public void RemoveAllListeners()
         {
             _listeners.Clear();
         }
-        
+
         public int ListenerCount => _listeners.Count;
-        
+
 #if UNITY_EDITOR
         public Stack<string> GetCallStack() => _callStack;
 #endif

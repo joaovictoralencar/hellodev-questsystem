@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b122bf07d976e74eb0fbbd145996568, type: 3}
+  m_Name: SO_Task_Kill_Goblin
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
+  devName: KillMonster
+  taskId: 28573f7a-f56f-42e3-b9a6-d821621ff44b
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 1815936309968896
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables:
+    - name: current
+      variable:
+        rid: 1502424905934962799
+    - name: required
+      variable:
+        rid: 1502424905934962800
+    - name: target
+      variable:
+        rid: 1502424905934962801
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 3443382889267200
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  failureConditions: []
+  targetId: Goblin
+  requiredCount: 5
+  currentCount: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 1502424905934962799
+      type: {class: IntVariable, ns: UnityEngine.Localization.SmartFormat.PersistentVariables, asm: Unity.Localization}
+      data:
+        m_Value: 1
+    - rid: 1502424905934962800
+      type: {class: IntVariable, ns: UnityEngine.Localization.SmartFormat.PersistentVariables, asm: Unity.Localization}
+      data:
+        m_Value: 5
+    - rid: 1502424905934962801
+      type: {class: LocalizedString, ns: UnityEngine.Localization, asm: Unity.Localization}
+      data:
+        m_TableReference:
+          m_TableCollectionName: GUID:5f078b73b1b368743bc354ebbc49a8ff
+        m_TableEntryReference:
+          m_KeyId: 12254756864
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []

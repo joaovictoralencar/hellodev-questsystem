@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Quests_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 05b8775364730764ab5bf1891aa1cb86, type: 2}
+  m_Metadata:
+    m_Items:
+    - rid: 1502424905934962797
+  m_TableData:
+  - m_Id: 734280610267136
+    m_Localized: Completed Quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735193919963136
+    m_Localized: Failed Quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735317442215936
+    m_Localized: Main Quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735424451493888
+    m_Localized: Special Quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735651774382080
+    m_Localized: Wasteland
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736137437036544
+    m_Localized: Goblin's Bane
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736338700713984
+    m_Localized: A merchant on the road to town has been waylaid by a band of goblins.
+      He managed to escape with his life, but they made off with his prized satchel
+      of goods. He's asking for a capable adventurer to clear out the goblin menace
+      and, if possible, recover his lost property.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815936309968896
+    m_Localized: Kill {current}/{required} {target}
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 3443382889267200
+    m_Localized: The merchant's satchel is nowhere to be found, but the camp is crawling
+      with goblins. You'll need to clear them out before their numbers become a real
+      threat.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1502424905934962797
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 1815936309968896

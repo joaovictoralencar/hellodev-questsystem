@@ -3,8 +3,7 @@
     "rootNamespace": "HelloDev.QuestSystem.Conditions",
     "references": [
         "GUID:27c8c7f0ff10ed54f95a60d70cec69f6",
-        "GUID:e7633cea22d20b34bae4f4667f112124",
-        "GUID:77ab856d65a033b4296126f4fd267c0d"
+        "GUID:e7633cea22d20b34bae4f4667f112124"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

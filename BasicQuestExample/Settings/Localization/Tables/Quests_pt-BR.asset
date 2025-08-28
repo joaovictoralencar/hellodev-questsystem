@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Quests_pt-BR
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: pt-BR
+  m_SharedData: {fileID: 11400000, guid: 05b8775364730764ab5bf1891aa1cb86, type: 2}
+  m_Metadata:
+    m_Items:
+    - rid: 1502424919329210480
+  m_TableData:
+  - m_Id: 734280610267136
+    m_Localized: "Miss\xF5es Completas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735193919963136
+    m_Localized: "Miss\xF5es Falhadas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735317442215936
+    m_Localized: "Miss\xF5es Principais"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735424451493888
+    m_Localized: "Miss\xF5es Especiais"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 735651774382080
+    m_Localized: Terra Arrasada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736137437036544
+    m_Localized: "Perdi\xE7\xE3o dos Goblins"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736338700713984
+    m_Localized: "Um mercador na estrada para a cidade foi assaltado por um bando
+      de goblins. Ele conseguiu escapar com vida, mas eles fugiram com sua preciosa
+      sacola de mercadorias. Ele pede a um aventureiro capaz que elimine a amea\xE7a
+      goblin e, se poss\xEDvel, recupere seus bens perdidos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815936309968896
+    m_Localized: Mate {current}/{required} {target}
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 3443382889267200
+    m_Localized: "A sacola do mercador n\xE3o foi encontrada em lugar nenhum, mas
+      o acampamento est\xE1 infestado de goblins. Voc\xEA precisar\xE1 elimin\xE1-los
+      antes que seus n\xFAmeros se tornem uma amea\xE7a real."
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1502424919329210480
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 1815936309968896

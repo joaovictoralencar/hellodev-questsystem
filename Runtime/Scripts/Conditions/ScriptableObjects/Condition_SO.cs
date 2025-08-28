@@ -1,11 +1,8 @@
-using System;
-using HelloDev.Events;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace HelloDev.QuestSystem.Conditions.ScriptableObjects
 {
-    public abstract class Condition_SO : ScriptableObject, ICondition
+    public abstract class Condition_SO : RuntimeScriptableObject, ICondition
     {
         [SerializeField] private bool _isInverted;
 
@@ -16,6 +13,11 @@ namespace HelloDev.QuestSystem.Conditions.ScriptableObjects
         }
 
         public abstract bool Evaluate();
+
+        protected override void Reset()
+        {
+            
+        }
     }
 
     // Generic base class for event-driven conditions
@@ -61,6 +63,11 @@ namespace HelloDev.QuestSystem.Conditions.ScriptableObjects
             UnsubscribeFromSpecificEvent();
             _isSubscribed = false;
             _onConditionMet = null;
+        }
+        
+        protected override void Reset()
+        {
+            UnsubscribeFromEvent();
         }
 
         protected abstract void SubscribeToSpecificEvent();

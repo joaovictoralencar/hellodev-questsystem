@@ -6,10 +6,9 @@ using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using System.Collections.ObjectModel;
 using System.Linq;
-using HelloDev.Events;
-using HelloDev.QuestSystem.Conditions;
-using HelloDev.QuestSystem.Conditions.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
+using HelloDev.Utils;
+using UnityEngine.Events;
 
 namespace HelloDev.QuestSystem
 {
@@ -25,24 +24,25 @@ namespace HelloDev.QuestSystem
 
         [SerializeField] private bool EnableDebugLogging = true;
         [SerializeField] private List<Quest_SO> QuestsDatabase = new();
-        [SerializeField] private bool NonRepeatableQuests;
         [SerializeField] private bool AllowMultipleActiveQuests = true;
         [SerializeField] private bool AllowPlayingCompletedQuests = true;
 
         private Dictionary<Guid, Quest_SO> _availableQuestsData = new();
         private Dictionary<Guid, Quest> _activeQuests = new();
         private HashSet<Guid> _completedQuests = new();
-
         private Dictionary<Type, List<Quest>> _eventListeners = new();
 
-        public Action<Quest> QuestAdded;
-        public Action<Quest> QuestRemoved;
-        public Action<Quest> QuestRestarted;
-        public Action<Quest> QuestFailed;
-        public Action<Quest> QuestUpdated;
-        public Action<Quest> QuestCompleted;
+        public UnityEvent<Quest> QuestAdded = new();
+        public UnityEvent<Quest> QuestStarted = new();
+        public UnityEvent<Quest> QuestRemoved = new();
+        public UnityEvent<Quest> QuestRestarted = new();
+        public UnityEvent<Quest> QuestFailed = new();
+        public UnityEvent<Quest> QuestUpdated = new();
+        public UnityEvent<Quest> QuestCompleted = new();
 
         public static QuestManager Instance { get; private set; }
+
+        public Dictionary<Guid, Quest> ActiveQuests => _activeQuests;
 
         private void Awake()
         {
@@ -76,6 +76,11 @@ namespace HelloDev.QuestSystem
             }
         }
 
+        private void Start()
+        {
+            AddQuest(_availableQuestsData.Values.First(), true);
+        }
+
         public void ShutdownManager()
         {
             _activeQuests.Clear();
@@ -91,6 +96,12 @@ namespace HelloDev.QuestSystem
         [Button]
         public bool AddQuest(Quest_SO quest, bool forceStart = false)
         {
+            if (quest == null)
+            {
+                QuestLogger.LogError($"Added quest is null.");
+                return false;
+            }
+
             Guid questId = quest.QuestId;
 
             if (!_availableQuestsData.ContainsKey(questId))
@@ -99,9 +110,9 @@ namespace HelloDev.QuestSystem
                 return false;
             }
 
-            if (NonRepeatableQuests && _activeQuests.ContainsKey(questId))
+            if (_activeQuests.ContainsKey(questId))
             {
-                QuestLogger.Log($"Quest '{quest.DevName}' is already active and NonRepeatableQuests is enabled.");
+                QuestLogger.Log($"Quest '{quest.DevName}' is was already added.");
                 return false;
             }
 
@@ -113,15 +124,20 @@ namespace HelloDev.QuestSystem
 
             if (!AllowMultipleActiveQuests && _activeQuests.Count > 0)
             {
-                QuestLogger.Log($"There's already one active quest ({_activeQuests.Values.First().DevName}) and AllowMultipleActiveQuests is disabled.");
+                QuestLogger.Log($"There's already one active quest ({_activeQuests.Values.First().QuestData.DevName}) and AllowMultipleActiveQuests is disabled.");
                 return false;
             }
 
             Quest newQuest = _availableQuestsData[questId].GetRuntimeQuest();
             _activeQuests.Add(questId, newQuest);
+            QuestLogger.Log($"Added quest '{quest.DevName}'.");
 
+            QuestAdded?.SafeInvoke(newQuest);
 
-            QuestAdded?.Invoke(newQuest);
+            newQuest.OnQuestStarted.SafeSubscribe(HandleQuestStarted);
+            newQuest.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
+            newQuest.OnQuestFailed.SafeSubscribe(HandleQuestFailed);
+            newQuest.OnQuestUpdated.SafeSubscribe(HandleQuestUpdated);
 
             if (forceStart || newQuest.CheckStartConditions())
             {
@@ -135,11 +151,20 @@ namespace HelloDev.QuestSystem
             return true;
         }
 
+        private void HandleQuestUpdated(Quest quest)
+        {
+        }
+
+        private void HandleQuestStarted(Quest quest)
+        {
+            QuestStarted?.SafeInvoke(quest);
+        }
+
         public void CompleteQuest(Guid questId)
         {
             if (_activeQuests.TryGetValue(questId, out var quest))
             {
-                quest.OnCompleteQuest();
+                quest.CompleteQuest();
             }
         }
 
@@ -157,9 +182,9 @@ namespace HelloDev.QuestSystem
             {
                 UnsubscribeFromQuestEvents(quest);
                 quest.ResetQuest();
-                QuestLogger.LogWarning($"Quest of ID '{quest.DevName}' was removed.");
+                QuestLogger.LogWarning($"Quest of ID '{quest.QuestData.DevName}' was removed.");
                 _activeQuests.Remove(questId);
-                QuestRemoved?.Invoke(quest);
+                QuestRemoved?.SafeInvoke(quest);
                 return true;
             }
 
@@ -173,7 +198,6 @@ namespace HelloDev.QuestSystem
             {
                 UnsubscribeFromQuestEvents(quest);
                 quest.ResetQuest();
-                quest.QuestRestarted?.Invoke(quest);
                 if (forceStart)
                 {
                     quest.StartQuest();
@@ -195,14 +219,14 @@ namespace HelloDev.QuestSystem
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
             _completedQuests.Add(quest.QuestId);
-            QuestLogger.Log($"Quest '{quest.DevName}' moved to completed quests.");
+            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' moved to completed quests.");
         }
 
         private void HandleQuestFailed(Quest quest)
         {
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
-            QuestLogger.Log($"Quest '{quest.DevName}' has failed.");
+            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' has failed.");
         }
 
         #endregion
@@ -211,22 +235,6 @@ namespace HelloDev.QuestSystem
 
         private void UnsubscribeFromQuestEvents(Quest quest)
         {
-            // var eventTypes = quest.GetTriggerEvents();
-            // foreach (var eventType in eventTypes)
-            // {
-            //     if (_eventListeners.TryGetValue(eventType, out var quests))
-            //     {
-            //         quests.Remove(quest);
-            //         if (quests.Count == 0)
-            //         {
-            //             UnsubscribeFromEvent(eventType);
-            //             _eventListeners.Remove(eventType);
-            //         }
-            //     }
-            // }
-            //
-            // quest.OnQuestCompleted -= HandleQuestCompleted;
-            // quest.OnQuestFailed -= HandleQuestFailed;
         }
 
         private void SubscribeToEvent(Type eventType)
@@ -236,19 +244,6 @@ namespace HelloDev.QuestSystem
         private void UnsubscribeFromEvent(Type eventType)
         {
         }
-
-        // private void HandleEvent<T>(T gameEvent) where T :  IEvent<object>
-        // {
-        //     var eventType = typeof(T);
-        //     if (_eventListeners.TryGetValue(eventType, out var quests))
-        //     {
-        //         var questsToHandle = quests.ToList();
-        //         foreach (var quest in questsToHandle)
-        //         {
-        //             // quest.HandleEvent(gameEvent);
-        //         }
-        //     }
-        // }
 
         #endregion
 

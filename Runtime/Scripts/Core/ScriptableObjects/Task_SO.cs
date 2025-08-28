@@ -5,6 +5,9 @@ using UnityEngine.Localization;
 using HelloDev.QuestSystem.Conditions.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
+using UnityEngine.Localization.Components;
+using UnityEngine.Localization.SmartFormat.PersistentVariables;
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -12,7 +15,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     /// The abstract base class for all task data ScriptableObjects.
     /// Defines the common data fields for tasks and a contract for creating a runtime Task instance.
     /// </summary>
-    public abstract class Task_SO : ScriptableObject
+    public abstract class Task_SO : RuntimeScriptableObject
     {
         [Header("Core Info")]
         [Tooltip("Internal name for developers, used for identification in code.")]
@@ -82,5 +85,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 taskId = Guid.NewGuid().ToString();
             }
         }
+
+        protected override void Reset()
+        {
+        }
+
+        public abstract void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, Task task);
     }
 }

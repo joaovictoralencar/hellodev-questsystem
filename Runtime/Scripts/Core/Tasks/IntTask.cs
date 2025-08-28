@@ -1,5 +1,6 @@
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
 
 namespace HelloDev.QuestSystem.Tasks
 {
@@ -9,6 +10,8 @@ namespace HelloDev.QuestSystem.Tasks
     /// </summary>
     public class IntTask : Task
     {
+        public override float Progress => RequiredCount == 0 ? 1 : (float)_currentCount / RequiredCount;
+
         private int _currentCount;
 
         /// <summary>
@@ -34,8 +37,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// Increments the task's counter by one and checks for completion.
         /// This method should be called externally by game systems when the relevant event occurs.
         /// </summary>
-        /// <param name="targetId">The ID of the event that caused the increment (e.g., "goblin").</param>
-        public bool IncrementCount()
+        private bool IncrementCount()
         {
             if (CurrentState != TaskState.InProgress || _currentCount >= RequiredCount)
             {
@@ -43,23 +45,33 @@ namespace HelloDev.QuestSystem.Tasks
             }
 
             _currentCount++;
-
-            // Fire the progress event for UI to listen to.
-            OnTaskUpdated?.Invoke(this);
-
             QuestLogger.Log($"Task '{DevName}' progress updated: {_currentCount}/{RequiredCount}.");
+            return true;
+        }
 
-            if (_currentCount >= RequiredCount)
+        /// <summary>
+        /// Increments the task's counter by one and checks for completion.
+        /// This method should be called externally by game systems when the relevant event occurs.
+        /// </summary>
+        private bool DecrementCount()
+        {
+            if (CurrentState != TaskState.InProgress || _currentCount >= RequiredCount || _currentCount == 0)
             {
-                CompleteTask();
+                return false;
             }
-            
+
+            _currentCount--;
             return true;
         }
 
         public override bool OnIncrementStep()
         {
             return IncrementCount();
+        }
+
+        public override bool OnDecrementStep()
+        {
+            return DecrementCount();
         }
 
         /// <summary>
@@ -69,7 +81,15 @@ namespace HelloDev.QuestSystem.Tasks
         {
             base.ResetTask();
             _currentCount = 0;
-            OnTaskUpdated?.Invoke(this);
+            OnTaskUpdated?.SafeInvoke(this);
+        }
+
+        protected override void CheckCompletion(Task task)
+        {
+            if (_currentCount >= RequiredCount)
+            {
+                CompleteTask();
+            }
         }
     }
 }

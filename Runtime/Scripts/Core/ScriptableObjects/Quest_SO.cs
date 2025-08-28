@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Localization;
 using HelloDev.QuestSystem.Conditions.ScriptableObjects;
 using HelloDev.QuestSystem.Quests;
-using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -13,7 +13,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     /// This is the primary asset for configuring quests in the editor.
     /// </summary>
     [CreateAssetMenu(fileName = "NewQuest", menuName = "HelloDev/Quest System/Scriptable Objects/Quest")]
-    public class Quest_SO : ScriptableObject
+    public class Quest_SO : RuntimeScriptableObject
     {
         [Header("Core Info")]
         [Tooltip("Internal name for developers, used for identification in code.")]
@@ -33,9 +33,12 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [SerializeField]
         private LocalizedString questDescription;
         
+        [Tooltip("The localized quest location. Optional.")]
+        [SerializeField] private LocalizedString questLocation; 
+        
         [Tooltip("An icon to display in the UI, representing the quest.")]
         [SerializeField]
-        private Sprite questIcon;
+        private Sprite questSprite;
 
         [Header("Structure")]
         [Tooltip("The list of tasks that make up this quest.")]
@@ -48,7 +51,17 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         
         [Tooltip("The list of conditions that, when all met, will cause this quest to fail.")]
         [SerializeField]
-        private List<Condition_SO> failureConditions; 
+        private List<Condition_SO> failureConditions;
+        
+        [Tooltip("The type of the quest. Use this to group quests together.")]
+        [SerializeField] private QuestType_SO questType; 
+        
+        [Tooltip("The list of rewards for completing this quest.")]
+        [SerializeField] private List<RewardInstance> rewards;
+        
+        [Tooltip("The recommended level for the player to start this quest.")]
+        [SerializeField]
+        private int recommendedLevel = -1;
 
         /// <summary>
         /// Gets the developer-friendly name of the quest.
@@ -73,7 +86,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Gets the icon associated with the quest.
         /// </summary>
-        public Sprite QuestIcon => questIcon;
+        public Sprite QuestSprite => questSprite;
 
         /// <summary>
         /// Gets the list of tasks that compose this quest.
@@ -90,6 +103,26 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// </summary>
         public List<Condition_SO> FailureConditions => failureConditions;
         
+        /// <summary>
+        /// Gets the type of the quest.
+        /// </summary>
+        public QuestType_SO QuestType => questType;
+        
+        /// <summary>
+        /// Gets the localized location of the quest.
+        /// </summary>
+        public LocalizedString QuestLocation => questLocation;
+        
+        /// <summary>
+        /// Gets the recommended level for the player to start this quest.
+        /// </summary>
+        public int RecommendedLevel => recommendedLevel;
+
+        /// <summary>
+        /// Gets the list of rewards for this quest.
+        /// </summary>
+        public List<RewardInstance> Rewards => rewards;
+
         /// <summary>
         /// Creates and returns a new runtime instance of this quest.
         /// </summary>
@@ -113,6 +146,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             {
                 devName = name;
             }
+        }
+
+        protected override void Reset()
+        {
         }
     }
 }

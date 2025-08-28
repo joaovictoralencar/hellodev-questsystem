@@ -58,8 +58,4 @@ namespace HelloDev.QuestSystem.Utils
             }
         }
     }
-
-    public class ReadOnlyAttribute : PropertyAttribute
-    {
-    }
 }
