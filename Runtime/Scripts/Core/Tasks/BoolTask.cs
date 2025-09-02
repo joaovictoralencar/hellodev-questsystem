@@ -14,6 +14,7 @@ namespace HelloDev.QuestSystem
 
         public override bool OnIncrementStep()
         {
+            if (CurrentState != TaskState.InProgress) return false;
             CompleteTask();
             return true;
         }

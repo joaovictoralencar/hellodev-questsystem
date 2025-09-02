@@ -52,6 +52,12 @@ namespace HelloDev.QuestSystem.Quests
             Tasks = questData.Tasks.Select(so => so.GetRuntimeTask()).ToList();
         }
 
+        private void UpdateQuestState(QuestState newState)
+        {
+            CurrentState = newState;
+            OnQuestStateChanged?.SafeInvoke(this, CurrentState);
+        }
+
         /// <summary>
         /// Attempts to start the quest, changing its state to InProgress if possible.
         /// </summary>
@@ -63,7 +69,6 @@ namespace HelloDev.QuestSystem.Quests
                 return;
             }
 
-            CurrentState = QuestState.InProgress;
             Task firstTask = Tasks.FirstOrDefault();
             firstTask?.StartTask();
             QuestLogger.Log($"Quest '{QuestData.DevName}' started.");
@@ -71,8 +76,8 @@ namespace HelloDev.QuestSystem.Quests
             UnsubscribeFromStartConditions();
             SubscribeToAllEvents();
 
+            UpdateQuestState(QuestState.InProgress);
             OnQuestStarted?.SafeInvoke(this);
-            OnQuestStateChanged?.SafeInvoke(this, CurrentState);
         }
 
         /// <summary>
@@ -83,13 +88,10 @@ namespace HelloDev.QuestSystem.Quests
         {
             if (CurrentState == QuestState.InProgress)
             {
-                CurrentState = QuestState.Completed;
-                QuestLogger.Log($"Quest '{QuestData.DevName}' completed!");
-
                 UnsubscribeFromAllEvents();
-
+                OnQuestUpdated?.SafeInvoke(this);
+                UpdateQuestState(QuestState.Completed);
                 OnQuestCompleted?.SafeInvoke(this);
-                OnQuestStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
 
@@ -97,17 +99,13 @@ namespace HelloDev.QuestSystem.Quests
         /// Marks the quest as failed, changing its state to Failed.
         /// This method can contain specific failure logic.
         /// </summary>
-        public void OnFailQuest()
+        public void FailQuest()
         {
             if (CurrentState == QuestState.InProgress)
             {
-                CurrentState = QuestState.Failed;
-                QuestLogger.Log($"Quest '{QuestData.DevName}' failed.");
-
+                UpdateQuestState(QuestState.Failed);
                 UnsubscribeFromAllEvents();
-
                 OnQuestFailed?.SafeInvoke(this);
-                OnQuestStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
 
@@ -116,12 +114,8 @@ namespace HelloDev.QuestSystem.Quests
         /// </summary>
         public void ResetQuest()
         {
-            CurrentState = QuestState.NotStarted;
-            QuestLogger.Log($"Quest '{QuestData.DevName}' reset.");
-
             UnsubscribeFromAllEvents();
-
-            OnQuestStateChanged?.SafeInvoke(this, CurrentState);
+            UpdateQuestState(QuestState.NotStarted);
         }
 
         private void SubscribeToAllEvents()

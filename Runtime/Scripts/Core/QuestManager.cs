@@ -175,7 +175,7 @@ namespace HelloDev.QuestSystem
         {
             if (_activeQuests.TryGetValue(questId, out var quest))
             {
-                quest.OnFailQuest();
+                quest.FailQuest();
             }
         }
 

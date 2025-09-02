@@ -26,6 +26,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private Task _task;
         private Action<Task> OnTaskSelected;
 
+        public Task Task => _task;
+
         private void OnDestroy()
         {
             UnSubscribeToEvents();

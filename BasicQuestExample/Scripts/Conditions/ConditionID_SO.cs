@@ -27,13 +27,17 @@ namespace HelloDev.QuestSystem.BasicQuestExample.Conditions
             }
         }
 
-        protected override bool CompareValues(ID_SO eventValue, ID_SO targetValue, ComparisonType comparisonType)
+        protected override bool CompareValues(ID_SO eventValue, ID_SO target, ComparisonType comparisonType)
         {
             return comparisonType switch
             {
-                ComparisonType.Equals => eventValue == targetValue,
+                ComparisonType.Equals => eventValue == target,
                 _ => false
             };
+        }
+        protected override void DebugForceFulfillCondition()
+        {
+            GameEventID.Raise(targetValue);
         }
     }
 }

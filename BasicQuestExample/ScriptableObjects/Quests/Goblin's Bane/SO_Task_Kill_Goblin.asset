@@ -42,6 +42,8 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
+  conditions:
+  - {fileID: 0}
   failureConditions: []
   targetId: Goblin
   requiredCount: 5
