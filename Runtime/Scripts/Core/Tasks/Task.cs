@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using HelloDev.QuestSystem.Conditions;
-using HelloDev.QuestSystem.Conditions.ScriptableObjects;
+using HelloDev.Conditions;
 using HelloDev.QuestSystem.ScriptableObjects;
 using UnityEngine.Localization;
 using HelloDev.QuestSystem.Utils;
@@ -70,12 +67,12 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// The current state of the task (NotStarted, InProgress, Completed, Failed).
         /// </summary>
-        public TaskState CurrentState { get; protected set; }
+        public TaskState CurrentState { get; private set; }
         
         /// <summary>
         /// The ScriptableObject data that this task was created from.
         /// </summary>
-        public Task_SO TaskData { get; private set; }
+        public Task_SO Data { get; private set; }
         
         public abstract float Progress { get; }
 
@@ -84,14 +81,14 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Initializes a new task instance from a ScriptableObject.
         /// </summary>
-        /// <param name="taskData">The ScriptableObject containing the task's data.</param>
-        protected Task(Task_SO taskData)
+        /// <param name="data">The ScriptableObject containing the task's data.</param>
+        protected Task(Task_SO data)
         {
-            TaskData = taskData;
-            TaskId = new Guid(taskData.TaskId);
-            DevName = taskData.DevName;
-            DisplayName = taskData.DisplayName;
-            Description = taskData.TaskDescription;
+            Data = data;
+            TaskId = data.TaskId;
+            DevName = data.DevName;
+            DisplayName = data.DisplayName;
+            Description = data.TaskDescription;
             CurrentState = TaskState.NotStarted;
         }
 
@@ -102,13 +99,11 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (CurrentState == TaskState.NotStarted)
             {
-                CurrentState = TaskState.InProgress;
-                QuestLogger.Log($"Task '{DevName}' started. TaskId: {TaskId}");
+                SetTaskState(TaskState.InProgress);
 
                 SubscribeToEvents();
 
                 OnTaskStarted?.SafeInvoke(this);
-                OnTaskStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
 
@@ -119,14 +114,12 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (CurrentState == TaskState.InProgress)
             {
-                CurrentState = TaskState.Completed;
-                QuestLogger.Log($"Task '{DevName}' completed!");
+                SetTaskState(TaskState.Completed);
 
                 UnsubscribeFromEvents();
 
                 OnTaskUpdated?.SafeInvoke(this);
                 OnTaskCompleted?.SafeInvoke(this);
-                OnTaskStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
         
@@ -171,13 +164,11 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (CurrentState == TaskState.InProgress)
             {
-                CurrentState = TaskState.Failed;
-                QuestLogger.Log($"Task '{DevName}' failed.");
+                SetTaskState(TaskState.Failed);
 
                 UnsubscribeFromEvents();
 
                 OnTaskFailed?.SafeInvoke(this);
-                OnTaskStateChanged?.SafeInvoke(this, CurrentState);
             }
         }
 
@@ -186,12 +177,10 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         public virtual void ResetTask()
         {
-            CurrentState = TaskState.NotStarted;
+            SetTaskState(TaskState.NotStarted);
             QuestLogger.Log($"Task '{DevName}' reset.");
 
             UnsubscribeFromEvents();
-
-            OnTaskStateChanged?.SafeInvoke(this, CurrentState);
         }
         
         /// <summary>
@@ -200,14 +189,18 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         protected virtual void SubscribeToEvents()
         {
-            foreach (Condition_SO condition in TaskData.FailureConditions)
+            foreach (Condition_SO condition in Data.Conditions)
             {
-                if (condition is IEventDrivenCondition eventCondition)
-                {
-                    eventCondition.SubscribeToEvent(FailTask);
-                }
+                if (condition is IConditionEventDriven conditionEventDriven) 
+                    conditionEventDriven.SubscribeToEvent(CompleteTask);
             }
-
+            
+            foreach (Condition_SO condition in Data.FailureConditions)
+            {
+                if (condition is IConditionEventDriven conditionEventDriven) 
+                    conditionEventDriven.SubscribeToEvent(FailTask);
+            }
+            
             OnTaskUpdated.SafeSubscribe(CheckCompletion);
         }
 
@@ -218,6 +211,14 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         protected virtual void UnsubscribeFromEvents()
         {
+        }
+
+        private void SetTaskState(TaskState state)
+        {
+            CurrentState = state;
+            QuestLogger.Log($"Task '{DevName}' state changed to {state}.");
+
+            OnTaskStateChanged?.SafeInvoke(this, CurrentState);
         }
     }
 }

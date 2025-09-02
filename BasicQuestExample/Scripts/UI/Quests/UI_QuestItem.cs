@@ -91,7 +91,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             if (nextNotCompletedTask == null) return;
             LocalizeStringEvent nextTaskText = Instantiate(NextTaskTextPrefab, questStatusHolder);
             nextTaskText.StringReference = nextNotCompletedTask.DisplayName;
-            nextNotCompletedTask.TaskData.SetupTaskLocalizedVariables(nextTaskText, nextNotCompletedTask);
+            nextNotCompletedTask.Data.SetupTaskLocalizedVariables(nextTaskText, nextNotCompletedTask);
         }
 
         private void OnQuestCompleted(Quest quest)

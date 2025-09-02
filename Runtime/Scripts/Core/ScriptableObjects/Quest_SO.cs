@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using HelloDev.Conditions;
 using UnityEngine;
 using UnityEngine.Localization;
-using HelloDev.QuestSystem.Conditions.ScriptableObjects;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.Utils;
 
@@ -53,6 +53,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [SerializeField]
         private List<Condition_SO> failureConditions;
         
+        [Tooltip("The list of conditions that, if any is met, will cause any task to fail.")]
+        [SerializeField]
+        private List<Condition_SO> globalTaskFailureConditions;
+        
         [Tooltip("The type of the quest. Use this to group quests together.")]
         [SerializeField] private QuestType_SO questType; 
         
@@ -99,9 +103,14 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         public List<Condition_SO> StartConditions => startConditions;
         
         /// <summary>
-        /// Gets the list of conditions that, when all met, will cause the quest to fail.
+        /// Gets the list of conditions that, if any is met, will cause any task to fail.
         /// </summary>
         public List<Condition_SO> FailureConditions => failureConditions;
+        
+        /// <summary>
+        /// Gets the list of conditions that, when all met, will cause the quest to fail.
+        /// </summary>
+        public List<Condition_SO> GlobalTaskFailureConditions => globalTaskFailureConditions;
         
         /// <summary>
         /// Gets the type of the quest.
@@ -148,7 +157,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
         }
 
-        protected override void Reset()
+        protected override void OnScriptableObjectReset()
         {
         }
     }

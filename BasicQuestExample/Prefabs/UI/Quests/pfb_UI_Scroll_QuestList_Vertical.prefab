@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 197674538510629784, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
+      propertyPath: m_Value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 419797978262899804, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
@@ -86,7 +90,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3973185061472001089, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_Name
-      value: pfb_UI_Scroll_QuestList_Vertical Variant
+      value: pfb_UI_Scroll_QuestList_Vertical
       objectReference: {fileID: 0}
     - target: {fileID: 3973185061472001089, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_IsActive

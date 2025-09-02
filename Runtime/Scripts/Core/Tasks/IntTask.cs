@@ -17,7 +17,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Gets the required number of counts to complete this task.
         /// </summary>
-        public int RequiredCount => (TaskData as IntTask_SO)?.RequiredCount ?? 0;
+        public int RequiredCount => (Data as TaskInt_SO)?.RequiredCount ?? 0;
 
         /// <summary>
         /// Gets the current number of counts for this task.
@@ -27,10 +27,10 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Initializes a new instance of the IntTask class.
         /// </summary>
-        /// <param name="taskData">The ScriptableObject containing the task's data.</param>
-        public IntTask(IntTask_SO taskData) : base(taskData)
+        /// <param name="data">The ScriptableObject containing the task's data.</param>
+        public IntTask(TaskInt_SO data) : base(data)
         {
-            _currentCount = taskData.CurrentCount;
+            _currentCount = data.CurrentCount;
         }
 
         /// <summary>

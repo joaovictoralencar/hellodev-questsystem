@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 816565eeb74b83f46afd5a1992ad8c3e, type: 3}
+  m_Name: SO_Task_FindGoblinsCampsite
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
+  devName: SO_Task_FindGoblinsCampsite
+  taskId: f9662af6-1c15-4478-9794-307bb7bd72e2
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 3825140356923392
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables:
+    - name: object
+      variable:
+        rid: 1502425035010211922
+    - name: location
+      variable:
+        rid: 1502425035010211923
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 3834205569073152
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions:
+  - {fileID: 11400000, guid: f456c35eaafcb0d4fb1a6f79be5411ca, type: 2}
+  failureConditions: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1502425035010211922
+      type: {class: LocalizedString, ns: UnityEngine.Localization, asm: Unity.Localization}
+      data:
+        m_TableReference:
+          m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+        m_TableEntryReference:
+          m_KeyId: 3835554264301568
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+    - rid: 1502425035010211923
+      type: {class: LocalizedString, ns: UnityEngine.Localization, asm: Unity.Localization}
+      data:
+        m_TableReference:
+          m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+        m_TableEntryReference:
+          m_KeyId: 735651774382080
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []

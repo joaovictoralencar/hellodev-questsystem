@@ -46,20 +46,29 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             TasksHolder.DestroyAllChildren();
             foreach (Task task in quest.Tasks)
             {
+                if (task.CurrentState == TaskState.NotStarted) continue;
                 UI_TaskItem taskItem = Instantiate(TaskItemPrefab, TasksHolder);
                 taskItem.Setup(task, OnTaskSelected);
                 if (task == nextTask)
+                {
                     taskItem.Select();
+                }
             }
             
             //Rewards
             RewardsUI.Setup(quest);
+            quest.OnAnyTaskUpdated.SafeSubscribe(OnQuestUpdated);
             quest.OnQuestUpdated.SafeSubscribe(OnQuestUpdated);
         }
 
         private void OnQuestUpdated(Quest quest)
         {
             ProgressionText.text = $"{QuestUtils.GetPercentage(quest.CurrentProgress)}%";
+            //Select next in progress task
+            Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+            if (nextTask == null) return;
+            UI_TaskItem taskItem = Instantiate(TaskItemPrefab, TasksHolder);
+            taskItem.Setup(nextTask, OnTaskSelected);
         }
 
         private void OnTaskSelected(Task task)

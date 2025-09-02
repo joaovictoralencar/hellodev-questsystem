@@ -17,10 +17,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private GameObject TaskCheck;
 
         [Header("Status style")] [SerializeField]
-        private ColourSO NotCompletedColour;
+        private Colour_SO NotCompletedColour;
 
-        [SerializeField] private ColourSO CompletedColour;
-        [SerializeField] private ColourSO FailedColour;
+        [SerializeField] private Colour_SO CompletedColour;
+        [SerializeField] private Colour_SO FailedColour;
         [SerializeField] private TextStyleUpdater TextStyleUpdater;
         private Selectable Selectable;
         private Task _task;
@@ -33,8 +33,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         public void Setup(Task task, Action<Task> onTaskSelected)
         {
-            TaskNameText.StringReference = task.TaskData.DisplayName;
-            task.TaskData.SetupTaskLocalizedVariables(TaskNameText, task);
+            TaskNameText.StringReference = task.Data.DisplayName;
+            task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
             switch (task.CurrentState)
             {
                 case TaskState.NotStarted:
@@ -70,7 +70,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void OnTaskUpdated(Task task)
         {
-            task.TaskData.SetupTaskLocalizedVariables(TaskNameText, task);
+            task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
         }
 
         private void UnSubscribeToEvents()

@@ -61,6 +61,20 @@ MonoBehaviour:
       threat.
     m_Metadata:
       m_Items: []
+  - m_Id: 3825140356923392
+    m_Localized: Find the {object} in {location}
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 3834205569073152
+    m_Localized: Follow the trail of discarded goods to find the source of the goblin
+      attacks. It seems they're operating from an old, abandoned campsite.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3835554264301568
+    m_Localized: Goblin's Campsite
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:
@@ -70,3 +84,4 @@ MonoBehaviour:
         m_Entries: 
         m_SharedEntries:
         - id: 1815936309968896
+        - id: 3825140356923392

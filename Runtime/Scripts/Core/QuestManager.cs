@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.Utils;
+using Sirenix.OdinInspector;
 using UnityEngine.Events;
 
 namespace HelloDev.QuestSystem
@@ -19,11 +20,11 @@ namespace HelloDev.QuestSystem
     /// </summary>
     public partial class QuestManager : MonoBehaviour
     {
+        [SerializeField] private List<Quest_SO> QuestsDatabase = new();
         [Header("Configuration")] [SerializeField]
         private bool InitializeOnAwake = true;
 
         [SerializeField] private bool EnableDebugLogging = true;
-        [SerializeField] private List<Quest_SO> QuestsDatabase = new();
         [SerializeField] private bool AllowMultipleActiveQuests = true;
         [SerializeField] private bool AllowPlayingCompletedQuests = true;
 
@@ -32,13 +33,13 @@ namespace HelloDev.QuestSystem
         private HashSet<Guid> _completedQuests = new();
         private Dictionary<Type, List<Quest>> _eventListeners = new();
 
-        public UnityEvent<Quest> QuestAdded = new();
-        public UnityEvent<Quest> QuestStarted = new();
-        public UnityEvent<Quest> QuestRemoved = new();
-        public UnityEvent<Quest> QuestRestarted = new();
-        public UnityEvent<Quest> QuestFailed = new();
-        public UnityEvent<Quest> QuestUpdated = new();
-        public UnityEvent<Quest> QuestCompleted = new();
+        [HideInInspector] public UnityEvent<Quest> QuestAdded = new();
+        [HideInInspector] public UnityEvent<Quest> QuestStarted = new();
+        [HideInInspector] public UnityEvent<Quest> QuestRemoved = new();
+        [HideInInspector] public UnityEvent<Quest> QuestRestarted = new();
+        [HideInInspector] public UnityEvent<Quest> QuestFailed = new();
+        [HideInInspector] public UnityEvent<Quest> QuestUpdated = new();
+        [HideInInspector] public UnityEvent<Quest> QuestCompleted = new();
 
         public static QuestManager Instance { get; private set; }
 
@@ -46,6 +47,8 @@ namespace HelloDev.QuestSystem
 
         private void Awake()
         {
+            QuestLogger.IsLoggingEnabled = EnableDebugLogging;
+            
             if (Instance == null)
             {
                 Instance = this;

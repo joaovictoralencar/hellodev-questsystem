@@ -44,6 +44,7 @@ MonoBehaviour:
     m_LocalVariables: []
   questSprite: {fileID: 21300000, guid: 6ed3892c32cb85b46929ce06909246ab, type: 3}
   tasks:
+  - {fileID: 11400000, guid: 8a22e26044994db4fb14f3ccb0249a54, type: 2}
   - {fileID: 11400000, guid: 801e8047180f83947a07a0dbd5b240ff, type: 2}
   startConditions:
   - {fileID: 11400000, guid: c49ce0457922ab740985a6eab990c1dd, type: 2}

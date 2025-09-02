@@ -61,6 +61,21 @@ MonoBehaviour:
       antes que seus n\xFAmeros se tornem uma amea\xE7a real."
     m_Metadata:
       m_Items: []
+  - m_Id: 3825140356923392
+    m_Localized: Encontre {object} em {location}
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 3834205569073152
+    m_Localized: "Siga a trilha de mercadorias descartadas para encontrar a origem
+      dos ataques dos goblins. Parece que eles est\xE3o operando a partir de um antigo
+      acampamento abandonado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3835554264301568
+    m_Localized: Acampamento dos Goblins
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:
@@ -70,3 +85,4 @@ MonoBehaviour:
         m_Entries: 
         m_SharedEntries:
         - id: 1815936309968896
+        - id: 3825140356923392

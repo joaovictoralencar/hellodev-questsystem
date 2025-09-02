@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using HelloDev.Conditions;
 using UnityEngine;
 using UnityEngine.Localization;
-using HelloDev.QuestSystem.Conditions.ScriptableObjects;
+
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -15,7 +16,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     /// The abstract base class for all task data ScriptableObjects.
     /// Defines the common data fields for tasks and a contract for creating a runtime Task instance.
     /// </summary>
-    public abstract class Task_SO : RuntimeScriptableObject
+    public abstract class   Task_SO : RuntimeScriptableObject
     {
         [Header("Core Info")]
         [Tooltip("Internal name for developers, used for identification in code.")]
@@ -34,6 +35,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [Tooltip("The localized description of the task.")]
         [SerializeField]
         private LocalizedString taskDescription;
+        
+        [Header("Conditions")]
+        [SerializeField] private List<Condition_SO> conditions;
 
         [Tooltip("The list of conditions that, when all met, will cause this task to fail.")]
         [SerializeField]
@@ -47,7 +51,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Gets the unique, permanent identifier for this task.
         /// </summary>
-        public string TaskId => taskId;
+        public Guid TaskId => Guid.Parse(taskId);
 
         /// <summary>
         /// Gets the localized display name of the task.
@@ -58,6 +62,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// Gets the localized description of the task.
         /// </summary>
         public LocalizedString TaskDescription => taskDescription;
+        
+        /// <summary>
+        /// Gets the list of conditions that must be met to fail the task.
+        /// </summary>
+        public List<Condition_SO> Conditions => conditions;
 
         /// <summary>
         /// Gets the list of conditions that must be met to fail the task.
@@ -75,18 +84,18 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// </summary>
         private void OnValidate()
         {
-            if (string.IsNullOrWhiteSpace(devName))
-            {
-                devName = name;
-            }
-
             if (string.IsNullOrWhiteSpace(taskId))
             {
                 taskId = Guid.NewGuid().ToString();
             }
+            
+            if (string.IsNullOrWhiteSpace(devName))
+            {
+                devName = name;
+            }
         }
 
-        protected override void Reset()
+        protected override void OnScriptableObjectReset()
         {
         }
 

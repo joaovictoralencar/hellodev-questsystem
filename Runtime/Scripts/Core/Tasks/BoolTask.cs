@@ -1,3 +1,4 @@
+using System.Linq;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
 
@@ -9,20 +10,25 @@ namespace HelloDev.QuestSystem
         {
         }
 
-        public override float Progress { get; }
+        public override float Progress => CurrentState == TaskState.Completed ? 1 : 0;
+
         public override bool OnIncrementStep()
         {
-            throw new System.NotImplementedException();
+            CompleteTask();
+            return true;
         }
 
         public override bool OnDecrementStep()
         {
-            throw new System.NotImplementedException();
+            return true;
         }
 
         protected override void CheckCompletion(Task task)
         {
-            throw new System.NotImplementedException();
+            if (task.Data.Conditions.All(condition => condition.Evaluate()))
+            {
+                CompleteTask();
+            }
         }
     }
 }

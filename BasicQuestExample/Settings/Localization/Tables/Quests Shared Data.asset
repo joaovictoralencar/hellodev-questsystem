@@ -15,6 +15,22 @@ MonoBehaviour:
   m_TableCollectionName: Quests
   m_TableCollectionNameGuidString: 05b8775364730764ab5bf1891aa1cb86
   m_Entries:
+  - m_Id: 735651774382080
+    m_Key: Location_Wasteland
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3835554264301568
+    m_Key: Location_Campsite_Goblins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736338700713984
+    m_Key: Quest_Description_MQ001_GoblinsBane
+    m_Metadata:
+      m_Items: []
+  - m_Id: 736137437036544
+    m_Key: Quest_Name_MQ001_GoblinsBane
+    m_Metadata:
+      m_Items: []
   - m_Id: 734280610267136
     m_Key: QuestType_Completed
     m_Metadata:
@@ -31,24 +47,20 @@ MonoBehaviour:
     m_Key: QuesType_Special
     m_Metadata:
       m_Items: []
-  - m_Id: 735651774382080
-    m_Key: Location_Wasteland
-    m_Metadata:
-      m_Items: []
-  - m_Id: 736137437036544
-    m_Key: MQ001_GoblinsBane
-    m_Metadata:
-      m_Items: []
-  - m_Id: 736338700713984
-    m_Key: MQ001_GoblinsBane_Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1815936309968896
-    m_Key: Task_Kill_Count_Target
+  - m_Id: 3834205569073152
+    m_Key: Task_Description_FindGoblinsCampsite
     m_Metadata:
       m_Items: []
   - m_Id: 3443382889267200
-    m_Key: Task_KillGoblins_Description
+    m_Key: Task_Description_KillGoblins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3825140356923392
+    m_Key: Task_Name_FindLocation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815936309968896
+    m_Key: Task_Name_Kill_Count_Target
     m_Metadata:
       m_Items: []
   m_Metadata:

@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HelloDev.QuestSystem.Conditions;
+using HelloDev.Conditions;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using UnityEngine.Localization;
 using UnityEngine;
-using HelloDev.QuestSystem.Conditions.ScriptableObjects;
 using HelloDev.Utils;
 using UnityEngine.Events;
 
@@ -27,6 +26,7 @@ namespace HelloDev.QuestSystem.Quests
         public UnityEvent<Quest> OnQuestCompleted = new();
         public UnityEvent<Quest> OnQuestFailed = new();
         public UnityEvent<Quest> OnQuestUpdated = new();
+        public UnityEvent<Quest> OnAnyTaskUpdated = new();
 
         #endregion
 
@@ -35,8 +35,6 @@ namespace HelloDev.QuestSystem.Quests
         public Guid QuestId { get; private set; }
         public QuestState CurrentState { get; private set; }
         public List<Task> Tasks { get; private set; }
-        public List<Condition_SO> StartConditions { get; private set; }
-        public List<Condition_SO> FailureConditions { get; private set; }
         public Quest_SO QuestData { get; private set; }
 
         public float CurrentProgress
@@ -53,17 +51,6 @@ namespace HelloDev.QuestSystem.Quests
             CurrentState = QuestState.NotStarted;
             Tasks = questData.Tasks.Select(so => so.GetRuntimeTask()).ToList();
         }
-
-        // List<Condition_SO> InstantiateConditionsList(List<Condition_SO> list)
-        // {
-        //     var newList = new List<Condition_SO>();
-        //     foreach (var so in list)
-        //     {
-        //         newList.Add(UnityEngine.Object.Instantiate(so));
-        //     }
-        //
-        //     return newList;
-        // }
 
         /// <summary>
         /// Attempts to start the quest, changing its state to InProgress if possible.
@@ -160,27 +147,30 @@ namespace HelloDev.QuestSystem.Quests
         {
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
-                if (condition is IEventDrivenCondition eventDrivenCondition)
-                {
-                    eventDrivenCondition.UnsubscribeFromEvent();
-                }
+                if (condition is IConditionEventDriven conditionEventDriven) 
+                    conditionEventDriven.UnsubscribeFromEvent();
             }
         }
 
         public void SubscribeToStartQuestEvents()
         {
-            foreach (Condition_SO condition in StartConditions)
+            foreach (Condition_SO condition in QuestData.StartConditions)
             {
-                if (condition is not IEventDrivenCondition eventDrivenCondition) continue;
-                eventDrivenCondition.SubscribeToEvent(StartQuest);
+                if (condition is IConditionEventDriven conditionEventDriven) 
+                    conditionEventDriven.SubscribeToEvent(StartQuest);
                 QuestLogger.Log($"Subscribed event {condition.name} to start conditions for quest '{QuestData.DevName}'.");
             }
         }
 
+        /// <summary>
+        /// Handles when a task within the quest is updated.
+        /// Logs information about the task and calls <see cref="OnQuestUpdated"/> if the event is not null.
+        /// </summary>
+        /// <param name="task">The task which was updated.</param>
         private void HandleTaskUpdated(Task task)
         {
             QuestLogger.Log($"Task '{task.DevName}' in quest '{QuestData.DevName}' was updated.");
-            OnQuestUpdated?.SafeInvoke(this);
+            OnAnyTaskUpdated?.SafeInvoke(this);
         }
 
         private void UnsubscribeFromAllEvents()
@@ -195,14 +185,26 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// The event handler for a task completing. Calls CheckCompletion to re-evaluate the quest's state.
         /// </summary>
-        /// <param name="task">The task that was completed.</param>
-        private void HandleTaskCompleted(Task task)
+        /// <param name="completedTask">The task that was completed.</param>
+        private void HandleTaskCompleted(Task completedTask)
         {
-            QuestLogger.Log($"Task '{task.DevName}' in quest '{QuestData.DevName}' completed. Checking quest completion.");
+            QuestLogger.Log($"Task '{completedTask.DevName}' in quest '{QuestData.DevName}' completed. Checking quest completion.");
             if (CheckCompletion())
             {
                 CompleteQuest();
             }
+            else
+            {
+                foreach (Task task in Tasks)
+                {
+                    if (task.CurrentState == TaskState.NotStarted)
+                    {
+                        task.StartTask();
+                        break;
+                    }
+                }
+            }
+            OnQuestUpdated?.SafeInvoke(this);
         }
 
         /// <summary>
@@ -212,7 +214,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <returns> True if the quest was successfully started, false otherwise.</returns>
         public bool CheckForConditionsAndStart()
         {
-            bool allConditionsMet = StartConditions.All(c => c.Evaluate());
+            bool allConditionsMet = QuestData.StartConditions.All(c => c.Evaluate());
             if (allConditionsMet)
             {
                 StartQuest();
@@ -224,7 +226,7 @@ namespace HelloDev.QuestSystem.Quests
 
         public bool CheckStartConditions()
         {
-            bool allConditionsMet = StartConditions.All(c => c.Evaluate());
+            bool allConditionsMet = QuestData.StartConditions.All(c => c.Evaluate());
             if (allConditionsMet)
             {
                 return true;
