@@ -79,7 +79,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 55
 --- !u!225 &4016205048544807143
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -126,9 +126,10 @@ MonoBehaviour:
   onStartShow:
     m_PersistentCalls:
       m_Calls: []
-  QuestSectionHolder: {fileID: 3611809570058612866}
-  QuestSectionPrefab: {fileID: 6416126745684623806, guid: e4bbaa95b1b67c24e9c6b3f047fa2587, type: 3}
-  QuestSectionToggleGroup: {fileID: 4084584733678668674}
+  showEmptySections: 1
+  questSectionHolder: {fileID: 3611809570058612866}
+  questSectionPrefab: {fileID: 6416126745684623806, guid: e4bbaa95b1b67c24e9c6b3f047fa2587, type: 3}
+  questSectionToggleGroup: {fileID: 4084584733678668674}
   questDetails: {fileID: 9021296139520726044}
 --- !u!1 &1349937144860755173
 GameObject:
@@ -1055,7 +1056,7 @@ PrefabInstance:
     - target: {fileID: 2322842649469053951, guid: ca7cf8b160fdee14eb09a9eb59efabe5, type: 3}
       propertyPath: selectedBackground
       value: 
-      objectReference: {fileID: 6152781869665833495}
+      objectReference: {fileID: 0}
     - target: {fileID: 2351284086998155022, guid: ca7cf8b160fdee14eb09a9eb59efabe5, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2660,17 +2661,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2508482093064818514, guid: ca7cf8b160fdee14eb09a9eb59efabe5, type: 3}
   m_PrefabInstance: {fileID: 4123392588844192376}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6152781869665833495 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7807598209570439279, guid: ca7cf8b160fdee14eb09a9eb59efabe5, type: 3}
-  m_PrefabInstance: {fileID: 4123392588844192376}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &9021296139520726044 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4903064007502792292, guid: ca7cf8b160fdee14eb09a9eb59efabe5, type: 3}

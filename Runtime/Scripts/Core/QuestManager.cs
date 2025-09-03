@@ -20,7 +20,7 @@ namespace HelloDev.QuestSystem
     /// </summary>
     public partial class QuestManager : MonoBehaviour
     {
-        [SerializeField] private List<Quest_SO> QuestsDatabase = new();
+        [SerializeField] private List<Quest_SO> questsDatabase = new();
         [Header("Configuration")] [SerializeField]
         private bool InitializeOnAwake = true;
 
@@ -44,6 +44,7 @@ namespace HelloDev.QuestSystem
         public static QuestManager Instance { get; private set; }
 
         public Dictionary<Guid, Quest> ActiveQuests => _activeQuests;
+        public List<Quest_SO> QuestsDatabase => questsDatabase;
 
         private void Awake()
         {

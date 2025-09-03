@@ -63,6 +63,10 @@ MonoBehaviour:
     m_Key: Task_Name_Kill_Count_Target
     m_Metadata:
       m_Items: []
+  - m_Id: 5682838304243712
+    m_Key: QuestType_Secondary
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

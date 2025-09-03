@@ -76,6 +76,10 @@ MonoBehaviour:
     m_Localized: Acampamento dos Goblins
     m_Metadata:
       m_Items: []
+  - m_Id: 5682838304243712
+    m_Localized: "Miss\xF5es Secund\xE1rias"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:

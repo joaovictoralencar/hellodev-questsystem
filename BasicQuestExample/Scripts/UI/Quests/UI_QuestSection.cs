@@ -21,23 +21,27 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         
         [Header("Toggle")] [SerializeField] BaseToggle toggle;
         public QuestType_SO QuestType { get; private set; }
-
+        
+        
         /// <summary>
-        /// Initializes the UI quest section with the given list of quests.
-        /// This method sets up the section's name and background color based on the first quest's type,
-        /// and instantiates a UI quest item for each quest in the list.
+        /// Sets up the quest section with the given quest type.
+        /// Assigns the quest type to the section, sets the section name to the display name of the quest type,
+        /// and sets the section background color to the color of the quest type.
         /// </summary>
-        /// <param name="quests">The list of quests to set up the UI section with.</param>
-        /// <param name="onQuestSelected">Callback to be called when a quest is selected.</param>
-        public void Setup(List<Quest> quests, Action<Quest> onQuestSelected)
+        /// <param name="questType">The quest type for the section</param>
+        public void Setup(QuestType_SO questType)
         {
             // Get the quest type of the first quest in the list
-            QuestType = quests.First().QuestData.QuestType;
+            QuestType = questType;
 
             // Set the section name and background color based on the quest type
             QuestSectionName.StringReference = QuestType.DisplayName;
             QuestSectionBackground.color = QuestType.Color;
-
+        }
+        public void SpawnQuestsItems(List<Quest> quests, Action<Quest> onQuestSelected)
+        {
+            if (quests.Count == 0) return;
+            
             // Instantiate a UI quest item for each quest in the list
             foreach (Quest quest in quests)
             {

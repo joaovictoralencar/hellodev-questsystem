@@ -75,6 +75,10 @@ MonoBehaviour:
     m_Localized: Goblin's Campsite
     m_Metadata:
       m_Items: []
+  - m_Id: 5682838304243712
+    m_Localized: Secondary Quests
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:
