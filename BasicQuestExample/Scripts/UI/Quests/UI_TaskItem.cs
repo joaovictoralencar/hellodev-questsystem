@@ -6,15 +6,17 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
+using DG.Tweening;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
     [RequireComponent(typeof(Selectable))]
-    public class UI_TaskItem : MonoBehaviour, ISelectHandler, IPointerEnterHandler
+    public class UI_TaskItem : MonoBehaviour, ISelectHandler, IPointerEnterHandler, IDeselectHandler
     {
         [SerializeField] private Selectable selectable;
         [SerializeField] private LocalizeStringEvent TaskNameText;
         [SerializeField] private GameObject TaskCheck;
+        [SerializeField] private Image selectedBackground;
 
         [Header("Status style")] [SerializeField]
         private Colour_SO NotCompletedColour;
@@ -126,7 +128,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             {
                 EventSystem.current.SetSelectedGameObject(gameObject);
             }
+
+            selectedBackground.enabled = true;
+            selectedBackground.DOFillAmount(1, 0.35f).SetEase(Ease.OutBack);
             OnTaskSelected.Invoke(_task);
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            selectedBackground.enabled = false;
+            selectedBackground.DOFillAmount(0, 0.2f).SetEase(Ease.InBack);
         }
     }
 }

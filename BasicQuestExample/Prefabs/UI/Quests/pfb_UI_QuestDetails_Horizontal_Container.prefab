@@ -1012,6 +1012,7 @@ MonoBehaviour:
   TaskItemPrefab: {fileID: 3171107527094496841, guid: 7122691c4ff453e42a2df7465a234ef5, type: 3}
   TasksHolder: {fileID: 7762556871803788366}
   TaskDescriptionText: {fileID: 778314818795038770}
+  TaskDescriptionTextMesh: {fileID: 4954617906382298031}
   CompleteCurrentTaskButton: {fileID: 833919314116683119}
   FailCurrentTaskButton: {fileID: 4060626023596344540}
   InvokeEventTaskButton: {fileID: 4528881806073021858}
@@ -4054,11 +4055,11 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 40f94ce1e065a8a4a8389cfaf61b5220, type: 3}
     - target: {fileID: 1842699045690986867, guid: 228c837e8fd69f54488f29480c5e79ca, type: 3}
       propertyPath: m_Size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1842699045690986867, guid: 228c837e8fd69f54488f29480c5e79ca, type: 3}
       propertyPath: m_Value
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2233713945519449783, guid: 228c837e8fd69f54488f29480c5e79ca, type: 3}
       propertyPath: m_SizeDelta.y
@@ -4284,6 +4285,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2233713945519449783, guid: 228c837e8fd69f54488f29480c5e79ca, type: 3}
   m_PrefabInstance: {fileID: 3016241120951128435}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4954617906382298031 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7861457482286303964, guid: 228c837e8fd69f54488f29480c5e79ca, type: 3}
+  m_PrefabInstance: {fileID: 3016241120951128435}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &5026247438416161128 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7789826834617923611, guid: 228c837e8fd69f54488f29480c5e79ca, type: 3}
@@ -4701,11 +4713,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 197674538510629784, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_Size
-      value: 0.7333356
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 197674538510629784, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_Value
-      value: 0.99999976
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 419797978262899804, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_SizeDelta.y

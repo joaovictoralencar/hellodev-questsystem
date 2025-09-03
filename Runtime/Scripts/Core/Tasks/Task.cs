@@ -179,7 +179,6 @@ namespace HelloDev.QuestSystem.Tasks
         {
             SetTaskState(TaskState.NotStarted);
             QuestLogger.Log($"Task '{DevName}' reset.");
-
             UnsubscribeFromEvents();
         }
         
@@ -217,7 +216,6 @@ namespace HelloDev.QuestSystem.Tasks
         {
             CurrentState = state;
             QuestLogger.Log($"Task '{DevName}' state changed to {state}.");
-
             OnTaskStateChanged?.SafeInvoke(this, CurrentState);
         }
     }

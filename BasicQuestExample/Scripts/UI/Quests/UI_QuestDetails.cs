@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using HelloDev.Conditions;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
@@ -24,6 +25,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [Header("Tasks")] [SerializeField] private UI_TaskItem TaskItemPrefab;
         [SerializeField] private RectTransform TasksHolder;
         [SerializeField] private LocalizeStringEvent TaskDescriptionText;
+        [SerializeField] private TextMeshProUGUI TaskDescriptionTextMesh;
 
         private Quest _quest;
         private Task _currentTask;
@@ -138,6 +140,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             _currentTask = task;
             TaskDescriptionText.StringReference = task.Description;
+            TaskDescriptionTextMesh.DOFade(1, .35f).From(0).SetEase(Ease.OutQuad);
 
             //Debug buttons setup
 #if UNITY_EDITOR
