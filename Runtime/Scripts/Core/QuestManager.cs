@@ -30,7 +30,7 @@ namespace HelloDev.QuestSystem
 
         private Dictionary<Guid, Quest_SO> _availableQuestsData = new();
         private Dictionary<Guid, Quest> _activeQuests = new();
-        private HashSet<Guid> _completedQuests = new();
+        private Dictionary<Guid, Quest> _completedQuests = new();
         private Dictionary<Type, List<Quest>> _eventListeners = new();
 
         [HideInInspector] public UnityEvent<Quest> QuestAdded = new();
@@ -45,6 +45,7 @@ namespace HelloDev.QuestSystem
 
         public Dictionary<Guid, Quest> ActiveQuests => _activeQuests;
         public List<Quest_SO> QuestsDatabase => questsDatabase;
+        public Dictionary<Guid, Quest> CompletedQuests => _completedQuests;
 
         private void Awake()
         {
@@ -120,7 +121,7 @@ namespace HelloDev.QuestSystem
                 return false;
             }
 
-            if (!AllowPlayingCompletedQuests && _completedQuests.Contains(questId))
+            if (!AllowPlayingCompletedQuests && _completedQuests.ContainsKey(questId))
             {
                 QuestLogger.Log($"Quest '{_availableQuestsData[questId].DevName}' has already been completed and AllowPlayingCompletedQuests is disabled.");
                 return false;
@@ -222,8 +223,9 @@ namespace HelloDev.QuestSystem
         {
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
-            _completedQuests.Add(quest.QuestId);
+            _completedQuests.TryAdd(quest.QuestId, quest);
             QuestLogger.Log($"Quest '{quest.QuestData.DevName}' moved to completed quests.");
+            QuestCompleted?.SafeInvoke(quest);
         }
 
         private void HandleQuestFailed(Quest quest)
@@ -317,7 +319,7 @@ namespace HelloDev.QuestSystem
 
         public bool IsQuestCompleted(Guid questId)
         {
-            return _completedQuests.Contains(questId);
+            return _completedQuests.ContainsKey(questId);
         }
 
         #endregion

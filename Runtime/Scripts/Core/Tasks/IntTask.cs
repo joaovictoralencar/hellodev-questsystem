@@ -64,6 +64,11 @@ namespace HelloDev.QuestSystem.Tasks
             return true;
         }
 
+        public override void ForceCompleteState()
+        {
+            _currentCount = RequiredCount;
+        }
+
         public override bool OnIncrementStep()
         {
             return IncrementCount();

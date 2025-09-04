@@ -27,7 +27,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private LocalizeStringEvent TaskDescriptionText;
         [SerializeField] private TextMeshProUGUI TaskDescriptionTextMesh;
 
-        private Quest _quest;
+        private Quest _currentQuest;
         private Task _currentTask;
         private List<UI_TaskItem> _taskUiItems = new();
 
@@ -66,7 +66,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         public void Setup(Quest quest)
         {
-            _quest = quest;
+            _currentQuest = quest;
 
             QuestNameText.StringReference = quest.QuestData.DisplayName;
             QuestDescriptionText.StringReference = quest.QuestData.QuestDescription;
@@ -94,7 +94,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             //Rewards
             RewardsUI.Setup(quest);
-            quest.OnAnyTaskUpdated.SafeSubscribe(OnQuestUpdated);
+            quest.OnAnyTaskUpdated.SafeSubscribe(OnTaskUpdated);
+            quest.OnAnyTaskCompleted.SafeSubscribe(OnTaskUpdated);
 
             //Debug buttons setup
             CompleteCurrentQuestButton.OnClick.SafeSubscribe(DebugCompleteQuest);
@@ -104,26 +105,31 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugFailQuest()
         {
-            _quest.FailQuest();
+            _currentQuest.FailQuest();
         }
 
         private void DebugResetQuest()
         {
-            _quest.ResetQuest();
+            _currentQuest.ResetQuest();
         }
 
         private void DebugCompleteQuest()
         {
-            foreach (Task task in _quest.Tasks)
+            foreach (Task task in _currentQuest.Tasks)
             {
                 task.CompleteTask();
             }
         }
 
-        private void OnQuestUpdated(Quest quest)
+        private void OnTaskUpdated(Task task)
         {
-            ProgressionText.text = $"{QuestUtils.GetPercentage(quest.CurrentProgress)}%";
+            ProgressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
             //Select next in progress task
+            SetupNextTask(_currentQuest);
+        }
+
+        private void SetupNextTask(Quest quest)
+        {
             Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
             if (nextTask == null) return;
             //Checks if task is already spawned
@@ -135,6 +141,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             }
             taskItem.Setup(nextTask, OnTaskSelected);
         }
+
 
         private void OnTaskSelected(Task task)
         {
@@ -168,7 +175,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugResetTask()
         {
-            _currentTask.ResetTask();
+            int index = _currentQuest.Tasks.IndexOf(_currentTask);
+            for (int i = index; i < _currentQuest.Tasks.Count; i++)
+            {
+                _currentQuest.Tasks[i].ResetTask();
+            }
+
+            _currentTask.StartTask();
         }
 
         private void DebugFailTask()

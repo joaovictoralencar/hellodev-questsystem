@@ -37,6 +37,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         public void Setup(Task task, Action<Task> onTaskSelected)
         {
+            _task = task;
             TaskNameText.StringReference = task.Data.DisplayName;
             task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
             switch (task.CurrentState)
@@ -54,8 +55,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                     OnTaskFailed(task);
                     break;
             }
-
-            _task = task;
             OnTaskSelected = onTaskSelected;
             SubscribeToEvents();
         }
@@ -105,11 +104,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             TaskCheck.SetActive(false);
             TextStyleUpdater.TextColourSO = NotCompletedColour;
+            _task.OnTaskStarted.Unsubscribe((t)=> OnTaskInProgress());
         }
 
         private void OnTaskNotStarted()
         {
             gameObject.SetActive(false);
+            _task.OnTaskStarted.SafeSubscribe((t)=> OnTaskInProgress());
         }
 
         public void OnSelect(BaseEventData eventData)

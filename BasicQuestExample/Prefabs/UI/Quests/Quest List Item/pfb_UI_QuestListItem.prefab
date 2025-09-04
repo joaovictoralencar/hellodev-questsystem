@@ -143,13 +143,13 @@ MonoBehaviour:
   questLocationText: {fileID: 2631643763333176905}
   levelText: {fileID: 5001852202336908258}
   progressionText: {fileID: 1152508717701780117}
-  toggle: {fileID: 0}
+  questColourMarker: {fileID: 896402874500938693}
   questStatusIndicatorHolder: {fileID: 9073748896441923698}
   updatedIndicatorPrefab: {fileID: 8253276519510219792, guid: 303793c34702fa146b6fd6e8ac951966, type: 3}
   completedIndicatorPrefab: {fileID: 7999649550308751022, guid: 502e5e63c099c7c459b36d685bd5eb55, type: 3}
   failedIndicatorPrefab: {fileID: 6320188195673473514, guid: afb104db810c12f4db453d8333f39727, type: 3}
   questStatusHolder: {fileID: 3565991828154587619}
-  NextTaskTextPrefab: {fileID: 2738105682562124176, guid: 09623865b4f6b7c4c9c2006166b11d7b, type: 3}
+  nextTaskTextPrefab: {fileID: 0}
   completedTextPrefab: {fileID: 3183054172739322818, guid: 6643b17d637a64a4bbc1654e65c5b0a1, type: 3}
   failedTextPrefab: {fileID: 8887287360785183637, guid: 963e6e6158de4044aba5cf07467847e2, type: 3}
 --- !u!114 &1788356545892161431

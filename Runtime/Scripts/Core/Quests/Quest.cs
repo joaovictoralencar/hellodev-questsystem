@@ -26,7 +26,8 @@ namespace HelloDev.QuestSystem.Quests
         public UnityEvent<Quest> OnQuestCompleted = new();
         public UnityEvent<Quest> OnQuestFailed = new();
         public UnityEvent<Quest> OnQuestUpdated = new();
-        public UnityEvent<Quest> OnAnyTaskUpdated = new();
+        public UnityEvent<Task> OnAnyTaskUpdated = new();
+        public UnityEvent<Task> OnAnyTaskCompleted = new();
 
         #endregion
 
@@ -44,6 +45,13 @@ namespace HelloDev.QuestSystem.Quests
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Quest"/> class.
+        /// </summary>
+        /// <param name="questData">The quest data.</param>
+        /// <remarks>
+        /// This constructor is used to create a runtime instance of a quest from a <see cref="Quest_SO"/> asset.
+        /// </remarks>
         public Quest(Quest_SO questData)
         {
             QuestData = questData;
@@ -164,7 +172,7 @@ namespace HelloDev.QuestSystem.Quests
         private void HandleTaskUpdated(Task task)
         {
             QuestLogger.Log($"Task '{task.DevName}' in quest '{QuestData.DevName}' was updated.");
-            OnAnyTaskUpdated?.SafeInvoke(this);
+            OnAnyTaskUpdated?.SafeInvoke(task);
         }
 
         private void UnsubscribeFromAllEvents()
@@ -199,6 +207,7 @@ namespace HelloDev.QuestSystem.Quests
                 }
             }
             OnQuestUpdated?.SafeInvoke(this);
+            OnAnyTaskCompleted?.SafeInvoke(completedTask);
         }
 
         /// <summary>

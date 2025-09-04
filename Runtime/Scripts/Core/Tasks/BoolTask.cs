@@ -12,6 +12,10 @@ namespace HelloDev.QuestSystem
 
         public override float Progress => CurrentState == TaskState.Completed ? 1 : 0;
 
+        public override void ForceCompleteState()
+        {
+        }
+
         public override bool OnIncrementStep()
         {
             if (CurrentState != TaskState.InProgress) return false;

@@ -117,11 +117,17 @@ namespace HelloDev.QuestSystem.Tasks
                 SetTaskState(TaskState.Completed);
 
                 UnsubscribeFromEvents();
+                ForceCompleteState();
 
                 OnTaskUpdated?.SafeInvoke(this);
                 OnTaskCompleted?.SafeInvoke(this);
             }
         }
+
+        /// <summary>
+        /// Forces the task parameters to a completed state.
+        /// </summary>
+        public abstract void ForceCompleteState();
         
         /// <summary>
         /// Increments the step for the task.
@@ -138,7 +144,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         public void IncrementStep()
         {
-            if (OnIncrementStep())
+            if (OnIncrementStep() && CurrentState == TaskState.InProgress)
             {
                 QuestLogger.Log($"Incremented step for Task '{DevName}'");
                 OnTaskUpdated.SafeInvoke(this);
@@ -150,7 +156,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         public void DecrementStep()
         {
-            if (OnDecrementStep())
+            if (OnDecrementStep() && CurrentState == TaskState.InProgress)
             {
                 QuestLogger.Log($"Decremented step for Task '{DevName}'");
                 OnTaskUpdated.SafeInvoke(this);
@@ -210,6 +216,19 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         protected virtual void UnsubscribeFromEvents()
         {
+            foreach (Condition_SO condition in Data.Conditions)
+            {
+                if (condition is IConditionEventDriven conditionEventDriven) 
+                    conditionEventDriven.UnsubscribeFromEvent();
+            }
+            
+            foreach (Condition_SO condition in Data.FailureConditions)
+            {
+                if (condition is IConditionEventDriven conditionEventDriven) 
+                    conditionEventDriven.UnsubscribeFromEvent();
+            }
+            
+            OnTaskUpdated.Unsubscribe(CheckCompletion);
         }
 
         private void SetTaskState(TaskState state)

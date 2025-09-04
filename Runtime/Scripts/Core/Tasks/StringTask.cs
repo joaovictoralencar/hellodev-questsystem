@@ -14,19 +14,24 @@ namespace HelloDev.QuestSystem.Tasks
         }
 
         public override float Progress => CurrentState == TaskState.Completed ? 1 : 0;
+        public override void ForceCompleteState()
+        {
+            //Todo current value = target value
+        }
+
         public override bool OnIncrementStep()
         {
-            throw new System.NotImplementedException();
+            CompleteTask();
+            return true;
         }
 
         public override bool OnDecrementStep()
         {
-            throw new System.NotImplementedException();
+            return true;
         }
 
         protected override void CheckCompletion(Task task)
         {
-            throw new System.NotImplementedException();
         }
     }
 }

@@ -130,6 +130,7 @@ MonoBehaviour:
   questSectionHolder: {fileID: 3611809570058612866}
   questSectionPrefab: {fileID: 6416126745684623806, guid: e4bbaa95b1b67c24e9c6b3f047fa2587, type: 3}
   questSectionToggleGroup: {fileID: 4084584733678668674}
+  completedQuestType: {fileID: 11400000, guid: 340bf8928c6125f4c94584d7a50337fe, type: 2}
   questDetails: {fileID: 9021296139520726044}
 --- !u!1 &1349937144860755173
 GameObject:
