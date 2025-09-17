@@ -11,9 +11,11 @@ using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Components;
+using UnityEngine.UI;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
+    [RequireComponent(typeof(ToggleGroup))]
     public class UI_QuestDetails : MonoBehaviour
     {
         [SerializeField] private LocalizeStringEvent QuestNameText;
@@ -24,6 +26,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [Header("Rewards")] [SerializeField] private UI_QuestRewards RewardsUI;
         [Header("Tasks")] [SerializeField] private UI_TaskItem TaskItemPrefab;
         [SerializeField] private RectTransform TasksHolder;
+        [SerializeField] private ToggleGroup ToggleGroup;
         [SerializeField] private LocalizeStringEvent TaskDescriptionText;
         [SerializeField] private TextMeshProUGUI TaskDescriptionTextMesh;
 
@@ -35,34 +38,39 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
 #if UNITY_EDITOR
         [FoldoutGroup("Debug"), Title("Tasks"), SerializeField]
-        private BaseButton CompleteCurrentTaskButton;
+        private UIButton CompleteCurrentTaskButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton FailCurrentTaskButton;
+        private UIButton FailCurrentTaskButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton InvokeEventTaskButton;
+        private UIButton InvokeEventTaskButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton IncrementCurrentTaskButton;
+        private UIButton IncrementCurrentTaskButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton DecrementCurrentTaskButton;
+        private UIButton DecrementCurrentTaskButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton ResetCurrentTaskButton;
+        private UIButton ResetCurrentTaskButton;
 
         [FoldoutGroup("Debug"), Title("Quests"), SerializeField]
-        private BaseButton CompleteCurrentQuestButton;
+        private UIButton CompleteCurrentQuestButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton FailCurrentQuestButton;
+        private UIButton FailCurrentQuestButton;
 
         [FoldoutGroup("Debug"), SerializeField]
-        private BaseButton ResetCurrentQuestButton;
+        private UIButton ResetCurrentQuestButton;
 #endif
 
         #endregion
+
+        private void Awake()
+        {
+            if (ToggleGroup == null) TryGetComponent(out ToggleGroup);
+        }
 
         public void Setup(Quest quest)
         {
@@ -86,6 +94,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 UI_TaskItem taskItem = Instantiate(TaskItemPrefab, TasksHolder);
                 _taskUiItems.Add(taskItem);
                 taskItem.Setup(task, OnTaskSelected);
+                taskItem.SetToggleGroup(ToggleGroup);
                 if (task == nextTask)
                 {
                     taskItem.Select();
@@ -140,6 +149,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 _taskUiItems.Add(taskItem);
             }
             taskItem.Setup(nextTask, OnTaskSelected);
+            taskItem.SetToggleGroup(ToggleGroup);
         }
 
 

@@ -13,10 +13,11 @@ GameObject:
   - component: {fileID: 2501789085962747579}
   - component: {fileID: 2588588170803801934}
   - component: {fileID: 2304424364439283780}
+  - component: {fileID: 1332473392196343552}
+  - component: {fileID: 952566456985169719}
   - component: {fileID: 6803743927342112136}
-  - component: {fileID: 1788356545892161431}
   m_Layer: 5
-  m_Name: pfb_UI_QuestListItem
+  m_Name: pfb_UI_QuestItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -127,7 +128,7 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &6803743927342112136
+--- !u!114 &1332473392196343552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -136,32 +137,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1523665438361006900}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b5340ad0a393db4ea3b781725ce0586, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  questNameText: {fileID: 158409824467797245}
-  questLocationText: {fileID: 2631643763333176905}
-  levelText: {fileID: 5001852202336908258}
-  progressionText: {fileID: 1152508717701780117}
-  questColourMarker: {fileID: 896402874500938693}
-  questStatusIndicatorHolder: {fileID: 9073748896441923698}
-  updatedIndicatorPrefab: {fileID: 8253276519510219792, guid: 303793c34702fa146b6fd6e8ac951966, type: 3}
-  completedIndicatorPrefab: {fileID: 7999649550308751022, guid: 502e5e63c099c7c459b36d685bd5eb55, type: 3}
-  failedIndicatorPrefab: {fileID: 6320188195673473514, guid: afb104db810c12f4db453d8333f39727, type: 3}
-  questStatusHolder: {fileID: 3565991828154587619}
-  nextTaskTextPrefab: {fileID: 0}
-  completedTextPrefab: {fileID: 3183054172739322818, guid: 6643b17d637a64a4bbc1654e65c5b0a1, type: 3}
-  failedTextPrefab: {fileID: 8887287360785183637, guid: 963e6e6158de4044aba5cf07467847e2, type: 3}
---- !u!114 &1788356545892161431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1523665438361006900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a98125502f715b4b83cfb77b434e436, type: 3}
+  m_Script: {fileID: 11500000, guid: 9085046f02f69544eb97fd06b6048fe2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -193,6 +169,78 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 2501789085962747579}
+  toggleTransition: 0
+  graphic: {fileID: 0}
+  m_Group: {fileID: 0}
+  onValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_IsOn: 0
+--- !u!114 &952566456985169719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523665438361006900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a09fbe37a48ae34a8c13bc507c1cd16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentState: 0
+  debugMode: 0
+  NormalStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  SelectedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  HighlightedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  PressedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  DisabledStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  ChangedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _toggle: {fileID: 1332473392196343552}
+  OnToggleOn:
+    m_PersistentCalls:
+      m_Calls: []
+  OnToggleOff:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &6803743927342112136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523665438361006900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b5340ad0a393db4ea3b781725ce0586, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  questNameText: {fileID: 158409824467797245}
+  questLocationText: {fileID: 2631643763333176905}
+  levelText: {fileID: 5001852202336908258}
+  progressionText: {fileID: 1152508717701780117}
+  toggle: {fileID: 952566456985169719}
+  questColourMarker: {fileID: 896402874500938693}
+  questStatusIndicatorHolder: {fileID: 9073748896441923698}
+  updatedIndicatorPrefab: {fileID: 8253276519510219792, guid: 303793c34702fa146b6fd6e8ac951966, type: 3}
+  completedIndicatorPrefab: {fileID: 7999649550308751022, guid: 502e5e63c099c7c459b36d685bd5eb55, type: 3}
+  failedIndicatorPrefab: {fileID: 6320188195673473514, guid: afb104db810c12f4db453d8333f39727, type: 3}
+  questStatusHolder: {fileID: 3565991828154587619}
+  nextTaskTextPrefab: {fileID: 0}
+  completedTextPrefab: {fileID: 3183054172739322818, guid: 6643b17d637a64a4bbc1654e65c5b0a1, type: 3}
+  failedTextPrefab: {fileID: 8887287360785183637, guid: 963e6e6158de4044aba5cf07467847e2, type: 3}
 --- !u!1 &1815579581300906842
 GameObject:
   m_ObjectHideFlags: 0

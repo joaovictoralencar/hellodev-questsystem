@@ -917,6 +917,7 @@ GameObject:
   - component: {fileID: 6983097259956368335}
   - component: {fileID: 5790767226173908825}
   - component: {fileID: 4903064007502792292}
+  - component: {fileID: 1470022463782094430}
   m_Layer: 5
   m_Name: pfb_UI_QuestDetails_Horizontal_Container
   m_TagString: Untagged
@@ -1011,6 +1012,7 @@ MonoBehaviour:
   RewardsUI: {fileID: 3681041779912511671}
   TaskItemPrefab: {fileID: 3171107527094496841, guid: 7122691c4ff453e42a2df7465a234ef5, type: 3}
   TasksHolder: {fileID: 7762556871803788366}
+  ToggleGroup: {fileID: 468714381711669206}
   TaskDescriptionText: {fileID: 778314818795038770}
   TaskDescriptionTextMesh: {fileID: 4954617906382298031}
   CompleteCurrentTaskButton: {fileID: 833919314116683119}
@@ -1022,6 +1024,19 @@ MonoBehaviour:
   CompleteCurrentQuestButton: {fileID: 4266191789903547125}
   FailCurrentQuestButton: {fileID: 4401721447487998044}
   ResetCurrentQuestButton: {fileID: 6671723500842927154}
+--- !u!114 &1470022463782094430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5068875940772807840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fafe2cfe61f6974895a912c3755e8f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AllowSwitchOff: 0
 --- !u!1 &5154905925878466638
 GameObject:
   m_ObjectHideFlags: 0
@@ -1379,6 +1394,7 @@ GameObject:
   - component: {fileID: 7762556871803788366}
   - component: {fileID: 6463964085699797959}
   - component: {fileID: 3279326797653384712}
+  - component: {fileID: 468714381711669206}
   m_Layer: 5
   m_Name: Vertical_QuestTasks
   m_TagString: Untagged
@@ -1454,6 +1470,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: 1
   m_LayoutPriority: 1
+--- !u!114 &468714381711669206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7118547375724605395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fafe2cfe61f6974895a912c3755e8f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AllowSwitchOff: 0
 --- !u!1 &7922625657423692598
 GameObject:
   m_ObjectHideFlags: 0

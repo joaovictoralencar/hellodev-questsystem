@@ -3,17 +3,16 @@ using HelloDev.QuestSystem.Tasks;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 using DG.Tweening;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
-    [RequireComponent(typeof(Selectable))]
-    public class UI_TaskItem : MonoBehaviour, ISelectHandler, IPointerEnterHandler, IDeselectHandler
+    [RequireComponent(typeof(UIToggle))]
+    public class UI_TaskItem : MonoBehaviour
     {
-        [SerializeField] private Selectable selectable;
+        [SerializeField] private UIToggle Toggle;
         [SerializeField] private LocalizeStringEvent TaskNameText;
         [SerializeField] private GameObject TaskCheck;
         [SerializeField] private Image selectedBackground;
@@ -24,11 +23,18 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private Colour_SO CompletedColour;
         [SerializeField] private Colour_SO FailedColour;
         [SerializeField] private TextStyleUpdater TextStyleUpdater;
-        private Selectable Selectable;
         private Task _task;
         private Action<Task> OnTaskSelected;
 
         public Task Task => _task;
+
+        private void Awake()
+        {
+            if (Toggle == null) TryGetComponent(out Toggle);
+            Toggle.OnToggleOn.AddListener(OnSelect);
+            Toggle.NormalStateEvent.AddListener(OnDeselect);
+            Toggle.HighlightedStateEvent.AddListener(Select);
+        }
 
         private void OnDestroy()
         {
@@ -37,6 +43,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         public void Setup(Task task, Action<Task> onTaskSelected)
         {
+            gameObject.name = task.Data.DevName;
             _task = task;
             TaskNameText.StringReference = task.Data.DisplayName;
             task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
@@ -65,12 +72,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _task.OnTaskCompleted.SafeSubscribe(OnTaskCompleted);
             _task.OnTaskFailed.SafeSubscribe(OnTaskFailed);
         }
-
-        public void Select()
-        {
-            selectable.Select();
-        }
-
         private void OnTaskUpdated(Task task)
         {
             task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
@@ -113,32 +114,29 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _task.OnTaskStarted.SafeSubscribe((t)=> OnTaskInProgress());
         }
 
-        public void OnSelect(BaseEventData eventData)
+        public void Select()
         {
-            Select(eventData);
+            OnTaskSelected.Invoke(_task);
+            Toggle.SetIsOn(true);
         }
 
-        public void OnPointerEnter(PointerEventData eventData)
+        private void OnSelect()
         {
-            Select(eventData);
-        }
-
-        private void Select(BaseEventData eventData)
-        {
-            if (EventSystem.current.currentSelectedGameObject != gameObject)
-            {
-                EventSystem.current.SetSelectedGameObject(gameObject);
-            }
-
             selectedBackground.enabled = true;
             selectedBackground.DOFillAmount(1, 0.35f).SetEase(Ease.OutBack);
-            OnTaskSelected.Invoke(_task);
+            Toggle.Toggle.Select();
         }
 
-        public void OnDeselect(BaseEventData eventData)
+        public void OnDeselect()
         {
+            if (Toggle.IsOn) return;
             selectedBackground.enabled = false;
             selectedBackground.DOFillAmount(0, 0.2f).SetEase(Ease.InBack);
+        }
+
+        public void SetToggleGroup(ToggleGroup toggleGroup)
+        {
+            Toggle.Toggle.group = toggleGroup;
         }
     }
 }

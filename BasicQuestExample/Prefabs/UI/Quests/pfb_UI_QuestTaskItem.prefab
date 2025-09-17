@@ -144,8 +144,9 @@ GameObject:
   - component: {fileID: 6610657905471168404}
   - component: {fileID: 8093154562623176741}
   - component: {fileID: 3171107527094496841}
-  - component: {fileID: 8979225923393261919}
   - component: {fileID: 7496683923836588589}
+  - component: {fileID: 5872736873199290283}
+  - component: {fileID: 5227483656188404367}
   m_Layer: 5
   m_Name: pfb_UI_QuestTaskItem
   m_TagString: Untagged
@@ -213,7 +214,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b16ba7f718d40f54e921d6f60a448164, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectable: {fileID: 8979225923393261919}
+  Toggle: {fileID: 0}
   TaskNameText: {fileID: 8411093748382662706}
   TaskCheck: {fileID: 6452576462985576414}
   selectedBackground: {fileID: 4327543795487347906}
@@ -221,7 +222,15 @@ MonoBehaviour:
   CompletedColour: {fileID: 11400000, guid: b1ae34b224f66f848a47d9b62cd132fe, type: 2}
   FailedColour: {fileID: 11400000, guid: bfac3025a11960546b196bd91923cffd, type: 2}
   TextStyleUpdater: {fileID: 4053707860164712795}
---- !u!114 &8979225923393261919
+--- !u!222 &7496683923836588589
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3265535091232115429}
+  m_CullTransparentMesh: 1
+--- !u!114 &5872736873199290283
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -230,7 +239,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3265535091232115429}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a98125502f715b4b83cfb77b434e436, type: 3}
+  m_Script: {fileID: 11500000, guid: 9085046f02f69544eb97fd06b6048fe2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -262,14 +271,52 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 0}
---- !u!222 &7496683923836588589
-CanvasRenderer:
+  toggleTransition: 0
+  graphic: {fileID: 0}
+  m_Group: {fileID: 0}
+  onValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_IsOn: 0
+--- !u!114 &5227483656188404367
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3265535091232115429}
-  m_CullTransparentMesh: 1
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a09fbe37a48ae34a8c13bc507c1cd16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentState: 0
+  debugMode: 0
+  NormalStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  SelectedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  HighlightedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  PressedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  DisabledStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  ChangedStateEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _toggle: {fileID: 5872736873199290283}
+  OnToggleOn:
+    m_PersistentCalls:
+      m_Calls: []
+  OnToggleOff:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &6452576462985576414
 GameObject:
   m_ObjectHideFlags: 0

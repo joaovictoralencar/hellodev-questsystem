@@ -391,7 +391,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// </summary>
         private void SelectFirstAvailableQuest()
         {
-            var firstSection = questSections.Values.FirstOrDefault();
+            UI_QuestSection firstSection = questSections.Values.FirstOrDefault();
             firstSection?.Select();
         }
 

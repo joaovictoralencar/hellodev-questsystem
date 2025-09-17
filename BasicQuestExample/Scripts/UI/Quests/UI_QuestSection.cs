@@ -14,6 +14,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
     /// UI component that represents a quest section containing multiple quest items.
     /// Handles the display and management of quests grouped by quest type.
     /// </summary>
+    [RequireComponent(typeof(ToggleGroup))]
     public class UI_QuestSection : MonoBehaviour
     {
         #region Serialized Fields
@@ -39,7 +40,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         [Header("Selection Toggle")]
         [SerializeField] 
         [Tooltip("Toggle component for section selection")]
-        private BaseToggle toggle;
+        private UIToggle toggle;
+        
+        [SerializeField] 
+        [Tooltip("Toggle group component for section selection")]
+        private ToggleGroup toggleGroup;
         
         #endregion
 
@@ -50,6 +55,19 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         private readonly Dictionary<Quest, UI_QuestItem> questItems = new Dictionary<Quest, UI_QuestItem>();
         
+        #endregion
+
+        #region Unity LifeCycle
+
+        protected void Start()
+        {
+            toggle.OnValueChanged.AddListener(OnToggleValueChanged);
+        }
+        private void OnDestroy()
+        {
+            toggle.OnValueChanged.RemoveListener(OnToggleValueChanged);
+        }
+
         #endregion
 
         #region Public Properties
@@ -171,6 +189,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             }
         }
         
+        private void OnToggleValueChanged(bool isOn)
+        {
+            //Select the first quest in this section
+            if (isOn)
+            {
+                if (questItems.Count == 0) return;
+                questItems.First().Value.Select();
+            }
+        }
+        
         #endregion
 
         #region Private Helper Methods
@@ -208,6 +236,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
             UI_QuestItem questItem = Instantiate(questItemPrefab, questItemHolder);
             questItem.Setup(quest, onQuestSelected);
+            questItem.SetToggleGroup(toggleGroup);
             questItem.SetupMarkerColour(QuestType.Color);
             questItems.Add(quest, questItem);
             

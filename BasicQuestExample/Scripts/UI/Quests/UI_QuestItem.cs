@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
+using HelloDev.UI.Default;
 using HelloDev.Utils;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
@@ -15,7 +15,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
     /// UI component representing a single quest item within a quest section.
     /// Handles the display of quest information, status indicators, and user interactions.
     /// </summary>
-    public class UI_QuestItem : MonoBehaviour, ISelectHandler, IPointerEnterHandler
+    [RequireComponent(typeof(UIToggle))]
+    public class UI_QuestItem : MonoBehaviour
     {
         #region Serialized Fields
         
@@ -35,6 +36,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         [SerializeField] 
         [Tooltip("Text component for displaying quest completion percentage")]
         private TextMeshProUGUI progressionText;
+        
+        [Header("Toggle"), SerializeField, Tooltip("The toggle component for quest selection")]
+        private UIToggle toggle;
 
         [Header("Quest Status Indicators")] [SerializeField] [Tooltip("The vertical marker for the quest colour on the left")]
         private Image questColourMarker;
@@ -100,7 +104,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         #endregion
 
         #region Unity Lifecycle
-        
+
+        private void Awake()
+        {
+            if (toggle == null) TryGetComponent(out toggle);
+            toggle.OnToggleOn.AddListener(SelectQuest);
+        }
+
         private void OnDestroy()
         {
             UnsubscribeFromQuestEvents();
@@ -209,21 +219,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         #region Selection Handlers
         
         /// <summary>
-        /// Handles UI selection events from the EventSystem.
+        /// Selects this quest item.
         /// </summary>
-        /// <param name="eventData">Selection event data</param>
-        public void OnSelect(BaseEventData eventData)
+        public void Select()
         {
-            SelectQuest();
-        }
-
-        /// <summary>
-        /// Handles mouse pointer enter events for hover selection.
-        /// </summary>
-        /// <param name="eventData">Pointer event data</param>
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            SelectQuest();
+            toggle?.SetIsOn(true);
         }
         
         #endregion
@@ -376,6 +376,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             onQuestSelected?.Invoke(quest);
         }
         
+        public void SetToggleGroup(ToggleGroup toggleGroup)
+        {
+            toggle.Toggle.group = toggleGroup;
+        }
         #endregion
     }
 }
