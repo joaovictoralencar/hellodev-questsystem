@@ -1,5 +1,4 @@
 using UnityEngine;
-using HelloDev.Utils;
 using UnityEngine.Localization;
 
 namespace HelloDev.QuestSystem.ScriptableObjects

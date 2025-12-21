@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
-using HelloDev.QuestSystem.Quests;
-using UnityEngine;
-using HelloDev.QuestSystem.ScriptableObjects;
-using HelloDev.Utils;
 using System.Collections.ObjectModel;
 using System.Linq;
+using HelloDev.QuestSystem.Quests;
+using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
-using Sirenix.OdinInspector;
+using UnityEngine;
 using UnityEngine.Events;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 
 namespace HelloDev.QuestSystem
 {
@@ -32,7 +33,6 @@ namespace HelloDev.QuestSystem
         private Dictionary<Guid, Quest_SO> _availableQuestsData = new();
         private Dictionary<Guid, Quest> _activeQuests = new();
         private Dictionary<Guid, Quest> _completedQuests = new();
-        private Dictionary<Type, List<Quest>> _eventListeners = new();
 
         [HideInInspector] public UnityEvent<Quest> QuestAdded = new();
         [HideInInspector] public UnityEvent<Quest> QuestStarted = new();
@@ -95,14 +95,15 @@ namespace HelloDev.QuestSystem
             _activeQuests.Clear();
             _completedQuests.Clear();
             _availableQuestsData.Clear();
-            _eventListeners.Clear();
         }
 
         #endregion
 
         #region Quest Lifecycle & State
 
+#if ODIN_INSPECTOR
         [Button]
+#endif
         public bool AddQuest(Quest_SO quest, bool forceStart = false)
         {
             if (quest == null)
@@ -258,7 +259,9 @@ namespace HelloDev.QuestSystem
 
         #region Task Lifecycle & Events
 
+#if ODIN_INSPECTOR
         [Button]
+#endif
         public void IncrementTaskStep(Quest_SO quest)
         {
             if (_activeQuests.TryGetValue(quest.QuestId, out Quest q))

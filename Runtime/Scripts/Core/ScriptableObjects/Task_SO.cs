@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using HelloDev.Conditions;
-using UnityEngine;
-using UnityEngine.Localization;
-
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.Utils;
-using HelloDev.Utils;
-using Sirenix.OdinInspector;
+using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -17,7 +17,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     /// The abstract base class for all task data ScriptableObjects.
     /// Defines the common data fields for tasks and a contract for creating a runtime Task instance.
     /// </summary>
-    public abstract class   Task_SO : RuntimeScriptableObject
+    public abstract class Task_SO : RuntimeScriptableObject
     {
         [Header("Core Info")]
         [Tooltip("Internal name for developers, used for identification in code.")]
@@ -25,7 +25,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private string devName;
 
         [Tooltip("A unique, permanent identifier for this task. Auto-generated.")]
-        [SerializeField, ReadOnly]
+        [SerializeField]
+#if ODIN_INSPECTOR
+        [ReadOnly]
+#endif
         private string taskId;
 
         [Header("Content")]
@@ -65,7 +68,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         public LocalizedString TaskDescription => taskDescription;
         
         /// <summary>
-        /// Gets the list of conditions that must be met to fail the task.
+        /// Gets the list of conditions that must be met to complete the task.
         /// </summary>
         public List<Condition_SO> Conditions => conditions;
 

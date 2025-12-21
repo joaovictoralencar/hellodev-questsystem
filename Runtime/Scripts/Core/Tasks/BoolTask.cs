@@ -1,8 +1,7 @@
 using System.Linq;
 using HelloDev.QuestSystem.ScriptableObjects;
-using HelloDev.QuestSystem.Tasks;
 
-namespace HelloDev.QuestSystem
+namespace HelloDev.QuestSystem.Tasks
 {
     public class BoolTask : Task
     {

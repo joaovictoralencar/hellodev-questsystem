@@ -1,7 +1,22 @@
+using System.Globalization;
 using UnityEngine;
 
 namespace HelloDev.QuestSystem.Utils
 {
+    /// <summary>
+    /// Utility methods for quest system calculations and formatting.
+    /// </summary>
+    public static class QuestUtils
+    {
+        /// <summary>
+        /// Converts a float value (0-1) to a percentage string (0-100).
+        /// </summary>
+        public static string GetPercentage(float value)
+        {
+            return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
     /// <summary>
     /// A centralized logger for all quest system messages.
     /// Use this to easily toggle logging on/off and standardize output.

@@ -8,7 +8,8 @@
         "HelloDev.Conditions",
         "Unity.TextMeshPro",
         "DOTween.Modules",
-        "Unity.Localization"
+        "Unity.Localization",
+        "QuestSystem.Utils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

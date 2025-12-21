@@ -9,7 +9,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 {
     /// <summary>
     /// A concrete ScriptableObject for a task that tracks a generic boolean value.
-    /// /// </summary>
+    /// </summary>
     [CreateAssetMenu(fileName = "Task Bool", menuName = "HelloDev/Quest System/Scriptable Objects/Tasks/Bool Task")]
     public class TaskBool_SO : Task_SO
     {
@@ -43,28 +43,6 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
                 return;
             }
-
-            // // Ensure "current" variable exists
-            // if (!stringReference.TryGetValue("object", out var currentVariable))
-            // {
-            //     stringReference.Add("object", new LocalizedString() { Value = intTask.CurrentCount });
-            // }
-            // else
-            // {
-            //     if (currentVariable is LocalizedString existingCurrent)
-            //         existingCurrent.Value = intTask.CurrentCount;
-            // }
-            //
-            // // Ensure "target" variable exists
-            // if (!stringReference.TryGetValue("location", out var requiredVariable))
-            // {
-            //     stringReference.Add("location", new LocalizedString { Value = intTask.RequiredCount });
-            // }
-            // else
-            // {
-            //     if (requiredVariable is LocalizedString existingTarget)
-            //         existingTarget.Value = intTask.RequiredCount;
-            // }
 
             // Refresh the localized string so UI updates immediately
             taskNameText.RefreshString();

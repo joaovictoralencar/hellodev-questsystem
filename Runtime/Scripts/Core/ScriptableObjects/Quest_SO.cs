@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using HelloDev.Conditions;
-using UnityEngine;
-using UnityEngine.Localization;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.Utils;
+using UnityEngine;
+using UnityEngine.Localization;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
+#endif
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -22,7 +24,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private string devName;
         
         [Tooltip("A unique, permanent identifier for this quest. Auto-generated.")]
-        [SerializeField, ReadOnly]
+        [SerializeField]
+#if ODIN_INSPECTOR
+        [ReadOnly]
+#endif
         private string questId;
 
         [Header("Content")]
@@ -158,7 +163,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
         }
 
+#if ODIN_INSPECTOR
         [Button]
+#endif
         private void GenerateNewGuid()
         {
             questId = Guid.NewGuid().ToString();

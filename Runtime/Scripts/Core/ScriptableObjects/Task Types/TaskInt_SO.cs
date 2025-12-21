@@ -1,12 +1,13 @@
-using UnityEngine;
-using HelloDev.Utils;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
-using Sirenix.OdinInspector;
+using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -23,7 +24,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [Tooltip("The number of times the target event must occur to complete the task.")] [SerializeField]
         private int requiredCount;
 
-        [Tooltip("The current progress of the task. Read-only in the editor, but serialized for saving.")] [ReadOnly, SerializeField]
+        [Tooltip("The current progress of the task. Read-only in the editor, but serialized for saving.")]
+        [SerializeField]
+#if ODIN_INSPECTOR
+        [ReadOnly]
+#endif
         private int currentCount;
 
         /// <summary>
