@@ -1,17 +1,28 @@
 {
     "name": "com.hellodev.questsystem.Editor.Tests",
-    "rootNamespace": "HelloDev.QuestSystem.Editor.Tests",
+    "rootNamespace": "HelloDev.QuestSystem.Tests.Editor",
     "references": [
-        "GUID:com.hellodev.questsystem.Editor",
-        "GUID:com.hellodev.questsystem.Runtime"
+        "HelloDev.QuestSystem",
+        "HelloDev.QuestSystem.Editor",
+        "HelloDev.Utils",
+        "HelloDev.Conditions",
+        "HelloDev.Events",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

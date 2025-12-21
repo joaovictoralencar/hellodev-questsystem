@@ -228,7 +228,7 @@ namespace HelloDev.QuestSystem.Tasks
                     conditionEventDriven.UnsubscribeFromEvent();
             }
             
-            OnTaskUpdated.Unsubscribe(CheckCompletion);
+            OnTaskUpdated.SafeUnsubscribe(CheckCompletion);
         }
 
         private void SetTaskState(TaskState state)

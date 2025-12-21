@@ -17,49 +17,288 @@ namespace HelloDev.QuestSystem
 {
     /// <summary>
     /// The central manager for all quests. This singleton handles quest lifecycle,
-    /// state, saving, loading, and event delegation. It provides a robust, clean API
+    /// state, and event delegation. It provides a robust, clean API
     /// for all other game systems to interact with quest data without knowing its internal logic.
     /// </summary>
-    public partial class QuestManager : MonoBehaviour
+    public class QuestManager : MonoBehaviour
     {
-        [SerializeField] private List<Quest_SO> questsDatabase = new();
-        [Header("Configuration")] [SerializeField]
-        private bool InitializeOnAwake = true;
+        #region Serialized Fields
 
-        [SerializeField] private bool EnableDebugLogging = true;
-        [SerializeField] private bool AllowMultipleActiveQuests = true;
-        [SerializeField] private bool AllowPlayingCompletedQuests = true;
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Database")]
+        [PropertyOrder(0)]
+        [ListDrawerSettings(ShowFoldout = true, DraggableItems = true)]
+        [InfoBox("$" + nameof(GetDatabaseInfoMessage), InfoMessageType.Info)]
+#else
+        [Header("Quest Database")]
+#endif
+        [Tooltip("The list of all available quests in the game.")]
+        [SerializeField]
+        private List<Quest_SO> questsDatabase = new();
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Configuration")]
+        [PropertyOrder(10)]
+        [ToggleLeft]
+#else
+        [Header("Configuration")]
+#endif
+        [Tooltip("If true, the manager will initialize itself on Awake.")]
+        [SerializeField]
+        private bool initializeOnAwake = true;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Configuration")]
+        [PropertyOrder(11)]
+        [ToggleLeft]
+#endif
+        [Tooltip("If true, all quests in the database will be added and started on Start.")]
+        [SerializeField]
+        private bool autoStartQuestsOnStart = true;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Configuration")]
+        [PropertyOrder(12)]
+        [ToggleLeft]
+#endif
+        [Tooltip("If true, debug messages will be logged to the console.")]
+        [SerializeField]
+        private bool enableDebugLogging = true;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Configuration")]
+        [PropertyOrder(13)]
+        [ToggleLeft]
+#endif
+        [Tooltip("If true, multiple quests can be active at the same time.")]
+        [SerializeField]
+        private bool allowMultipleActiveQuests = true;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Configuration")]
+        [PropertyOrder(14)]
+        [ToggleLeft]
+#endif
+        [Tooltip("If true, completed quests can be replayed.")]
+        [SerializeField]
+        private bool allowReplayingCompletedQuests = true;
+
+        #endregion
+
+        #region Private Fields
 
         private Dictionary<Guid, Quest_SO> _availableQuestsData = new();
         private Dictionary<Guid, Quest> _activeQuests = new();
         private Dictionary<Guid, Quest> _completedQuests = new();
+        private Dictionary<Guid, Quest> _failedQuests = new();
 
+        #endregion
+
+        #region Events
+
+        /// <summary>Fired when a quest is added to the active quests.</summary>
         [HideInInspector] public UnityEvent<Quest> QuestAdded = new();
+
+        /// <summary>Fired when a quest starts (transitions to InProgress).</summary>
         [HideInInspector] public UnityEvent<Quest> QuestStarted = new();
+
+        /// <summary>Fired when a quest is removed from the active quests.</summary>
         [HideInInspector] public UnityEvent<Quest> QuestRemoved = new();
+
+        /// <summary>Fired when a quest is restarted.</summary>
         [HideInInspector] public UnityEvent<Quest> QuestRestarted = new();
+
+        /// <summary>Fired when a quest fails.</summary>
         [HideInInspector] public UnityEvent<Quest> QuestFailed = new();
+
+        /// <summary>Fired when a quest is updated (task progress, etc.).</summary>
         [HideInInspector] public UnityEvent<Quest> QuestUpdated = new();
+
+        /// <summary>Fired when a quest is completed.</summary>
         [HideInInspector] public UnityEvent<Quest> QuestCompleted = new();
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>The singleton instance of the QuestManager.</summary>
         public static QuestManager Instance { get; private set; }
 
-        public Dictionary<Guid, Quest> ActiveQuests => _activeQuests;
-        public List<Quest_SO> QuestsDatabase => questsDatabase;
-        public Dictionary<Guid, Quest> CompletedQuests => _completedQuests;
+        /// <summary>Read-only access to the quest database.</summary>
+        public IReadOnlyList<Quest_SO> QuestsDatabase => questsDatabase;
+
+        /// <summary>Gets the count of active quests.</summary>
+        public int ActiveQuestCount => _activeQuests.Count;
+
+        /// <summary>Gets the count of completed quests.</summary>
+        public int CompletedQuestCount => _completedQuests.Count;
+
+        /// <summary>Gets the count of failed quests.</summary>
+        public int FailedQuestCount => _failedQuests.Count;
+
+        /// <summary>Configuration: Whether multiple quests can be active simultaneously.</summary>
+        public bool AllowMultipleActiveQuests => allowMultipleActiveQuests;
+
+        /// <summary>Configuration: Whether completed quests can be replayed.</summary>
+        public bool AllowReplayingCompletedQuests => allowReplayingCompletedQuests;
+
+        #endregion
+
+        #region Runtime State Display (Odin)
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(50)]
+        [ShowInInspector, ReadOnly]
+        [InfoBox("Runtime state is only visible during Play mode.", InfoMessageType.Info, nameof(IsNotPlaying))]
+        private string StatusSummary => Application.isPlaying
+            ? $"Active: {ActiveQuestCount} | Completed: {CompletedQuestCount} | Failed: {FailedQuestCount}"
+            : "Not in Play mode";
+
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(51)]
+        [ShowInInspector, ReadOnly]
+        [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
+        [ShowIf(nameof(IsPlayingWithActiveQuests))]
+        private List<string> ActiveQuestNames => _activeQuests?.Values
+            .Select(q => $"{q.QuestData.DevName} ({q.CurrentState})")
+            .ToList() ?? new List<string>();
+
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(52)]
+        [ShowInInspector, ReadOnly]
+        [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
+        [ShowIf(nameof(IsPlayingWithCompletedQuests))]
+        private List<string> CompletedQuestNames => _completedQuests?.Values
+            .Select(q => q.QuestData.DevName)
+            .ToList() ?? new List<string>();
+
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(53)]
+        [ShowInInspector, ReadOnly]
+        [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
+        [ShowIf(nameof(IsPlayingWithFailedQuests))]
+        private List<string> FailedQuestNames => _failedQuests?.Values
+            .Select(q => q.QuestData.DevName)
+            .ToList() ?? new List<string>();
+
+        private bool IsNotPlaying => !Application.isPlaying;
+        private bool IsPlayingWithActiveQuests => Application.isPlaying && _activeQuests?.Count > 0;
+        private bool IsPlayingWithCompletedQuests => Application.isPlaying && _completedQuests?.Count > 0;
+        private bool IsPlayingWithFailedQuests => Application.isPlaying && _failedQuests?.Count > 0;
+
+        private string GetDatabaseInfoMessage()
+        {
+            if (questsDatabase == null || questsDatabase.Count == 0)
+                return "No quests in database. Add Quest_SO assets to enable quests.";
+            int validCount = questsDatabase.Count(q => q != null);
+            return $"{validCount} quest(s) in database.";
+        }
+#endif
+
+        #endregion
+
+        #region Debug Actions (Odin)
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Debug Actions")]
+        [PropertyOrder(60)]
+        [Button("Complete All Active Quests", ButtonSizes.Medium)]
+        [EnableIf(nameof(IsPlayingWithActiveQuests))]
+        private void DebugCompleteAllQuests()
+        {
+            var questIds = _activeQuests.Keys.ToList();
+            foreach (var questId in questIds)
+            {
+                CompleteQuest(questId);
+            }
+            Debug.Log("[QuestManager] All active quests completed.");
+        }
+
+        [TitleGroup("Debug Actions")]
+        [PropertyOrder(61)]
+        [Button("Fail All Active Quests", ButtonSizes.Medium)]
+        [EnableIf(nameof(IsPlayingWithActiveQuests))]
+        private void DebugFailAllQuests()
+        {
+            var questIds = _activeQuests.Keys.ToList();
+            foreach (var questId in questIds)
+            {
+                FailQuest(questId);
+            }
+            Debug.Log("[QuestManager] All active quests failed.");
+        }
+
+        [TitleGroup("Debug Actions")]
+        [PropertyOrder(62)]
+        [Button("Increment Current Task (All Quests)", ButtonSizes.Medium)]
+        [EnableIf(nameof(IsPlayingWithActiveQuests))]
+        private void DebugIncrementAllCurrentTasks()
+        {
+            foreach (var quest in _activeQuests.Values)
+            {
+                var currentTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+                currentTask?.IncrementStep();
+            }
+            Debug.Log("[QuestManager] Incremented current task for all active quests.");
+        }
+
+        [TitleGroup("Debug Actions")]
+        [PropertyOrder(63)]
+        [Button("Restart All Failed Quests", ButtonSizes.Medium)]
+        [EnableIf(nameof(IsPlayingWithFailedQuests))]
+        private void DebugRestartFailedQuests()
+        {
+            var failedQuestData = _failedQuests.Values.Select(q => q.QuestData).ToList();
+            _failedQuests.Clear();
+            foreach (var questData in failedQuestData)
+            {
+                AddQuest(questData, forceStart: true);
+            }
+            Debug.Log("[QuestManager] All failed quests restarted.");
+        }
+
+        [TitleGroup("Debug Actions")]
+        [PropertyOrder(64)]
+        [Button("Log State to Console", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying")]
+        private void DebugLogState()
+        {
+            Debug.Log($"[QuestManager] === Current State ===");
+            Debug.Log($"Active Quests ({ActiveQuestCount}):");
+            foreach (var quest in _activeQuests.Values)
+            {
+                var currentTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+                Debug.Log($"  - {quest.QuestData.DevName}: {quest.CurrentState} | Current Task: {currentTask?.DevName ?? "None"} | Progress: {quest.CurrentProgress:P0}");
+            }
+            Debug.Log($"Completed Quests ({CompletedQuestCount}):");
+            foreach (var quest in _completedQuests.Values)
+            {
+                Debug.Log($"  - {quest.QuestData.DevName}");
+            }
+            Debug.Log($"Failed Quests ({FailedQuestCount}):");
+            foreach (var quest in _failedQuests.Values)
+            {
+                Debug.Log($"  - {quest.QuestData.DevName}");
+            }
+        }
+#endif
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
-            QuestLogger.IsLoggingEnabled = EnableDebugLogging;
-            
             if (Instance == null)
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
+                QuestLogger.IsLoggingEnabled = enableDebugLogging;
 
-                if (InitializeOnAwake)
+                if (initializeOnAwake)
                 {
-                    InitializeManager(QuestsDatabase);
+                    InitializeManager(questsDatabase);
                 }
             }
             else
@@ -68,87 +307,146 @@ namespace HelloDev.QuestSystem
             }
         }
 
+        private void Start()
+        {
+            if (autoStartQuestsOnStart)
+            {
+                foreach (Quest_SO quest in _availableQuestsData.Values)
+                {
+                    AddQuest(quest, forceStart: true);
+                }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                // Clean up all active quest subscriptions
+                foreach (Quest quest in _activeQuests.Values)
+                {
+                    UnsubscribeFromQuestEvents(quest);
+                }
+                _activeQuests.Clear();
+                _completedQuests.Clear();
+                _failedQuests.Clear();
+                _availableQuestsData.Clear();
+                Instance = null;
+            }
+        }
+
+        #endregion
+
         #region Core Manager Lifecycle
 
+        /// <summary>
+        /// Initializes the quest manager with the given quest data.
+        /// </summary>
+        /// <param name="allQuestData">The list of all available quest data.</param>
         public void InitializeManager(List<Quest_SO> allQuestData)
         {
+            if (allQuestData == null)
+            {
+                QuestLogger.LogError("InitializeManager: allQuestData is null.");
+                return;
+            }
+
             _availableQuestsData.Clear();
             foreach (Quest_SO questData in allQuestData)
             {
+                if (questData == null)
+                {
+                    QuestLogger.LogWarning("InitializeManager: Null quest found in database, skipping.");
+                    continue;
+                }
+
                 if (!_availableQuestsData.TryAdd(questData.QuestId, questData))
                 {
                     QuestLogger.LogWarning($"Duplicate quest ID found for '{questData.DevName}'. ID: {questData.QuestId}");
                 }
             }
+
+            QuestLogger.Log($"QuestManager initialized with {_availableQuestsData.Count} quests.");
         }
 
-        private void Start()
-        {
-            foreach (Quest_SO quest in _availableQuestsData.Values)
-            {
-                AddQuest(quest, true);
-            }
-        }
-
+        /// <summary>
+        /// Shuts down the quest manager and clears all state.
+        /// </summary>
         public void ShutdownManager()
         {
+            foreach (Quest quest in _activeQuests.Values)
+            {
+                UnsubscribeFromQuestEvents(quest);
+            }
+
             _activeQuests.Clear();
             _completedQuests.Clear();
+            _failedQuests.Clear();
             _availableQuestsData.Clear();
+
+            QuestLogger.Log("QuestManager shut down.");
         }
 
         #endregion
 
         #region Quest Lifecycle & State
 
+        /// <summary>
+        /// Adds a quest to the active quests and optionally starts it.
+        /// </summary>
+        /// <param name="questData">The quest data to add.</param>
+        /// <param name="forceStart">If true, starts the quest immediately regardless of conditions.</param>
+        /// <returns>True if the quest was successfully added.</returns>
 #if ODIN_INSPECTOR
-        [Button]
+        [TitleGroup("Runtime Actions")]
+        [Button("Add Quest")]
+        [PropertyOrder(70)]
+        [EnableIf("@UnityEngine.Application.isPlaying")]
 #endif
-        public bool AddQuest(Quest_SO quest, bool forceStart = false)
+        public bool AddQuest(
+#if ODIN_INSPECTOR
+            [ValueDropdown(nameof(GetAvailableQuests))]
+#endif
+            Quest_SO questData, bool forceStart = false)
         {
-            if (quest == null)
+            if (questData == null)
             {
-                QuestLogger.LogError($"Added quest is null.");
+                QuestLogger.LogError("AddQuest: questData is null.");
                 return false;
             }
 
-            Guid questId = quest.QuestId;
+            Guid questId = questData.QuestId;
 
             if (!_availableQuestsData.ContainsKey(questId))
             {
-                QuestLogger.Log($"Quest with ID '{questId}' is not a registered available quest.");
+                QuestLogger.LogWarning($"Quest '{questData.DevName}' is not in the available quests database.");
                 return false;
             }
 
             if (_activeQuests.ContainsKey(questId))
             {
-                QuestLogger.Log($"Quest '{quest.DevName}' is was already added.");
+                QuestLogger.Log($"Quest '{questData.DevName}' is already active.");
                 return false;
             }
 
-            if (!AllowPlayingCompletedQuests && _completedQuests.ContainsKey(questId))
+            if (!allowReplayingCompletedQuests && _completedQuests.ContainsKey(questId))
             {
-                QuestLogger.Log($"Quest '{_availableQuestsData[questId].DevName}' has already been completed and AllowPlayingCompletedQuests is disabled.");
+                QuestLogger.Log($"Quest '{questData.DevName}' has already been completed and replaying is disabled.");
                 return false;
             }
 
-            if (!AllowMultipleActiveQuests && _activeQuests.Count > 0)
+            if (!allowMultipleActiveQuests && _activeQuests.Count > 0)
             {
-                QuestLogger.Log($"There's already one active quest ({_activeQuests.Values.First().QuestData.DevName}) and AllowMultipleActiveQuests is disabled.");
+                QuestLogger.Log($"Cannot add '{questData.DevName}': Another quest is already active and multiple active quests are disabled.");
                 return false;
             }
 
             Quest newQuest = _availableQuestsData[questId].GetRuntimeQuest();
             _activeQuests.Add(questId, newQuest);
-            QuestLogger.Log($"Added quest '{quest.DevName}'.");
+            SubscribeToQuestEvents(newQuest);
 
+            QuestLogger.Log($"Quest '{questData.DevName}' added.");
             QuestAdded?.SafeInvoke(newQuest);
-
-            newQuest.OnQuestStarted.SafeSubscribe(HandleQuestStarted);
-            newQuest.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
-            newQuest.OnQuestFailed.SafeSubscribe(HandleQuestFailed);
-            newQuest.OnQuestUpdated.SafeSubscribe(HandleQuestUpdated);
-            newQuest.OnQuestRestarted.SafeSubscribe(HandleQuestRestarted);
 
             if (forceStart || newQuest.CheckStartConditions())
             {
@@ -162,14 +460,184 @@ namespace HelloDev.QuestSystem
             return true;
         }
 
-        private void HandleQuestRestarted(Quest quest)
+#if ODIN_INSPECTOR
+        private IEnumerable<Quest_SO> GetAvailableQuests()
         {
-            QuestRestarted.Invoke(quest);
+            return questsDatabase?.Where(q => q != null) ?? Enumerable.Empty<Quest_SO>();
+        }
+#endif
+
+        /// <summary>
+        /// Force completes a quest by its ID.
+        /// </summary>
+        public void CompleteQuest(Guid questId)
+        {
+            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            {
+                foreach (Task task in quest.Tasks)
+                {
+                    if (task.CurrentState != TaskState.Completed)
+                    {
+                        task.CompleteTask();
+                    }
+                }
+            }
+            else
+            {
+                QuestLogger.LogWarning($"CompleteQuest: Quest with ID '{questId}' is not active.");
+            }
         }
 
-        private void HandleQuestUpdated(Quest quest)
+        /// <summary>
+        /// Force completes a quest.
+        /// </summary>
+        public void CompleteQuest(Quest_SO questData)
         {
-            QuestUpdated?.SafeInvoke(quest);
+            if (questData == null) return;
+            CompleteQuest(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Force completes a quest.
+        /// </summary>
+        public void CompleteQuest(Quest quest)
+        {
+            if (quest == null) return;
+            CompleteQuest(quest.QuestId);
+        }
+
+        /// <summary>
+        /// Fails a quest by its ID.
+        /// </summary>
+        public void FailQuest(Guid questId)
+        {
+            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            {
+                quest.FailQuest();
+            }
+            else
+            {
+                QuestLogger.LogWarning($"FailQuest: Quest with ID '{questId}' is not active.");
+            }
+        }
+
+        /// <summary>
+        /// Fails a quest.
+        /// </summary>
+        public void FailQuest(Quest_SO questData)
+        {
+            if (questData == null) return;
+            FailQuest(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Fails a quest.
+        /// </summary>
+        public void FailQuest(Quest quest)
+        {
+            if (quest == null) return;
+            FailQuest(quest.QuestId);
+        }
+
+        /// <summary>
+        /// Removes a quest from the active quests.
+        /// </summary>
+        /// <returns>True if the quest was successfully removed.</returns>
+        public bool RemoveQuest(Guid questId)
+        {
+            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            {
+                UnsubscribeFromQuestEvents(quest);
+                _activeQuests.Remove(questId);
+                QuestLogger.Log($"Quest '{quest.QuestData.DevName}' removed.");
+                QuestRemoved?.SafeInvoke(quest);
+                return true;
+            }
+
+            QuestLogger.LogWarning($"RemoveQuest: Quest with ID '{questId}' is not active.");
+            return false;
+        }
+
+        /// <summary>
+        /// Removes a quest from the active quests.
+        /// </summary>
+        public bool RemoveQuest(Quest_SO questData)
+        {
+            if (questData == null) return false;
+            return RemoveQuest(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Removes a quest from the active quests.
+        /// </summary>
+        public bool RemoveQuest(Quest quest)
+        {
+            if (quest == null) return false;
+            return RemoveQuest(quest.QuestId);
+        }
+
+        /// <summary>
+        /// Restarts a quest.
+        /// </summary>
+        /// <param name="questId">The quest ID.</param>
+        /// <param name="forceStart">If true, starts immediately without checking conditions.</param>
+        /// <returns>True if the quest was successfully restarted.</returns>
+        public bool RestartQuest(Guid questId, bool forceStart = false)
+        {
+            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            {
+                quest.ResetQuest();
+                if (forceStart || quest.CheckStartConditions())
+                {
+                    quest.StartQuest();
+                }
+                return true;
+            }
+
+            QuestLogger.LogWarning($"RestartQuest: Quest with ID '{questId}' is not active.");
+            return false;
+        }
+
+        /// <summary>
+        /// Restarts a quest.
+        /// </summary>
+        public bool RestartQuest(Quest_SO questData, bool forceStart = false)
+        {
+            if (questData == null) return false;
+            return RestartQuest(questData.QuestId, forceStart);
+        }
+
+        /// <summary>
+        /// Restarts a quest.
+        /// </summary>
+        public bool RestartQuest(Quest quest, bool forceStart = false)
+        {
+            if (quest == null) return false;
+            return RestartQuest(quest.QuestId, forceStart);
+        }
+
+        #endregion
+
+        #region Event Subscription Management
+
+        private void SubscribeToQuestEvents(Quest quest)
+        {
+            quest.OnQuestStarted.SafeSubscribe(HandleQuestStarted);
+            quest.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
+            quest.OnQuestFailed.SafeSubscribe(HandleQuestFailed);
+            quest.OnQuestUpdated.SafeSubscribe(HandleQuestUpdated);
+            quest.OnQuestRestarted.SafeSubscribe(HandleQuestRestarted);
+        }
+
+        private void UnsubscribeFromQuestEvents(Quest quest)
+        {
+            if (quest == null) return;
+
+            quest.OnQuestStarted.SafeUnsubscribe(HandleQuestStarted);
+            quest.OnQuestCompleted.SafeUnsubscribe(HandleQuestCompleted);
+            quest.OnQuestFailed.SafeUnsubscribe(HandleQuestFailed);
+            quest.OnQuestUpdated.SafeUnsubscribe(HandleQuestUpdated);
+            quest.OnQuestRestarted.SafeUnsubscribe(HandleQuestRestarted);
         }
 
         private void HandleQuestStarted(Quest quest)
@@ -177,66 +645,12 @@ namespace HelloDev.QuestSystem
             QuestStarted?.SafeInvoke(quest);
         }
 
-        public void CompleteQuest(Guid questId)
-        {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                quest.CompleteQuest();
-            }
-        }
-
-        public void FailQuest(Guid questId)
-        {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                quest.FailQuest();
-            }
-        }
-
-        public bool RemoveQuest(Guid questId)
-        {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                UnsubscribeFromQuestEvents(quest);
-                quest.ResetQuest();
-                QuestLogger.LogWarning($"Quest of ID '{quest.QuestData.DevName}' was removed.");
-                _activeQuests.Remove(questId);
-                QuestRemoved?.SafeInvoke(quest);
-                return true;
-            }
-
-            QuestLogger.LogWarning($"Quest of ID '{questId}' is not active.");
-            return false;
-        }
-
-        public bool RestartQuest(Guid questId, bool forceStart = false)
-        {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                UnsubscribeFromQuestEvents(quest);
-                quest.ResetQuest();
-                if (forceStart)
-                {
-                    quest.StartQuest();
-                }
-                else
-                {
-                    quest.CheckForConditionsAndStart();
-                }
-
-                return true;
-            }
-
-            QuestLogger.LogWarning($"Quest of ID '{questId}' is not active.");
-            return false;
-        }
-
         private void HandleQuestCompleted(Quest quest)
         {
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
             _completedQuests.TryAdd(quest.QuestId, quest);
-            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' moved to completed quests.");
+            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' completed.");
             QuestCompleted?.SafeInvoke(quest);
         }
 
@@ -244,88 +658,274 @@ namespace HelloDev.QuestSystem
         {
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
-            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' has failed.");
+            _failedQuests.TryAdd(quest.QuestId, quest);
+            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' failed.");
             QuestFailed?.SafeInvoke(quest);
         }
 
-        #endregion
-
-        #region Dynamic Subscription Management
-
-        private void UnsubscribeFromQuestEvents(Quest quest)
+        private void HandleQuestUpdated(Quest quest)
         {
+            QuestUpdated?.SafeInvoke(quest);
         }
+
+        private void HandleQuestRestarted(Quest quest)
+        {
+            QuestRestarted?.SafeInvoke(quest);
+        }
+
         #endregion
 
-        #region Task Lifecycle & Events
+        #region Task Operations
 
+        /// <summary>
+        /// Increments the current task's step for a quest.
+        /// </summary>
 #if ODIN_INSPECTOR
-        [Button]
+        [TitleGroup("Runtime Actions")]
+        [Button("Increment Task Step")]
+        [PropertyOrder(71)]
+        [EnableIf("@UnityEngine.Application.isPlaying")]
 #endif
-        public void IncrementTaskStep(Quest_SO quest)
+        public void IncrementTaskStep(
+#if ODIN_INSPECTOR
+            [ValueDropdown(nameof(GetAvailableQuests))]
+#endif
+            Quest_SO questData)
         {
-            if (_activeQuests.TryGetValue(quest.QuestId, out Quest q))
-            {
-                Task task = q.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
-                task?.IncrementStep();
-            }
+            if (questData == null) return;
+            IncrementTaskStep(questData.QuestId);
         }
 
+        /// <summary>
+        /// Increments the current task's step for a quest.
+        /// </summary>
+        public void IncrementTaskStep(Guid questId)
+        {
+            Task task = GetCurrentTask(questId);
+            task?.IncrementStep();
+        }
+
+        /// <summary>
+        /// Increments the current task's step for a quest.
+        /// </summary>
+        public void IncrementTaskStep(Quest quest)
+        {
+            if (quest == null) return;
+            IncrementTaskStep(quest.QuestId);
+        }
+
+        /// <summary>
+        /// Decrements the current task's step for a quest.
+        /// </summary>
+        public void DecrementTaskStep(Quest_SO questData)
+        {
+            if (questData == null) return;
+            DecrementTaskStep(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Decrements the current task's step for a quest.
+        /// </summary>
+        public void DecrementTaskStep(Guid questId)
+        {
+            Task task = GetCurrentTask(questId);
+            task?.DecrementStep();
+        }
+
+        /// <summary>
+        /// Decrements the current task's step for a quest.
+        /// </summary>
+        public void DecrementTaskStep(Quest quest)
+        {
+            if (quest == null) return;
+            DecrementTaskStep(quest.QuestId);
+        }
+
+        /// <summary>
+        /// Decrements a specific task's step.
+        /// </summary>
         public void DecrementTaskStep(Guid questId, Guid taskId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                Task task = quest.Tasks.FirstOrDefault(t => t.TaskId == taskId);
-                task?.DecrementStep();
-            }
+            Task task = GetTask(questId, taskId);
+            task?.DecrementStep();
         }
 
+        /// <summary>
+        /// Completes a specific task.
+        /// </summary>
         public void CompleteTask(Guid questId, Guid taskId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                Task task = quest.Tasks.FirstOrDefault(t => t.TaskId == taskId);
-                task?.CompleteTask();
-            }
+            Task task = GetTask(questId, taskId);
+            task?.CompleteTask();
         }
 
+        /// <summary>
+        /// Fails a specific task.
+        /// </summary>
         public void FailTask(Guid questId, Guid taskId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
-            {
-                Task task = quest.Tasks.FirstOrDefault(t => t.TaskId == taskId);
-                task?.FailTask();
-            }
+            Task task = GetTask(questId, taskId);
+            task?.FailTask();
         }
 
         #endregion
 
         #region Query & Data Access
 
+        /// <summary>
+        /// Gets an active quest by its ID.
+        /// </summary>
         public Quest GetActiveQuest(Guid questId)
         {
             _activeQuests.TryGetValue(questId, out Quest quest);
             return quest;
         }
 
+        /// <summary>
+        /// Gets an active quest by its data.
+        /// </summary>
+        public Quest GetActiveQuest(Quest_SO questData)
+        {
+            if (questData == null) return null;
+            return GetActiveQuest(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Gets all active quests as a read-only collection.
+        /// </summary>
         public ReadOnlyCollection<Quest> GetActiveQuests()
         {
             return _activeQuests.Values.ToList().AsReadOnly();
         }
 
+        /// <summary>
+        /// Gets all completed quests as a read-only collection.
+        /// </summary>
+        public ReadOnlyCollection<Quest> GetCompletedQuests()
+        {
+            return _completedQuests.Values.ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets all failed quests as a read-only collection.
+        /// </summary>
+        public ReadOnlyCollection<Quest> GetFailedQuests()
+        {
+            return _failedQuests.Values.ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets all tasks for a quest as a read-only collection.
+        /// </summary>
         public ReadOnlyCollection<Task> GetTasksForQuest(Guid questId)
         {
             if (_activeQuests.TryGetValue(questId, out Quest quest))
             {
                 return quest.Tasks.AsReadOnly();
             }
-
             return null;
         }
 
+        /// <summary>
+        /// Gets all tasks for a quest as a read-only collection.
+        /// </summary>
+        public ReadOnlyCollection<Task> GetTasksForQuest(Quest_SO questData)
+        {
+            if (questData == null) return null;
+            return GetTasksForQuest(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Gets a specific task from a quest.
+        /// </summary>
+        public Task GetTask(Guid questId, Guid taskId)
+        {
+            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            {
+                return quest.Tasks.FirstOrDefault(t => t.TaskId == taskId);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the current in-progress task for a quest.
+        /// </summary>
+        public Task GetCurrentTask(Guid questId)
+        {
+            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            {
+                return quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the current in-progress task for a quest.
+        /// </summary>
+        public Task GetCurrentTask(Quest quest)
+        {
+            if (quest == null) return null;
+            return quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+        }
+
+        /// <summary>
+        /// Gets the current in-progress task for a quest.
+        /// </summary>
+        public Task GetCurrentTask(Quest_SO questData)
+        {
+            if (questData == null) return null;
+            return GetCurrentTask(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Checks if a quest is currently active.
+        /// </summary>
+        public bool IsQuestActive(Guid questId)
+        {
+            return _activeQuests.ContainsKey(questId);
+        }
+
+        /// <summary>
+        /// Checks if a quest is currently active.
+        /// </summary>
+        public bool IsQuestActive(Quest_SO questData)
+        {
+            if (questData == null) return false;
+            return IsQuestActive(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Checks if a quest has been completed.
+        /// </summary>
         public bool IsQuestCompleted(Guid questId)
         {
             return _completedQuests.ContainsKey(questId);
+        }
+
+        /// <summary>
+        /// Checks if a quest has been completed.
+        /// </summary>
+        public bool IsQuestCompleted(Quest_SO questData)
+        {
+            if (questData == null) return false;
+            return IsQuestCompleted(questData.QuestId);
+        }
+
+        /// <summary>
+        /// Checks if a quest has failed.
+        /// </summary>
+        public bool IsQuestFailed(Guid questId)
+        {
+            return _failedQuests.ContainsKey(questId);
+        }
+
+        /// <summary>
+        /// Checks if a quest has failed.
+        /// </summary>
+        public bool IsQuestFailed(Quest_SO questData)
+        {
+            if (questData == null) return false;
+            return IsQuestFailed(questData.QuestId);
         }
 
         #endregion

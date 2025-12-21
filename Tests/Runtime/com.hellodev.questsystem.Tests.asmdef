@@ -1,16 +1,25 @@
 {
     "name": "com.hellodev.questsystem.Tests",
-    "rootNamespace": "HelloDev.QuestSystem.Tests",
+    "rootNamespace": "HelloDev.QuestSystem.Tests.Runtime",
     "references": [
-        "GUID:com.hellodev.questsystem.Runtime"
+        "HelloDev.QuestSystem",
+        "HelloDev.Utils",
+        "HelloDev.Conditions",
+        "HelloDev.Events",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

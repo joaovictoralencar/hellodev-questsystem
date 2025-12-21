@@ -366,7 +366,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// <returns>List of active quests of the specified type</returns>
         private List<Quest> GetActiveQuestsOfType(QuestType_SO questType)
         {
-            return QuestManager.Instance.ActiveQuests.Values
+            return QuestManager.Instance.GetActiveQuests()
                 .Where(quest => quest.QuestData.QuestType == questType)
                 .ToList();
         }
@@ -377,7 +377,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// <returns>List of completed quests</returns>
         private List<Quest> GetCompletedQuests()
         {
-            return QuestManager.Instance.CompletedQuests.Values.ToList();
+            return QuestManager.Instance.GetCompletedQuests().ToList();
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             var groupedQuests = new Dictionary<QuestType_SO, List<Quest>>();
 
-            foreach (var quest in QuestManager.Instance.ActiveQuests.Values)
+            foreach (var quest in QuestManager.Instance.GetActiveQuests())
             {
                 var questType = quest.QuestData.QuestType;
 

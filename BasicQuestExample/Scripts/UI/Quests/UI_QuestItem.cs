@@ -189,7 +189,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             ClearStatusText();
             ClearStatusIndicators();
             
-            questData.OnQuestCompleted.Unsubscribe(OnQuestCompleted);
+            questData.OnQuestCompleted.SafeUnsubscribe(OnQuestCompleted);
             
             CreateStatusIndicator(completedIndicatorPrefab);
             CreateStatusText(completedTextPrefab);
@@ -322,7 +322,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (quest?.OnQuestUpdated != null)
             {
-                quest.OnQuestUpdated.Unsubscribe(OnQuestUpdated);
+                quest.OnQuestUpdated.SafeUnsubscribe(OnQuestUpdated);
             }
         }
 

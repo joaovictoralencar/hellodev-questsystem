@@ -91,13 +91,27 @@ namespace HelloDev.QuestSystem.Quests
 
         /// <summary>
         /// Marks the quest as completed, changing its state to Completed.
-        /// This method should contain logic for rewards and events.
+        /// Distributes all rewards and fires completion events.
         /// </summary>
         public void CompleteQuest()
         {
             if (CurrentState == QuestState.InProgress)
             {
                 UnsubscribeFromAllEvents();
+
+                // Distribute rewards
+                if (QuestData.Rewards != null)
+                {
+                    foreach (var reward in QuestData.Rewards)
+                    {
+                        if (reward.RewardType != null)
+                        {
+                            reward.RewardType.GiveReward(reward.Amount);
+                            QuestLogger.Log($"Distributed reward: {reward.RewardType.name} x{reward.Amount}");
+                        }
+                    }
+                }
+
                 OnQuestUpdated?.SafeInvoke(this);
                 UpdateQuestState(QuestState.Completed);
                 OnQuestCompleted?.SafeInvoke(this);
@@ -139,6 +153,33 @@ namespace HelloDev.QuestSystem.Quests
             {
                 task.OnTaskCompleted.SafeSubscribe(HandleTaskCompleted);
                 task.OnTaskUpdated.SafeSubscribe(HandleTaskUpdated);
+            }
+
+            // Subscribe to global task failure conditions
+            if (QuestData.GlobalTaskFailureConditions != null)
+            {
+                foreach (Condition_SO condition in QuestData.GlobalTaskFailureConditions)
+                {
+                    if (condition is IConditionEventDriven conditionEventDriven)
+                    {
+                        conditionEventDriven.SubscribeToEvent(HandleGlobalTaskFailure);
+                        QuestLogger.Log($"Subscribed to global task failure condition '{condition.name}' for quest '{QuestData.DevName}'.");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles when a global task failure condition is met.
+        /// Fails the current in-progress task.
+        /// </summary>
+        private void HandleGlobalTaskFailure()
+        {
+            Task currentTask = Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+            if (currentTask != null)
+            {
+                QuestLogger.Log($"Global task failure condition met. Failing task '{currentTask.DevName}' in quest '{QuestData.DevName}'.");
+                currentTask.FailTask();
             }
         }
 
@@ -186,8 +227,20 @@ namespace HelloDev.QuestSystem.Quests
         {
             foreach (Task task in Tasks)
             {
-                task.OnTaskCompleted.Unsubscribe(HandleTaskCompleted);
-                task.OnTaskUpdated.Unsubscribe(HandleTaskUpdated);
+                task.OnTaskCompleted.SafeUnsubscribe(HandleTaskCompleted);
+                task.OnTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
+            }
+
+            // Unsubscribe from global task failure conditions
+            if (QuestData.GlobalTaskFailureConditions != null)
+            {
+                foreach (Condition_SO condition in QuestData.GlobalTaskFailureConditions)
+                {
+                    if (condition is IConditionEventDriven conditionEventDriven)
+                    {
+                        conditionEventDriven.UnsubscribeFromEvent();
+                    }
+                }
             }
         }
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
@@ -18,62 +17,264 @@ using Sirenix.OdinInspector;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
+    /// <summary>
+    /// UI component for displaying quest details including tasks, rewards, and progress.
+    /// </summary>
     [RequireComponent(typeof(ToggleGroup))]
     public class UI_QuestDetails : MonoBehaviour
     {
+        #region UI References
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Info")]
+        [PropertyOrder(0)]
+#else
+        [Header("Quest Info")]
+#endif
         [SerializeField] private LocalizeStringEvent QuestNameText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Info")]
+        [PropertyOrder(1)]
+#endif
         [SerializeField] private LocalizeStringEvent QuestDescriptionText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Info")]
+        [PropertyOrder(2)]
+#endif
         [SerializeField] private LocalizeStringEvent QuestLocationText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Info")]
+        [PropertyOrder(3)]
+#endif
         [SerializeField] private TextMeshProUGUI LevelText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Info")]
+        [PropertyOrder(4)]
+#endif
         [SerializeField] private TextMeshProUGUI ProgressionText;
-        [Header("Rewards")] [SerializeField] private UI_QuestRewards RewardsUI;
-        [Header("Tasks")] [SerializeField] private UI_TaskItem TaskItemPrefab;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Rewards")]
+        [PropertyOrder(10)]
+        [Required("RewardsUI reference is required.")]
+#else
+        [Header("Rewards")]
+#endif
+        [SerializeField] private UI_QuestRewards RewardsUI;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Tasks")]
+        [PropertyOrder(20)]
+        [Required("TaskItemPrefab is required for spawning task items.")]
+#else
+        [Header("Tasks")]
+#endif
+        [SerializeField] private UI_TaskItem TaskItemPrefab;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Tasks")]
+        [PropertyOrder(21)]
+        [Required]
+#endif
         [SerializeField] private RectTransform TasksHolder;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Tasks")]
+        [PropertyOrder(22)]
+#endif
         [SerializeField] private ToggleGroup ToggleGroup;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Tasks")]
+        [PropertyOrder(23)]
+#endif
         [SerializeField] private LocalizeStringEvent TaskDescriptionText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Tasks")]
+        [PropertyOrder(24)]
+#endif
         [SerializeField] private TextMeshProUGUI TaskDescriptionTextMesh;
+
+        #endregion
+
+        #region Runtime State
 
         private Quest _currentQuest;
         private Task _currentTask;
         private List<UI_TaskItem> _taskUiItems = new();
 
-        #region Debug
+#if ODIN_INSPECTOR
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(40)]
+        [ShowInInspector, ReadOnly]
+        [InfoBox("Runtime state is only visible during Play mode.", InfoMessageType.Info, "@!UnityEngine.Application.isPlaying")]
+        private string CurrentQuestName => _currentQuest?.QuestData?.DevName ?? "None";
 
-#if UNITY_EDITOR
-        [FoldoutGroup("Debug"), Title("Tasks"), SerializeField]
-        private UIButton CompleteCurrentTaskButton;
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(41)]
+        [ShowInInspector, ReadOnly]
+        [ShowIf("@UnityEngine.Application.isPlaying && _currentQuest != null")]
+        private string CurrentQuestState => _currentQuest?.CurrentState.ToString() ?? "N/A";
 
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton FailCurrentTaskButton;
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(42)]
+        [ShowInInspector, ReadOnly]
+        [ShowIf("@UnityEngine.Application.isPlaying && _currentQuest != null")]
+        [ProgressBar(0, 1, ColorGetter = nameof(GetProgressColor))]
+        private float CurrentQuestProgress => _currentQuest?.CurrentProgress ?? 0f;
 
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton InvokeEventTaskButton;
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(43)]
+        [ShowInInspector, ReadOnly]
+        [ShowIf("@UnityEngine.Application.isPlaying && _currentTask != null")]
+        private string CurrentTaskName => _currentTask?.DevName ?? "None";
 
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton IncrementCurrentTaskButton;
+        [TitleGroup("Runtime State")]
+        [PropertyOrder(44)]
+        [ShowInInspector, ReadOnly]
+        [ShowIf("@UnityEngine.Application.isPlaying && _currentTask != null")]
+        private string CurrentTaskState => _currentTask?.CurrentState.ToString() ?? "N/A";
 
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton DecrementCurrentTaskButton;
-
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton ResetCurrentTaskButton;
-
-        [FoldoutGroup("Debug"), Title("Quests"), SerializeField]
-        private UIButton CompleteCurrentQuestButton;
-
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton FailCurrentQuestButton;
-
-        [FoldoutGroup("Debug"), SerializeField]
-        private UIButton ResetCurrentQuestButton;
+        private Color GetProgressColor()
+        {
+            if (_currentQuest == null) return Color.gray;
+            return _currentQuest.CurrentState switch
+            {
+                QuestState.Completed => Color.green,
+                QuestState.Failed => Color.red,
+                QuestState.InProgress => new Color(0.2f, 0.6f, 1f),
+                _ => Color.gray
+            };
+        }
 #endif
 
         #endregion
+
+        #region Debug Buttons
+
+#if UNITY_EDITOR
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug", expanded: false)]
+        [TitleGroup("Debug/Task Actions")]
+        [PropertyOrder(50)]
+#else
+        [Header("Debug - Tasks")]
+#endif
+        [SerializeField] private UIButton CompleteCurrentTaskButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Task Actions")]
+        [PropertyOrder(51)]
+#endif
+        [SerializeField] private UIButton FailCurrentTaskButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Task Actions")]
+        [PropertyOrder(52)]
+#endif
+        [SerializeField] private UIButton InvokeEventTaskButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Task Actions")]
+        [PropertyOrder(53)]
+#endif
+        [SerializeField] private UIButton IncrementCurrentTaskButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Task Actions")]
+        [PropertyOrder(54)]
+#endif
+        [SerializeField] private UIButton DecrementCurrentTaskButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Task Actions")]
+        [PropertyOrder(55)]
+#endif
+        [SerializeField] private UIButton ResetCurrentTaskButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quest Actions")]
+        [PropertyOrder(60)]
+#else
+        [Header("Debug - Quests")]
+#endif
+        [SerializeField] private UIButton CompleteCurrentQuestButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quest Actions")]
+        [PropertyOrder(61)]
+#endif
+        [SerializeField] private UIButton FailCurrentQuestButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quest Actions")]
+        [PropertyOrder(62)]
+#endif
+        [SerializeField] private UIButton ResetCurrentQuestButton;
+
+#if ODIN_INSPECTOR
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quick Actions")]
+        [PropertyOrder(70)]
+        [Button("Complete Current Task", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickCompleteTask() => _currentTask?.CompleteTask();
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quick Actions")]
+        [PropertyOrder(71)]
+        [Button("Fail Current Task", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickFailTask() => _currentTask?.FailTask();
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quick Actions")]
+        [PropertyOrder(72)]
+        [Button("Increment Task", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickIncrementTask() => _currentTask?.IncrementStep();
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quick Actions")]
+        [PropertyOrder(73)]
+        [Button("Complete Current Quest", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        private void QuickCompleteQuest() => DebugCompleteQuest();
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Quick Actions")]
+        [PropertyOrder(74)]
+        [Button("Fail Current Quest", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        private void QuickFailQuest() => _currentQuest?.FailQuest();
+#endif
+#endif
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
             if (ToggleGroup == null) TryGetComponent(out ToggleGroup);
         }
+
+        #endregion
+
+        #region Public Methods
 
         public void Setup(Quest quest)
         {
@@ -85,17 +286,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             LevelText.text = quest.QuestData.RecommendedLevel.ToString();
             ProgressionText.text = $"{QuestUtils.GetPercentage(quest.CurrentProgress)}%";
 
-
-            //Select next in progress task
+            // Select next in progress task
             Task nextTask = quest.Tasks.FirstOrDefault(t => IsFirstValidTask(quest, t));
 
             bool IsFirstValidTask(Quest q, Task t)
             {
-               return (q.CurrentState is QuestState.InProgress && t.CurrentState == TaskState.InProgress) ||
-                      (q.CurrentState == QuestState.Completed  && t.CurrentState == TaskState.Completed)  ||
-                      (q.CurrentState == QuestState.Failed     && t.CurrentState == TaskState.Failed);
+                return (q.CurrentState is QuestState.InProgress && t.CurrentState == TaskState.InProgress) ||
+                       (q.CurrentState == QuestState.Completed && t.CurrentState == TaskState.Completed) ||
+                       (q.CurrentState == QuestState.Failed && t.CurrentState == TaskState.Failed);
             }
-            
+
             TasksHolder.DestroyAllChildren();
             _taskUiItems.Clear();
             foreach (Task task in quest.Tasks)
@@ -111,13 +311,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 }
             }
 
-            //Rewards
+            // Rewards
             RewardsUI.Setup(quest);
             quest.OnAnyTaskUpdated.SafeSubscribe(OnTaskUpdated);
             quest.OnAnyTaskCompleted.SafeSubscribe(OnTaskUpdated);
 
 #if UNITY_EDITOR
-            //Debug buttons setup
+            // Debug buttons setup
             CompleteCurrentQuestButton.OnClick.SafeSubscribe(DebugCompleteQuest);
             FailCurrentQuestButton.OnClick.SafeSubscribe(DebugFailQuest);
             ResetCurrentQuestButton.OnClick.SafeSubscribe(DebugResetQuest);
@@ -125,68 +325,39 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 #endif
         }
 
-        private void DebugFailQuest()
-        {
-            _currentQuest.FailQuest();
-        }
+        #endregion
 
-        private void DebugResetQuest()
-        {
-            _currentQuest.ResetQuest();
-        }
-
-        private void DebugCompleteQuest()
-        {
-            foreach (Task task in _currentQuest.Tasks)
-            {
-                task.CompleteTask();
-            }
-        }
+        #region Private Methods
 
         private void OnTaskUpdated(Task task)
         {
             ProgressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
-            //Select next in progress task
             SetupNextTask(_currentQuest);
-            
-            //Update debug buttons
-            #if UNITY_EDITOR
-            UpdateDebugButtons();
-            #endif
-        }
+
 #if UNITY_EDITOR
-        private void UpdateDebugButtons()
-        {
-            CompleteCurrentTaskButton. SetInteractable(_currentTask.CurrentState == TaskState.InProgress);
-            IncrementCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress);
-            DecrementCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress || _currentTask.CurrentState == TaskState.Completed);
-            FailCurrentTaskButton.     SetInteractable(_currentTask.CurrentState == TaskState.InProgress || _currentTask.CurrentState == TaskState.Completed);
-            ResetCurrentTaskButton.    SetInteractable(_currentTask.CurrentState != TaskState.NotStarted);
-            
-            CompleteCurrentQuestButton.SetInteractable(_currentQuest.CurrentState == QuestState.InProgress);
-            FailCurrentQuestButton.    SetInteractable(_currentQuest.CurrentState == QuestState.InProgress);
-            ResetCurrentQuestButton.   SetInteractable(_currentQuest.CurrentState != QuestState.NotStarted);
-        }
+            UpdateDebugButtons();
 #endif
+        }
+
         private void SetupNextTask(Quest quest)
         {
             Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
             if (nextTask == null) return;
-            //Checks if task is already spawned
+
             UI_TaskItem taskItem = _taskUiItems.FirstOrDefault(t => t.Task == nextTask);
             if (taskItem == null)
             {
                 taskItem = Instantiate(TaskItemPrefab, TasksHolder);
                 _taskUiItems.Add(taskItem);
             }
+
             taskItem.Setup(nextTask, OnTaskSelected);
             taskItem.SetToggleGroup(ToggleGroup);
-            //Update debug buttons
-            #if UNITY_EDITOR
-                UpdateDebugButtons();
-            #endif
-        }
 
+#if UNITY_EDITOR
+            UpdateDebugButtons();
+#endif
+        }
 
         private void OnTaskSelected(Task task)
         {
@@ -194,7 +365,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             TaskDescriptionText.StringReference = task.Description;
             TaskDescriptionTextMesh.DOFade(1, .35f).From(0).SetEase(Ease.OutQuad);
 
-            //Debug buttons setup
 #if UNITY_EDITOR
             CompleteCurrentTaskButton.OnClick.SafeSubscribe(DebugCompleteTask);
             FailCurrentTaskButton.OnClick.SafeSubscribe(DebugFailTask);
@@ -202,48 +372,87 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             IncrementCurrentTaskButton.OnClick.SafeSubscribe(DebugIncrementTask);
             DecrementCurrentTaskButton.OnClick.SafeSubscribe(DebugDecrementTask);
             InvokeEventTaskButton.OnClick.SafeSubscribe(DebugEventTask);
-            
-            //Update debug buttons
             UpdateDebugButtons();
 #endif
         }
 
-        #region Debug callbacks
+        #endregion
+
+        #region Debug Methods
 
 #if UNITY_EDITOR
+        private void UpdateDebugButtons()
+        {
+            if (_currentTask != null)
+            {
+                CompleteCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress);
+                IncrementCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress);
+                DecrementCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress || _currentTask.CurrentState == TaskState.Completed);
+                FailCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress || _currentTask.CurrentState == TaskState.Completed);
+                ResetCurrentTaskButton.SetInteractable(_currentTask.CurrentState != TaskState.NotStarted);
+            }
+
+            if (_currentQuest != null)
+            {
+                CompleteCurrentQuestButton.SetInteractable(_currentQuest.CurrentState == QuestState.InProgress);
+                FailCurrentQuestButton.SetInteractable(_currentQuest.CurrentState == QuestState.InProgress);
+                ResetCurrentQuestButton.SetInteractable(_currentQuest.CurrentState != QuestState.NotStarted);
+            }
+        }
+
+        private void DebugFailQuest()
+        {
+            _currentQuest?.FailQuest();
+        }
+
+        private void DebugResetQuest()
+        {
+            _currentQuest?.ResetQuest();
+        }
+
+        private void DebugCompleteQuest()
+        {
+            if (_currentQuest == null) return;
+            foreach (Task task in _currentQuest.Tasks)
+            {
+                task.CompleteTask();
+            }
+        }
+
         private void DebugDecrementTask()
         {
-            _currentTask.DecrementStep();
+            _currentTask?.DecrementStep();
         }
 
         private void DebugIncrementTask()
         {
-            _currentTask.IncrementStep();
+            _currentTask?.IncrementStep();
         }
 
         private void DebugResetTask()
         {
+            if (_currentQuest == null || _currentTask == null) return;
             int index = _currentQuest.Tasks.IndexOf(_currentTask);
             for (int i = index; i < _currentQuest.Tasks.Count; i++)
             {
                 _currentQuest.Tasks[i].ResetTask();
             }
-
             _currentTask.StartTask();
         }
 
         private void DebugFailTask()
         {
-            _currentTask.FailTask();
+            _currentTask?.FailTask();
         }
 
         private void DebugCompleteTask()
         {
-            _currentTask.CompleteTask();
+            _currentTask?.CompleteTask();
         }
 
         private void DebugEventTask()
         {
+            if (_currentTask?.Data?.Conditions == null) return;
             foreach (Condition_SO condition in _currentTask.Data.Conditions)
             {
                 if (condition is not IConditionEventDriven conditionEventDriven) continue;

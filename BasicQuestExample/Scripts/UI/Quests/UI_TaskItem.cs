@@ -81,9 +81,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void UnSubscribeToEvents()
         {
             if (_task == null) return;
-            _task.OnTaskUpdated.Unsubscribe(OnTaskUpdated);
-            _task.OnTaskCompleted.Unsubscribe(OnTaskCompleted);
-            _task.OnTaskFailed.Unsubscribe(OnTaskFailed);
+            _task.OnTaskUpdated.SafeUnsubscribe(OnTaskUpdated);
+            _task.OnTaskCompleted.SafeUnsubscribe(OnTaskCompleted);
+            _task.OnTaskFailed.SafeUnsubscribe(OnTaskFailed);
         }
 
 
@@ -106,7 +106,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             TaskCheck.SetActive(false);
             TextStyleUpdater.TextColourSO = NotCompletedColour;
-            _task.OnTaskStarted.Unsubscribe((t)=> OnTaskInProgress());
+            _task.OnTaskStarted.SafeUnsubscribe((t)=> OnTaskInProgress());
         }
 
         private void OnTaskNotStarted()
