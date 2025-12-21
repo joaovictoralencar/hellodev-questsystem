@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using DG.Tweening;
+using PrimeTween;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
@@ -363,7 +364,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             _currentTask = task;
             TaskDescriptionText.StringReference = task.Description;
-            TaskDescriptionTextMesh.DOFade(1, .35f).From(0).SetEase(Ease.OutQuad);
+            Tween.Alpha(TaskDescriptionTextMesh, 0f, 1f, 0.35f, Ease.OutQuad);
 
 #if UNITY_EDITOR
             CompleteCurrentTaskButton.OnClick.SafeSubscribe(DebugCompleteTask);
@@ -402,12 +403,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugFailQuest()
         {
-            _currentQuest?.FailQuest();
+            if (_currentQuest == null) return;
+            QuestManager.Instance.FailQuest(_currentQuest);
         }
 
         private void DebugResetQuest()
         {
-            _currentQuest?.ResetQuest();
+            if (_currentQuest == null) return;
+            QuestManager.Instance.RestartQuest(_currentQuest);
         }
 
         private void DebugCompleteQuest()

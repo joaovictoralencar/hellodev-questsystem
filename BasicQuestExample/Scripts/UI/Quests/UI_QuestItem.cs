@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using DG.Tweening;
+using PrimeTween;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
@@ -124,6 +124,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void OnDestroy()
         {
+            // Kill any running tweens to prevent null reference errors
+            Tween.StopAll(transform);
             UnsubscribeFromQuestEvents();
         }
         
@@ -241,7 +243,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void OnSelect()
         {
-            transform.DOScale(1.035f, .25f).From(1).SetEase(Ease.OutBack);
+            Tween.Scale(transform, 1f, 1.035f, 0.25f, Ease.OutBack);
             selectableImage.color = selectedStateColour;
             toggle.Toggle.Select();
         }
@@ -250,7 +252,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (toggle.IsOn) return;
             selectableImage.color = originalColor;
-            transform.DOScale(1, .15f).SetEase(Ease.InBack);
+            Tween.Scale(transform, 1f, 0.15f, Ease.InBack);
         }
         
         #endregion

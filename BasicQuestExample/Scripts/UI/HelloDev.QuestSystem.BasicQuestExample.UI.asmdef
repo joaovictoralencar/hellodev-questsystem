@@ -7,7 +7,7 @@
         "HelloDev.UI.Default",
         "HelloDev.Conditions",
         "Unity.TextMeshPro",
-        "DOTween.Modules",
+        "PrimeTween.Runtime",
         "Unity.Localization",
         "QuestSystem.Utils"
     ],

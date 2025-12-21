@@ -360,10 +360,7 @@ namespace HelloDev.QuestSystem
                     continue;
                 }
 
-                if (!_availableQuestsData.TryAdd(questData.QuestId, questData))
-                {
-                    QuestLogger.LogWarning($"Duplicate quest ID found for '{questData.DevName}'. ID: {questData.QuestId}");
-                }
+                _availableQuestsData.TryAdd(questData.QuestId, questData);
             }
 
             QuestLogger.Log($"QuestManager initialized with {_availableQuestsData.Count} quests.");
@@ -577,24 +574,43 @@ namespace HelloDev.QuestSystem
         }
 
         /// <summary>
-        /// Restarts a quest.
+        /// Restarts a quest. Works for active, completed, or failed quests.
         /// </summary>
         /// <param name="questId">The quest ID.</param>
         /// <param name="forceStart">If true, starts immediately without checking conditions.</param>
         /// <returns>True if the quest was successfully restarted.</returns>
         public bool RestartQuest(Guid questId, bool forceStart = false)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            Quest quest = null;
+
+            // Check active quests first
+            if (_activeQuests.TryGetValue(questId, out quest))
             {
                 quest.ResetQuest();
-                if (forceStart || quest.CheckStartConditions())
-                {
-                    quest.StartQuest();
-                }
                 return true;
             }
 
-            QuestLogger.LogWarning($"RestartQuest: Quest with ID '{questId}' is not active.");
+            // Check completed quests
+            if (_completedQuests.TryGetValue(questId, out quest))
+            {
+                _completedQuests.Remove(questId);
+                _activeQuests.Add(questId, quest);
+                SubscribeToQuestEvents(quest);
+                quest.ResetQuest();
+                return true;
+            }
+
+            // Check failed quests
+            if (_failedQuests.TryGetValue(questId, out quest))
+            {
+                _failedQuests.Remove(questId);
+                _activeQuests.Add(questId, quest);
+                SubscribeToQuestEvents(quest);
+                quest.ResetQuest();
+                return true;
+            }
+
+            QuestLogger.LogWarning($"RestartQuest: Quest with ID '{questId}' not found in active, completed, or failed quests.");
             return false;
         }
 

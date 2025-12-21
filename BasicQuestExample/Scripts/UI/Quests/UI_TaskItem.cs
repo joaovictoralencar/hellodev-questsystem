@@ -1,11 +1,11 @@
 using System;
+using PrimeTween;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
-using DG.Tweening;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
@@ -39,7 +39,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void OnDestroy()
         {
             UnSubscribeToEvents();
-            selectedBackground.DOKill();
+            Tween.StopAll(selectedBackground);
         }
 
         public void Setup(Task task, Action<Task> onTaskSelected)
@@ -125,7 +125,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void OnSelect()
         {
             selectedBackground.enabled = true;
-            selectedBackground.DOFillAmount(1, 0.35f).SetEase(Ease.OutBack);
+            Tween.UIFillAmount(selectedBackground, 1f, 0.35f, Ease.OutBack);
             Toggle.Toggle.Select();
         }
 
@@ -133,7 +133,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (Toggle.IsOn) return;
             selectedBackground.enabled = false;
-            selectedBackground.DOFillAmount(0, 0.2f).SetEase(Ease.InBack);
+            Tween.UIFillAmount(selectedBackground, 0f, 0.2f, Ease.InBack);
         }
 
         public void SetToggleGroup(ToggleGroup toggleGroup)

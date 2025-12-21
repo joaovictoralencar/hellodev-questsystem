@@ -151,10 +151,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
             UI_QuestItem questItem = questItems[quest];
             questItems.Remove(quest);
-            
+
             if (questItem != null)
             {
-                DestroyImmediate(questItem.gameObject);
+                Destroy(questItem.gameObject);
             }
         }
 
@@ -301,10 +301,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             {
                 if (questItem != null)
                 {
-                    DestroyImmediate(questItem.gameObject);
+                    Destroy(questItem.gameObject);
                 }
             }
-            
+
             questItems.Clear();
         }
         
