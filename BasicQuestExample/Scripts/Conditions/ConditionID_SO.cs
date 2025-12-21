@@ -1,6 +1,6 @@
 using HelloDev.Conditions;
+using HelloDev.IDs;
 using HelloDev.QuestSystem.BasicQuestExample.GameEvents;
-using HelloDev.Utils;
 using UnityEngine;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.Conditions

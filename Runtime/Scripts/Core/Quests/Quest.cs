@@ -5,6 +5,7 @@ using HelloDev.Conditions;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
 using UnityEngine.Localization;
 using UnityEngine;
 using HelloDev.Utils;
@@ -25,15 +26,16 @@ namespace HelloDev.QuestSystem.Quests
         public UnityEvent<Quest> OnQuestStarted = new();
         public UnityEvent<Quest> OnQuestCompleted = new();
         public UnityEvent<Quest> OnQuestFailed = new();
+        public UnityEvent<Quest> OnQuestRestarted = new();
         public UnityEvent<Quest> OnQuestUpdated = new();
-        public UnityEvent<Task> OnAnyTaskUpdated = new();
-        public UnityEvent<Task> OnAnyTaskCompleted = new();
+        public UnityEvent<Task>  OnAnyTaskUpdated = new();
+        public UnityEvent<Task>  OnAnyTaskCompleted = new();
 
         #endregion
 
         #region Properties
 
-        public Guid QuestId { get; private set; }
+        public Guid QuestId { get; }
         public QuestState CurrentState { get; private set; }
         public List<Task> Tasks { get; private set; }
         public Quest_SO QuestData { get; private set; }
@@ -123,12 +125,18 @@ namespace HelloDev.QuestSystem.Quests
         public void ResetQuest()
         {
             UnsubscribeFromAllEvents();
+            foreach (Task task in Tasks)
+            {
+                task.ResetTask();
+            }
             UpdateQuestState(QuestState.NotStarted);
+            StartQuest();
+            OnQuestRestarted.Invoke(this);
         }
 
         private void SubscribeToAllEvents()
         {
-            foreach (var task in Tasks)
+            foreach (Task task in Tasks)
             {
                 task.OnTaskCompleted.SafeSubscribe(HandleTaskCompleted);
                 task.OnTaskUpdated.SafeSubscribe(HandleTaskUpdated);
@@ -177,7 +185,7 @@ namespace HelloDev.QuestSystem.Quests
 
         private void UnsubscribeFromAllEvents()
         {
-            foreach (var task in Tasks)
+            foreach (Task task in Tasks)
             {
                 task.OnTaskCompleted.Unsubscribe(HandleTaskCompleted);
                 task.OnTaskUpdated.Unsubscribe(HandleTaskUpdated);
@@ -236,6 +244,20 @@ namespace HelloDev.QuestSystem.Quests
             }
 
             return false;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is Quest other)
+            {
+                return QuestId == other.QuestId;
+            }
+
+            return false;
+        }
+        
+        public override int GetHashCode()
+        {
+            return QuestId.GetHashCode();
         }
     }
 }

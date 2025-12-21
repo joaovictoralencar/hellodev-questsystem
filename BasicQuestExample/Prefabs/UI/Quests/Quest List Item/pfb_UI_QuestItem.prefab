@@ -241,6 +241,8 @@ MonoBehaviour:
   nextTaskTextPrefab: {fileID: 0}
   completedTextPrefab: {fileID: 3183054172739322818, guid: 6643b17d637a64a4bbc1654e65c5b0a1, type: 3}
   failedTextPrefab: {fileID: 8887287360785183637, guid: 963e6e6158de4044aba5cf07467847e2, type: 3}
+  selectableImage: {fileID: 7849601662829732783}
+  selectedStateColour: {r: 0.90943396, g: 0.8183277, b: 0.08064787, a: 0.43137255}
 --- !u!1 &1815579581300906842
 GameObject:
   m_ObjectHideFlags: 0

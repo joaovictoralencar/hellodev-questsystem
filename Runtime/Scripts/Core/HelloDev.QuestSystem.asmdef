@@ -1,0 +1,21 @@
+{
+    "name": "HelloDev.QuestSystem",
+    "rootNamespace": "HelloDev.QuestSystem",
+    "references": [
+        "HelloDev.Utils",
+        "HelloDev.Conditions",
+        "HelloDev.Events",
+        "HelloDev.IDs",
+        "Unity.Localization",
+        "QuestSystem.Utils"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,12 +1,9 @@
-
-using HelloDev.Conditions;
 using UnityEngine;
-using HelloDev.QuestSystem.Utils;
-using HelloDev.QuestSystem.Tasks;
 using HelloDev.Utils;
+using HelloDev.QuestSystem.Tasks;
+using HelloDev.QuestSystem.Utils;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
-using UnityEngine.Localization.SmartFormat.PersistentVariables;
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -40,7 +37,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            var stringReference = taskNameText.StringReference;
+            LocalizedString stringReference = taskNameText.StringReference;
             if (stringReference == null)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");

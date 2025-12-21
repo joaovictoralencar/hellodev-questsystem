@@ -5,8 +5,9 @@ using UnityEngine;
 using UnityEngine.Localization;
 
 using HelloDev.QuestSystem.Tasks;
-using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
+using HelloDev.Utils;
+using Sirenix.OdinInspector;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 
@@ -100,5 +101,21 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         }
 
         public abstract void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, Task task);
+        
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is Task_SO other)
+            {
+                return TaskId == other.TaskId;
+            }
+
+            return false;
+        }
+        
+        public override int GetHashCode()
+        {
+            return TaskId.GetHashCode();
+        }
     }
 }

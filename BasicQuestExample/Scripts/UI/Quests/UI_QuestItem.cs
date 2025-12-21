@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using DG.Tweening;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.UI.Default;
@@ -77,6 +78,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         [SerializeField] 
         [Tooltip("Prefab for failed quest text")]
         private RectTransform failedTextPrefab;
+
+        [Header("UI selectable")]
+        [SerializeField] private Image selectableImage;
+        [SerializeField] private Color selectedStateColour;
         
         #endregion
 
@@ -91,6 +96,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// The quest data associated with this UI item
         /// </summary>
         private Quest quest;
+
+        private Color originalColor;
         
         #endregion
 
@@ -109,6 +116,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (toggle == null) TryGetComponent(out toggle);
             toggle.OnToggleOn.AddListener(SelectQuest);
+            toggle.HighlightedStateEvent.AddListener(Select);
+            toggle.NormalStateEvent.AddListener(OnDeselect);
+            originalColor = selectableImage.color;
         }
 
         private void OnDestroy()
@@ -223,7 +233,23 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         public void Select()
         {
+            if (toggle.IsOn) return;
             toggle?.SetIsOn(true);
+            SelectQuest();
+        }
+
+        private void OnSelect()
+        {
+            transform.DOScale(1.035f, .25f).From(1).SetEase(Ease.OutBack);
+            selectableImage.color = selectedStateColour;
+            toggle.Toggle.Select();
+        }
+
+        public void OnDeselect()
+        {
+            if (toggle.IsOn) return;
+            selectableImage.color = originalColor;
+            transform.DOScale(1, .15f).SetEase(Ease.InBack);
         }
         
         #endregion
@@ -374,6 +400,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         private void SelectQuest()
         {
             onQuestSelected?.Invoke(quest);
+            OnSelect();
+            toggle.Toggle.Select();
         }
         
         public void SetToggleGroup(ToggleGroup toggleGroup)
@@ -381,5 +409,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             toggle.Toggle.group = toggleGroup;
         }
         #endregion
+
+        public void SetToggleIsOn(bool isOn)
+        {
+            toggle.SetIsOn(isOn);
+        }
     }
 }

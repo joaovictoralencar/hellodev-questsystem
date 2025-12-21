@@ -84,8 +84,15 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
 
             //Select next in progress task
-            Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+            Task nextTask = quest.Tasks.FirstOrDefault(t => IsFirstValidTask(quest, t));
 
+            bool IsFirstValidTask(Quest q, Task t)
+            {
+               return (q.CurrentState is QuestState.InProgress && t.CurrentState == TaskState.InProgress) ||
+                      (q.CurrentState == QuestState.Completed  && t.CurrentState == TaskState.Completed)  ||
+                      (q.CurrentState == QuestState.Failed     && t.CurrentState == TaskState.Failed);
+            }
+            
             TasksHolder.DestroyAllChildren();
             _taskUiItems.Clear();
             foreach (Task task in quest.Tasks)
@@ -106,10 +113,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             quest.OnAnyTaskUpdated.SafeSubscribe(OnTaskUpdated);
             quest.OnAnyTaskCompleted.SafeSubscribe(OnTaskUpdated);
 
+#if UNITY_EDITOR
             //Debug buttons setup
             CompleteCurrentQuestButton.OnClick.SafeSubscribe(DebugCompleteQuest);
             FailCurrentQuestButton.OnClick.SafeSubscribe(DebugFailQuest);
             ResetCurrentQuestButton.OnClick.SafeSubscribe(DebugResetQuest);
+            UpdateDebugButtons();
+#endif
         }
 
         private void DebugFailQuest()
@@ -135,8 +145,26 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             ProgressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
             //Select next in progress task
             SetupNextTask(_currentQuest);
+            
+            //Update debug buttons
+            #if UNITY_EDITOR
+            UpdateDebugButtons();
+            #endif
         }
-
+#if UNITY_EDITOR
+        private void UpdateDebugButtons()
+        {
+            CompleteCurrentTaskButton. SetInteractable(_currentTask.CurrentState == TaskState.InProgress);
+            IncrementCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress);
+            DecrementCurrentTaskButton.SetInteractable(_currentTask.CurrentState == TaskState.InProgress || _currentTask.CurrentState == TaskState.Completed);
+            FailCurrentTaskButton.     SetInteractable(_currentTask.CurrentState == TaskState.InProgress || _currentTask.CurrentState == TaskState.Completed);
+            ResetCurrentTaskButton.    SetInteractable(_currentTask.CurrentState != TaskState.NotStarted);
+            
+            CompleteCurrentQuestButton.SetInteractable(_currentQuest.CurrentState == QuestState.InProgress);
+            FailCurrentQuestButton.    SetInteractable(_currentQuest.CurrentState == QuestState.InProgress);
+            ResetCurrentQuestButton.   SetInteractable(_currentQuest.CurrentState != QuestState.NotStarted);
+        }
+#endif
         private void SetupNextTask(Quest quest)
         {
             Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
@@ -150,6 +178,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             }
             taskItem.Setup(nextTask, OnTaskSelected);
             taskItem.SetToggleGroup(ToggleGroup);
+            //Update debug buttons
+            #if UNITY_EDITOR
+                UpdateDebugButtons();
+            #endif
         }
 
 
@@ -167,6 +199,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             IncrementCurrentTaskButton.OnClick.SafeSubscribe(DebugIncrementTask);
             DecrementCurrentTaskButton.OnClick.SafeSubscribe(DebugDecrementTask);
             InvokeEventTaskButton.OnClick.SafeSubscribe(DebugEventTask);
+            
+            //Update debug buttons
+            UpdateDebugButtons();
 #endif
         }
 

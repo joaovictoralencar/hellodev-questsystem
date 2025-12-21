@@ -2,9 +2,9 @@
     "name": "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
     "rootNamespace": "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
     "references": [
-        "GUID:77ab856d65a033b4296126f4fd267c0d",
-        "GUID:882f17f80c0c41e41887b7bf5bb7f7ff",
-        "GUID:e5b4c3e4ab8f025469eb50f7f4489925"
+        "HelloDev.Events",
+        "HelloDev.IDs",
+        "HelloDev.Utils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

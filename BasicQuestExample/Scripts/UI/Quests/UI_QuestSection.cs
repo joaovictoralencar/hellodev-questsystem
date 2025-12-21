@@ -76,7 +76,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// The quest type associated with this section
         /// </summary>
         public QuestType_SO QuestType { get; private set; }
-        
+
+        /// <summary>
+        /// Dictionary mapping quests to their corresponding UI items for efficient lookup
+        /// </summary>
+        public Dictionary<Quest, UI_QuestItem> QuestItems => questItems;
+
         #endregion
 
         #region Public Setup Methods
@@ -90,6 +95,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (questType == null) return;
 
+            Debug.Log("[UI/QuestSection] Setup. {gameObject.name}", gameObject);
             QuestType = questType;
             UpdateSectionAppearance();
         }
@@ -197,6 +203,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 if (questItems.Count == 0) return;
                 questItems.First().Value.Select();
             }
+            Debug.Log($"[UI/QuestSection] OnToggleValueChanged to {isOn}. {gameObject.name}", gameObject);
         }
         
         #endregion
@@ -219,6 +226,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             {
                 questSectionBackground.color = QuestType.Color;
             }
+            Debug.Log("[UI/QuestSection] UpdateSectionAppearance. {gameObject.name}", gameObject);
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
     "name": "HelloDev.QuestSystem.BasicQuestExample.Rewards",
     "rootNamespace": "HelloDev.QuestSystem.BasicQuestExample.Rewards",
     "references": [
-        "GUID:ad560759137fbbc42ae0b8be19bda58c"
+        "HelloDev.QuestSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

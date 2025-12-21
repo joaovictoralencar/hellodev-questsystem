@@ -1,8 +1,9 @@
 using System;
 using HelloDev.Conditions;
 using HelloDev.QuestSystem.ScriptableObjects;
-using UnityEngine.Localization;
 using HelloDev.QuestSystem.Utils;
+using UnityEngine.Localization;
+using HelloDev.Utils;
 using HelloDev.Utils;
 using UnityEngine.Events;
 
@@ -47,7 +48,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// A unique, permanent identifier for the task instance.
         /// </summary>
-        public Guid TaskId { get; private set; }
+        public Guid TaskId { get; }
 
         /// <summary>
         /// A developer-friendly name for the task, used for internal identification.
@@ -236,6 +237,21 @@ namespace HelloDev.QuestSystem.Tasks
             CurrentState = state;
             QuestLogger.Log($"Task '{DevName}' state changed to {state}.");
             OnTaskStateChanged?.SafeInvoke(this, CurrentState);
+        }
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is Task other)
+            {
+                return TaskId == other.TaskId;
+            }
+
+            return false;
+        }
+        
+        public override int GetHashCode()
+        {
+            return TaskId.GetHashCode();
         }
     }
 }

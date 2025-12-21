@@ -1,7 +1,9 @@
 using UnityEngine;
-using HelloDev.QuestSystem.Utils;
-using HelloDev.QuestSystem.Tasks;
 using HelloDev.Utils;
+using HelloDev.QuestSystem.Tasks;
+using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
+using Sirenix.OdinInspector;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
@@ -68,7 +70,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            var stringReference = taskNameText.StringReference;
+            LocalizedString stringReference = taskNameText.StringReference;
             if (stringReference == null)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
@@ -76,7 +78,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             // Ensure "current" variable exists
-            if (!stringReference.TryGetValue("current", out var currentVariable))
+            if (!stringReference.TryGetValue("current", out IVariable currentVariable))
             {
                 stringReference.Add("current", new IntVariable { Value = intTask.CurrentCount });
             }
@@ -87,7 +89,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             // Ensure "target" variable exists
-            if (!stringReference.TryGetValue("required", out var requiredVariable))
+            if (!stringReference.TryGetValue("required", out IVariable requiredVariable))
             {
                 stringReference.Add("required", new IntVariable { Value = intTask.RequiredCount });
             }

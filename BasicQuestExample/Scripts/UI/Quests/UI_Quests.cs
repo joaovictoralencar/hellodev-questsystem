@@ -124,14 +124,20 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             foreach (var questGroup in groupedQuests)
             {
-                var questType = questGroup.Key;
+                QuestType_SO questType = questGroup.Key;
                 if (questType == completedQuestType) continue;
 
-                var questSection = GetOrCreateQuestSection(questType);
-                questSection.Setup(questType);
-                questSection.SpawnQuestsItems(questGroup.Value, OnQuestSelected);
-                questSections.TryAdd(questType, questSection);
+                List<Quest> questGroupValue = questGroup.Value;
+                AddQuestToSection(questType, questGroupValue);
             }
+        }
+
+        private void AddQuestToSection(QuestType_SO questType, List<Quest> questList)
+        {
+            UI_QuestSection questSection = GetOrCreateQuestSection(questType);
+            questSection.Setup(questType);
+            questSection.SpawnQuestsItems(questList, OnQuestSelected);
+            questSections.TryAdd(questType, questSection);
         }
 
         /// <summary>
@@ -206,12 +212,25 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (quest?.QuestData?.QuestType == null || completedQuestType == null) return;
 
-            var originalQuestType = quest.QuestData.QuestType;
+            QuestType_SO originalQuestType = quest.QuestData.QuestType;
 
             RemoveQuestFromSection(quest, originalQuestType);
             AddQuestToCompletedSection(quest);
 
             HandleCompletedQuestSelection(quest);
+        }
+
+
+        private void OnQuestRestarted(Quest quest)
+        {
+            if (quest?.QuestData?.QuestType == null) return;
+
+            QuestType_SO originalQuestType = quest.QuestData.QuestType;
+
+            //try to remove the quest from the completed section
+            RemoveQuestFromSection(quest, completedQuestType);
+            AddQuestToSection(originalQuestType, new List<Quest>() { quest });
+            OnQuestSelected(quest);
         }
 
         /// <summary>
@@ -227,6 +246,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (questDetails != null)
             {
                 questDetails.Setup(quest);
+            }
+
+            foreach (UI_QuestSection section in questSections.Values)
+            {
+                foreach (UI_QuestItem questItem in section.QuestItems.Values)
+                {
+                    questItem.SetToggleIsOn(Equals(questItem.Quest, quest));
+                }
             }
         }
 
@@ -246,7 +273,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 return existingSection;
             }
 
-            var newSection = CreateQuestSection();
+            UI_QuestSection newSection = CreateQuestSection();
             questSections.Add(questType, newSection);
             return newSection;
         }
@@ -258,7 +285,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// <param name="questType">The quest type section to remove from</param>
         private void RemoveQuestFromSection(Quest quest, QuestType_SO questType)
         {
-            if (questSections.TryGetValue(questType, out var questSection))
+            if (questSections.TryGetValue(questType, out UI_QuestSection questSection))
             {
                 questSection.RemoveQuest(quest);
             }
@@ -384,6 +411,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (QuestManager.Instance == null) return;
             QuestManager.Instance.QuestStarted.SafeSubscribe(OnQuestStarted);
             QuestManager.Instance.QuestCompleted.SafeSubscribe(OnQuestCompleted);
+            QuestManager.Instance.QuestRestarted.SafeSubscribe(OnQuestRestarted);
         }
 
         /// <summary>

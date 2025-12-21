@@ -39,6 +39,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void OnDestroy()
         {
             UnSubscribeToEvents();
+            selectedBackground.DOKill();
         }
 
         public void Setup(Task task, Action<Task> onTaskSelected)
@@ -116,6 +117,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         public void Select()
         {
+            if (Toggle.IsOn) return;
             OnTaskSelected.Invoke(_task);
             Toggle.SetIsOn(true);
         }

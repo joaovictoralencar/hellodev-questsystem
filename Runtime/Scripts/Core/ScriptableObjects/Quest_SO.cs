@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Localization;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.Utils;
+using Sirenix.OdinInspector;
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -148,7 +149,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         {
             if (string.IsNullOrEmpty(questId))
             {
-                questId = Guid.NewGuid().ToString();
+                GenerateNewGuid();
             }
 
             if (string.IsNullOrEmpty(devName))
@@ -157,8 +158,29 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
         }
 
+        [Button]
+        private void GenerateNewGuid()
+        {
+            questId = Guid.NewGuid().ToString();
+        }
+
         protected override void OnScriptableObjectReset()
         {
+        }
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is Quest_SO other)
+            {
+                return QuestId == other.QuestId;
+            }
+
+            return false;
+        }
+        
+        public override int GetHashCode()
+        {
+            return QuestId.GetHashCode();
         }
     }
 }
