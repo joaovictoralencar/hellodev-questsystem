@@ -82,6 +82,17 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     existingRemaining.Value = timeString;
             }
 
+            // Add or update "time" variable (alias for remaining time - used in some localization strings)
+            if (!stringReference.TryGetValue("time", out IVariable timeVariable))
+            {
+                stringReference.Add("time", new StringVariable { Value = timeString });
+            }
+            else
+            {
+                if (timeVariable is StringVariable existingTime)
+                    existingTime.Value = timeString;
+            }
+
             // Add or update "limit" variable for total time limit
             int limitMinutes = (int)(timeLimit / 60);
             int limitSeconds = (int)(timeLimit % 60);
