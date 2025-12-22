@@ -243,7 +243,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void OnSelect()
         {
-            Tween.Scale(transform, 1f, 1.035f, 0.25f, Ease.OutBack);
+            if (transform.localScale.x < 1.035f)
+                Tween.Scale(transform, 1f, 1.035f, 0.25f, Ease.OutBack);
             selectableImage.color = selectedStateColour;
             toggle.Toggle.Select();
         }
@@ -252,7 +253,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (toggle.IsOn) return;
             selectableImage.color = originalColor;
-            Tween.Scale(transform, 1f, 0.15f, Ease.InBack);
+            if (transform.localScale.x > 1f)
+                Tween.Scale(transform, 1f, 0.15f, Ease.InBack);
         }
         
         #endregion

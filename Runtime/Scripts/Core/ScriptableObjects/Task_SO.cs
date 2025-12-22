@@ -58,7 +58,6 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 #if ODIN_INSPECTOR
         [FoldoutGroup("Display")]
         [PropertyOrder(11)]
-        [TextArea(2, 4)]
 #endif
         [Tooltip("The localized description of the task.")]
         [SerializeField]

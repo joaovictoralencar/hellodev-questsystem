@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
+  m_Name: SO_Quest_MerchantsStolenGoods
+  m_EditorClassIdentifier:
+  _description: "Secondary quest: Help a merchant recover stolen goods from bandits. Demonstrates BoolTask, DiscoveryTask, LocationTask, IntTask, and StringTask."
+  devName: MerchantsStolenGoods
+  questId: 77777777-8888-9999-0000-111122223333
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795970
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  questDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795971
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  questLocation:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795972
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  questSprite: {fileID: 0}
+  tasks:
+  - {fileID: 11400000, guid: 6f789012345678abcd0001020304ab01, type: 2}
+  - {fileID: 11400000, guid: 789012345678abcd0001020304ab0102, type: 2}
+  - {fileID: 11400000, guid: 75bd6a01f350bcd47a246b2514b0abea, type: 2}
+  - {fileID: 11400000, guid: 9012345678abcd0001020304ab010234, type: 2}
+  - {fileID: 11400000, guid: c1ad2b8468303ae42966becfc4d2fb8a, type: 2}
+  - {fileID: 11400000, guid: 12345678abcd0001020304ab01023456, type: 2}
+  startConditions: []
+  failureConditions:
+  - {fileID: 11400000, guid: 654f0621c78fb98449d0acabec3ed39c, type: 2}
+  globalTaskFailureConditions:
+  - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
+  questType: {fileID: 11400000, guid: 955a193800c30ce41b19879861efbd2f, type: 2}
+  rewards:
+  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
+    Amount: 750
+  - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
+    Amount: 500
+  recommendedLevel: 3
+  references:
+    version: 2
+    RefIds: []

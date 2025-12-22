@@ -19,6 +19,10 @@ MonoBehaviour:
     m_Key: Resources_Experience
     m_Metadata:
       m_Items: []
+  - m_Id: 43141327020408832
+    m_Key: Resources_Gold
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

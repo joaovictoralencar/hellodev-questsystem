@@ -46,8 +46,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             gameObject.name = task.Data.DevName;
             _task = task;
+            // Disable component to prevent auto-format before variables are set up
+            TaskNameText.enabled = false;
             TaskNameText.StringReference = task.Data.DisplayName;
             task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
+            TaskNameText.enabled = true;
+            TaskNameText.RefreshString();
             switch (task.CurrentState)
             {
                 case TaskState.NotStarted:
@@ -125,7 +129,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void OnSelect()
         {
             selectedBackground.enabled = true;
-            Tween.UIFillAmount(selectedBackground, 1f, 0.35f, Ease.OutBack);
+            if (selectedBackground.fillAmount < 1f)
+                Tween.UIFillAmount(selectedBackground, 1f, 0.35f, Ease.OutBack);
             Toggle.Toggle.Select();
         }
 
@@ -133,7 +138,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (Toggle.IsOn) return;
             selectedBackground.enabled = false;
-            Tween.UIFillAmount(selectedBackground, 0f, 0.2f, Ease.InBack);
+            if (selectedBackground.fillAmount > 0f)
+                Tween.UIFillAmount(selectedBackground, 0f, 0.2f, Ease.InBack);
         }
 
         public void SetToggleGroup(ToggleGroup toggleGroup)

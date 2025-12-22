@@ -1,3 +1,4 @@
+using HelloDev.IDs;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -18,8 +19,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     [CreateAssetMenu(fileName = "TaskInt_SO", menuName = "HelloDev/Quest System/Scriptable Objects/Tasks/Int Task")]
     public class TaskInt_SO : Task_SO
     {
-        [Header("Int Task")] [Tooltip("A unique string ID for the target of this task (e.g., 'goblin', 'gold_coin').")] [SerializeField]
-        private string targetId;
+        [Header("Int Task")] [Tooltip("The ID_SO reference for the target of this task (e.g., Goblin ID, Gold Coin ID).")] [SerializeField]
+        private ID_SO targetId;
 
         [Tooltip("The number of times the target event must occur to complete the task.")] [SerializeField]
         private int requiredCount;
@@ -32,10 +33,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private int currentCount;
 
         /// <summary>
-        /// Gets the unique string ID for the target of this task.
+        /// Gets the ID_SO reference for the target of this task.
         /// </summary>
-        public string TargetId => targetId;
-
+        public ID_SO TargetId => targetId;
         /// <summary>
         /// Gets the required count to complete this task.
         /// </summary>

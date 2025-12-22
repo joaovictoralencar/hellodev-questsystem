@@ -1,3 +1,4 @@
+using HelloDev.IDs;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -15,6 +16,11 @@ namespace HelloDev.QuestSystem.Tasks
         private int _currentCount;
 
         /// <summary>
+        /// Gets the ID_SO reference for the target of this task.
+        /// </summary>
+        public ID_SO TargetId => (Data as TaskInt_SO)?.TargetId;
+
+        /// <summary>
         /// Gets the required number of counts to complete this task.
         /// </summary>
         public int RequiredCount => (Data as TaskInt_SO)?.RequiredCount ?? 0;
@@ -23,6 +29,16 @@ namespace HelloDev.QuestSystem.Tasks
         /// Gets the current number of counts for this task.
         /// </summary>
         public int CurrentCount => _currentCount;
+
+        /// <summary>
+        /// Checks if the given ID matches this task's target ID.
+        /// </summary>
+        /// <param name="id">The ID to check against the target.</param>
+        /// <returns>True if the IDs match, false otherwise.</returns>
+        public bool MatchesTargetId(ID_SO id)
+        {
+            return TargetId != null && TargetId.Equals(id);
+        }
 
         /// <summary>
         /// Initializes a new instance of the IntTask class.

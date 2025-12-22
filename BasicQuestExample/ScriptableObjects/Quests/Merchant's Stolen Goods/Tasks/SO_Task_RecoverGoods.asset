@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b122bf07d976e74eb0fbbd145996568, type: 3}
+  m_Name: SO_Task_RecoverGoods
+  m_EditorClassIdentifier:
+  _description: "[Task 4/6 - IntTask] Collect 3 stolen crates from the bandit camp. Demonstrates IntTask for item collection."
+  devName: Task04_RecoverGoods
+  taskId: 44444444-5555-6666-7777-888899990000
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795987
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795988
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions: []
+  failureConditions:
+  - {fileID: 11400000, guid: 9e1ab2799eb35bc419030aa52b870c11, type: 2}
+  targetId: {fileID: 11400000, guid: 890123456789abcdef0102030405060b, type: 2}
+  requiredCount: 3
+  currentCount: 0
+  references:
+    version: 2
+    RefIds: []

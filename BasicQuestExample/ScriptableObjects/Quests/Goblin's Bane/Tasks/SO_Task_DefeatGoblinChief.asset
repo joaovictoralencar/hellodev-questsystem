@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0d99648521bc004e92675dc6661ef11, type: 3}
+  m_Name: SO_Task_DefeatGoblinChief
+  m_EditorClassIdentifier: 
+  _description: '[Task 5/6 - TimedTask] Defeat the goblin chief within 2 minutes.
+    Demonstrates TimedTask with timer mechanics.'
+  devName: Task05_DefeatGoblinChief
+  taskId: a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7d
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795977
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795978
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions:
+  - {fileID: 11400000, guid: a513c1c8db62fcd418bd76ec675e04e9, type: 2}
+  failureConditions: []
+  timeLimit: 120
+  failQuestOnExpire: 0
+  references:
+    version: 2
+    RefIds: []

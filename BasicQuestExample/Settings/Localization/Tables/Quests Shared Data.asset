@@ -23,12 +23,36 @@ MonoBehaviour:
     m_Key: Location_Campsite_Goblins
     m_Metadata:
       m_Items: []
+  - m_Id: 45247112382824448
+    m_Key: Location_Village
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795968
+    m_Key: Location_Market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795969
+    m_Key: Location_BanditCamp
+    m_Metadata:
+      m_Items: []
   - m_Id: 736338700713984
     m_Key: Quest_Description_MQ001_GoblinsBane
     m_Metadata:
       m_Items: []
   - m_Id: 736137437036544
     m_Key: Quest_Name_MQ001_GoblinsBane
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795970
+    m_Key: Quest_Name_SQ001_MerchantsStolenGoods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795971
+    m_Key: Quest_Description_SQ001_MerchantsStolenGoods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795972
+    m_Key: Quest_Location_SQ001_MerchantsStolenGoods
     m_Metadata:
       m_Items: []
   - m_Id: 734280610267136
@@ -47,6 +71,26 @@ MonoBehaviour:
     m_Key: QuesType_Special
     m_Metadata:
       m_Items: []
+  - m_Id: 5682838304243712
+    m_Key: QuestType_Secondary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795973
+    m_Key: Task_Name_InvestigateAttacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795974
+    m_Key: Task_Description_InvestigateAttacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795975
+    m_Key: Task_Name_TrackGoblinCamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795976
+    m_Key: Task_Description_TrackGoblinCamp
+    m_Metadata:
+      m_Items: []
   - m_Id: 3834205569073152
     m_Key: Task_Description_FindGoblinsCampsite
     m_Metadata:
@@ -63,8 +107,68 @@ MonoBehaviour:
     m_Key: Task_Name_Kill_Count_Target
     m_Metadata:
       m_Items: []
-  - m_Id: 5682838304243712
-    m_Key: QuestType_Secondary
+  - m_Id: 45247112403795977
+    m_Key: Task_Name_DefeatGoblinChief
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795978
+    m_Key: Task_Description_DefeatGoblinChief
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795979
+    m_Key: Task_Name_ReturnToVillage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795980
+    m_Key: Task_Description_ReturnToVillage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795981
+    m_Key: Task_Name_TalkToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795982
+    m_Key: Task_Description_TalkToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795983
+    m_Key: Task_Name_SearchCrimeScene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795984
+    m_Key: Task_Description_SearchCrimeScene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795985
+    m_Key: Task_Name_FollowTheTrail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795986
+    m_Key: Task_Description_FollowTheTrail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795987
+    m_Key: Task_Name_RecoverGoods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795988
+    m_Key: Task_Description_RecoverGoods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795989
+    m_Key: Task_Name_InterrogateBanditLeader
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795990
+    m_Key: Task_Description_InterrogateBanditLeader
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795991
+    m_Key: Task_Name_ReturnToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247112403795992
+    m_Key: Task_Description_ReturnToMerchant
     m_Metadata:
       m_Items: []
   m_Metadata:

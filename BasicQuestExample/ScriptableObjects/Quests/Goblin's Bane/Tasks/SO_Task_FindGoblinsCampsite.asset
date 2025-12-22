@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 816565eeb74b83f46afd5a1992ad8c3e, type: 3}
   m_Name: SO_Task_FindGoblinsCampsite
   m_EditorClassIdentifier: 
-  _description: Describe what this scriptable object represents
-  devName: SO_Task_FindGoblinsCampsite
+  _description: "[Task 4/6 - BoolTask] Locate the goblin chief hiding in the cave. Demonstrates BoolTask with event-driven condition."
+  devName: Task04_FindGoblinChief
   taskId: f9662af6-1c15-4478-9794-307bb7bd72e2
   displayName:
     m_TableReference:

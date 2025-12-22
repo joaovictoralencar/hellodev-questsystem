@@ -9,6 +9,9 @@ using UnityEngine.Localization;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -19,6 +22,254 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     [CreateAssetMenu(fileName = "NewQuest", menuName = "HelloDev/Quest System/Scriptable Objects/Quest")]
     public class Quest_SO : RuntimeScriptableObject
     {
+        #region Quest Overview (Designer View)
+
+#if ODIN_INSPECTOR && UNITY_EDITOR
+        private static readonly Color HeaderColor = new Color(0.18f, 0.18f, 0.22f);
+        private static readonly Color RowEvenColor = new Color(0.22f, 0.22f, 0.26f);
+        private static readonly Color RowOddColor = new Color(0.25f, 0.25f, 0.29f);
+        private static readonly Color BorderColor = new Color(0.35f, 0.35f, 0.4f);
+
+        [FoldoutGroup("Quest Overview", expanded: true, Order = -100)]
+        [OnInspectorGUI("DrawQuestOverview", append: false)]
+        [ShowInInspector]
+        [HideLabel]
+        [PropertyOrder(-100)]
+        private int _overviewDummy; // Dummy field to attach the drawer
+
+        private void DrawQuestOverview()
+        {
+            if (Event.current == null) return;
+
+            // Create styles
+            var headerStyle = new GUIStyle(EditorStyles.boldLabel)
+            {
+                fontSize = 14,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.9f, 0.9f, 0.9f) }
+            };
+
+            var statStyle = new GUIStyle(EditorStyles.label)
+            {
+                fontSize = 11,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.7f, 0.7f, 0.7f) }
+            };
+
+            var tableHeaderStyle = new GUIStyle(EditorStyles.miniLabel)
+            {
+                fontSize = 10,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = new Color(0.6f, 0.6f, 0.65f) },
+                padding = new RectOffset(6, 6, 4, 4)
+            };
+
+            var tableCellStyle = new GUIStyle(EditorStyles.label)
+            {
+                fontSize = 11,
+                alignment = TextAnchor.MiddleLeft,
+                padding = new RectOffset(6, 6, 3, 3),
+                normal = { textColor = new Color(0.85f, 0.85f, 0.85f) }
+            };
+
+            var indexStyle = new GUIStyle(tableCellStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold
+            };
+
+            // Main container
+            EditorGUILayout.BeginVertical();
+            GUILayout.Space(4);
+
+            // Quest Header
+            string typeName = questType != null ? questType.name.Replace("SO_QuestType_", "").ToUpper() : "UNASSIGNED";
+            string questTitle = !string.IsNullOrEmpty(devName) ? devName : "Unnamed Quest";
+
+            EditorGUILayout.LabelField(questTitle, headerStyle);
+            GUILayout.Space(2);
+
+            // Stats Row
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            DrawStatBadge(typeName, GetQuestTypeColor());
+            GUILayout.Space(8);
+            DrawStatBadge(recommendedLevel > 0 ? $"LVL {recommendedLevel}" : "ANY LVL", new Color(0.5f, 0.5f, 0.55f));
+            GUILayout.Space(8);
+            DrawStatBadge($"{tasks?.Count ?? 0} TASKS", new Color(0.4f, 0.5f, 0.6f));
+            GUILayout.Space(8);
+            DrawStatBadge($"{rewards?.Count ?? 0} REWARDS", new Color(0.5f, 0.45f, 0.3f));
+
+            int startCond = startConditions?.Count(c => c != null) ?? 0;
+            int failCond = failureConditions?.Count(c => c != null) ?? 0;
+            if (startCond > 0 || failCond > 0)
+            {
+                GUILayout.Space(8);
+                DrawStatBadge($"{startCond + failCond} COND", new Color(0.45f, 0.4f, 0.5f));
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.Space(12);
+
+            // Task Table
+            if (tasks != null && tasks.Count > 0)
+            {
+                // Table Header
+                var headerRect = EditorGUILayout.BeginHorizontal();
+                DrawTableBackground(headerRect, HeaderColor);
+
+                GUILayout.Space(2);
+                EditorGUILayout.LabelField("#", tableHeaderStyle, GUILayout.Width(28));
+                EditorGUILayout.LabelField("TYPE", tableHeaderStyle, GUILayout.Width(90));
+                EditorGUILayout.LabelField("TASK NAME", tableHeaderStyle, GUILayout.MinWidth(100));
+                EditorGUILayout.LabelField("CONDITIONS", tableHeaderStyle, GUILayout.Width(80));
+                GUILayout.Space(2);
+
+                EditorGUILayout.EndHorizontal();
+
+                // Draw separator
+                var separatorRect = GUILayoutUtility.GetRect(1, 1);
+                EditorGUI.DrawRect(separatorRect, BorderColor);
+
+                // Table Rows
+                for (int i = 0; i < tasks.Count; i++)
+                {
+                    var task = tasks[i];
+                    bool isEven = i % 2 == 0;
+
+                    var rowRect = EditorGUILayout.BeginHorizontal(GUILayout.Height(22));
+                    DrawTableBackground(rowRect, isEven ? RowEvenColor : RowOddColor);
+
+                    GUILayout.Space(2);
+
+                    if (task == null)
+                    {
+                        // Null task - show error
+                        EditorGUILayout.LabelField((i + 1).ToString(), indexStyle, GUILayout.Width(28));
+
+                        var errorStyle = new GUIStyle(tableCellStyle) { normal = { textColor = new Color(1f, 0.4f, 0.4f) } };
+                        EditorGUILayout.LabelField("ERROR", errorStyle, GUILayout.Width(90));
+                        EditorGUILayout.LabelField("Missing Task Reference!", errorStyle, GUILayout.MinWidth(100));
+                        EditorGUILayout.LabelField("-", tableCellStyle, GUILayout.Width(80));
+                    }
+                    else
+                    {
+                        var (taskTypeName, typeColor) = GetTaskTypeInfo(task);
+                        int condCount = task.Conditions?.Count(c => c != null) ?? 0;
+
+                        // Index
+                        EditorGUILayout.LabelField((i + 1).ToString(), indexStyle, GUILayout.Width(28));
+
+                        // Type with color
+                        var typeStyle = new GUIStyle(tableCellStyle)
+                        {
+                            fontStyle = FontStyle.Bold,
+                            normal = { textColor = typeColor }
+                        };
+                        EditorGUILayout.LabelField(taskTypeName, typeStyle, GUILayout.Width(90));
+
+                        // Task Name
+                        EditorGUILayout.LabelField(task.DevName, tableCellStyle, GUILayout.MinWidth(100));
+
+                        // Conditions
+                        string condText = condCount > 0 ? condCount.ToString() : "-";
+                        var condStyle = new GUIStyle(tableCellStyle)
+                        {
+                            alignment = TextAnchor.MiddleCenter,
+                            normal = { textColor = condCount > 0 ? new Color(0.6f, 0.8f, 0.6f) : new Color(0.5f, 0.5f, 0.5f) }
+                        };
+                        EditorGUILayout.LabelField(condText, condStyle, GUILayout.Width(80));
+                    }
+
+                    GUILayout.Space(2);
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                // Bottom border
+                var bottomRect = GUILayoutUtility.GetRect(1, 1);
+                EditorGUI.DrawRect(bottomRect, BorderColor);
+            }
+            else
+            {
+                // No tasks message
+                var warningStyle = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                {
+                    fontSize = 11,
+                    normal = { textColor = new Color(0.8f, 0.6f, 0.4f) }
+                };
+                EditorGUILayout.LabelField("No tasks configured - quest will complete immediately", warningStyle);
+            }
+
+            GUILayout.Space(8);
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawStatBadge(string text, Color bgColor)
+        {
+            var content = new GUIContent(text);
+            var style = new GUIStyle(EditorStyles.miniLabel)
+            {
+                fontSize = 9,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(6, 6, 2, 2)
+            };
+
+            var size = style.CalcSize(content);
+            var rect = GUILayoutUtility.GetRect(size.x + 4, size.y + 4);
+
+            // Draw rounded background
+            EditorGUI.DrawRect(rect, bgColor);
+            GUI.Label(rect, content, style);
+        }
+
+        private void DrawTableBackground(Rect rect, Color color)
+        {
+            if (Event.current.type == EventType.Repaint)
+            {
+                EditorGUI.DrawRect(rect, color);
+            }
+        }
+
+        private Color GetQuestTypeColor()
+        {
+            if (questType == null) return new Color(0.5f, 0.5f, 0.5f);
+
+            string typeName = questType.name.ToLower();
+            if (typeName.Contains("main")) return new Color(0.8f, 0.65f, 0.2f);      // Gold
+            if (typeName.Contains("secondary")) return new Color(0.5f, 0.65f, 0.8f); // Blue
+            if (typeName.Contains("special")) return new Color(0.7f, 0.5f, 0.8f);    // Purple
+            if (typeName.Contains("failed")) return new Color(0.7f, 0.35f, 0.35f);   // Red
+            if (typeName.Contains("completed")) return new Color(0.4f, 0.7f, 0.4f);  // Green
+
+            return new Color(0.5f, 0.5f, 0.55f);
+        }
+
+        private (string typeName, Color color) GetTaskTypeInfo(Task_SO task)
+        {
+            string fullTypeName = task.GetType().Name;
+            string cleanName = fullTypeName.Replace("Task", "").Replace("_SO", "");
+
+            return cleanName switch
+            {
+                "Int" => ("COUNTER", new Color(0.5f, 0.75f, 1f)),
+                "Bool" => ("TOGGLE", new Color(0.5f, 0.9f, 0.5f)),
+                "String" => ("TEXT", new Color(0.95f, 0.75f, 0.45f)),
+                "Location" => ("LOCATION", new Color(0.9f, 0.55f, 0.9f)),
+                "Timed" => ("TIMED", new Color(1f, 0.55f, 0.55f)),
+                "Discovery" => ("DISCOVERY", new Color(0.95f, 0.9f, 0.45f)),
+                _ => (cleanName.ToUpper(), new Color(0.7f, 0.7f, 0.7f))
+            };
+        }
+#endif
+
+        #endregion
+
         #region Identity
 
 #if ODIN_INSPECTOR
@@ -75,7 +326,6 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 #if ODIN_INSPECTOR
         [FoldoutGroup("Display")]
         [PropertyOrder(11)]
-        [TextArea(3, 6)]
 #endif
         [Tooltip("The localized description of the quest.")]
         [SerializeField]
@@ -295,11 +545,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     }
                 }
             }
-
+ 
             // Validate start conditions
             if (startConditions != null)
             {
-                for (int i = 0; i < startConditions.Count; i++)
+                for (int i = 0; i < startConditions.Count; i++) 
                 {
                     if (startConditions[i] == null)
                     {

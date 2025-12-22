@@ -19,6 +19,18 @@ MonoBehaviour:
     m_Key: Monster_Goblin
     m_Metadata:
       m_Items: []
+  - m_Id: 43430217098772480
+    m_Key: Monster_GoblinChief
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43430217098772481
+    m_Key: Monster_Bandit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43430217098772482
+    m_Key: Monster_BanditLeader
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

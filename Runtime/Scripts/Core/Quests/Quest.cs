@@ -144,7 +144,7 @@ namespace HelloDev.QuestSystem.Quests
             }
             UpdateQuestState(QuestState.NotStarted);
             StartQuest();
-            OnQuestRestarted.Invoke(this);
+            OnQuestRestarted?.SafeInvoke(this);
         }
 
         private void SubscribeToAllEvents()
@@ -253,6 +253,7 @@ namespace HelloDev.QuestSystem.Quests
             QuestLogger.Log($"Task '{completedTask.DevName}' in quest '{QuestData.DevName}' completed. Checking quest completion.");
             if (CheckCompletion())
             {
+                // CompleteQuest already fires OnQuestUpdated, so don't fire it again
                 CompleteQuest();
             }
             else
@@ -265,8 +266,9 @@ namespace HelloDev.QuestSystem.Quests
                         break;
                     }
                 }
+                // Only fire OnQuestUpdated if quest didn't complete (to avoid double-fire)
+                OnQuestUpdated?.SafeInvoke(this);
             }
-            OnQuestUpdated?.SafeInvoke(this);
             OnAnyTaskCompleted?.SafeInvoke(completedTask);
         }
 

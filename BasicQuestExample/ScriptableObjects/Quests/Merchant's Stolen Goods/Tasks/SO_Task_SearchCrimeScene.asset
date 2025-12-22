@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee1313f47e859a8418598bde4081a472, type: 3}
+  m_Name: SO_Task_SearchCrimeScene
+  m_EditorClassIdentifier:
+  _description: "[Task 2/6 - DiscoveryTask] Find 2 clues at the crime scene. Demonstrates DiscoveryTask with multiple items."
+  devName: Task02_SearchCrimeScene
+  taskId: 22222222-3333-4444-5555-666677778888
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795983
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795984
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions: []
+  failureConditions: []
+  discoverableItems:
+  - {fileID: 11400000, guid: 3c4d5e6f789012345678abcd00010203, type: 2}
+  - {fileID: 11400000, guid: 4d5e6f789012345678abcd0001020304, type: 2}
+  requiredDiscoveries: 2
+  references:
+    version: 2
+    RefIds: []

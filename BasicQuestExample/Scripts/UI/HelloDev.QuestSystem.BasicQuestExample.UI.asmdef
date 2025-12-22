@@ -9,7 +9,8 @@
         "Unity.TextMeshPro",
         "PrimeTween.Runtime",
         "Unity.Localization",
-        "QuestSystem.Utils"
+        "QuestSystem.Utils",
+        "HelloDev.IDs"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

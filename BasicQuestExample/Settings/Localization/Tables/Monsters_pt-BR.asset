@@ -18,8 +18,20 @@ MonoBehaviour:
   m_Metadata:
     m_Items: []
   m_TableData:
+  - m_Id: 43430217098772482
+    m_Localized: "L\xEDder Bandido"
+    m_Metadata:
+      m_Items: []
   - m_Id: 12254756864
     m_Localized: Goblin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43430217098772480
+    m_Localized: Chefe Goblin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43430217098772481
+    m_Localized: Bandido
     m_Metadata:
       m_Items: []
   references:

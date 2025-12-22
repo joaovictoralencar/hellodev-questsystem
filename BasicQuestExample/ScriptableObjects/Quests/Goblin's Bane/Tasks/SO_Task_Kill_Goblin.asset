@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b122bf07d976e74eb0fbbd145996568, type: 3}
   m_Name: SO_Task_Kill_Goblin
   m_EditorClassIdentifier: 
-  _description: Describe what this scriptable object represents
-  devName: KillMonster
+  _description: "[Task 3/6 - IntTask] Defeat 5 goblins in the camp. Demonstrates IntTask counter with increment/decrement."
+  devName: Task03_ClearTheCamp
   taskId: 28573f7a-f56f-42e3-b9a6-d821621ff44b
   displayName:
     m_TableReference:
@@ -42,10 +42,10 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  conditions:
-  - {fileID: 0}
-  failureConditions: []
-  targetId: Goblin
+  conditions: []
+  failureConditions:
+  - {fileID: 11400000, guid: a3b4c5d6789012345678abcdef112233, type: 2}
+  targetId: {fileID: 11400000, guid: 789012345678abcdef0102030405060a, type: 2}
   requiredCount: 5
   currentCount: 0
   references:

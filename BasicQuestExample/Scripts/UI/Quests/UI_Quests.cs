@@ -68,6 +68,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             SubscribeToQuestEvents();
         }
 
+        private void OnDestroy()
+        {
+            UnsubscribeFromQuestEvents();
+        }
+
         #endregion
 
         #region UI Setup and Management
@@ -412,6 +417,71 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             QuestManager.Instance.QuestStarted.SafeSubscribe(OnQuestStarted);
             QuestManager.Instance.QuestCompleted.SafeSubscribe(OnQuestCompleted);
             QuestManager.Instance.QuestRestarted.SafeSubscribe(OnQuestRestarted);
+            QuestManager.Instance.QuestFailed.SafeSubscribe(OnQuestFailed);
+            QuestManager.Instance.QuestRemoved.SafeSubscribe(OnQuestRemoved);
+        }
+
+        /// <summary>
+        /// Unsubscribes from all quest manager events.
+        /// </summary>
+        private void UnsubscribeFromQuestEvents()
+        {
+            if (QuestManager.Instance == null) return;
+            QuestManager.Instance.QuestStarted.SafeUnsubscribe(OnQuestStarted);
+            QuestManager.Instance.QuestCompleted.SafeUnsubscribe(OnQuestCompleted);
+            QuestManager.Instance.QuestRestarted.SafeUnsubscribe(OnQuestRestarted);
+            QuestManager.Instance.QuestFailed.SafeUnsubscribe(OnQuestFailed);
+            QuestManager.Instance.QuestRemoved.SafeUnsubscribe(OnQuestRemoved);
+        }
+
+        /// <summary>
+        /// Handles the event when a quest fails.
+        /// Moves the quest to failed state in the UI.
+        /// </summary>
+        /// <param name="quest">The failed quest</param>
+        private void OnQuestFailed(Quest quest)
+        {
+            if (quest?.QuestData?.QuestType == null) return;
+
+            // Update the UI to reflect the failed state
+            if (questSections.TryGetValue(quest.QuestData.QuestType, out UI_QuestSection section))
+            {
+                if (section.QuestItems.TryGetValue(quest, out UI_QuestItem questItem))
+                {
+                    // The quest item will update its own display based on quest state
+                    // Just ensure the details are refreshed if this was the selected quest
+                    if (selectedQuest == quest && questDetails != null)
+                    {
+                        questDetails.Setup(quest);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the event when a quest is removed.
+        /// Removes the quest from its section in the UI.
+        /// </summary>
+        /// <param name="quest">The removed quest</param>
+        private void OnQuestRemoved(Quest quest)
+        {
+            if (quest?.QuestData?.QuestType == null) return;
+
+            RemoveQuestFromSection(quest, quest.QuestData.QuestType);
+
+            // If this was the selected quest, select another one
+            if (selectedQuest == quest)
+            {
+                var nextQuest = FindNextSelectableQuest();
+                if (nextQuest != null)
+                {
+                    OnQuestSelected(nextQuest);
+                }
+                else
+                {
+                    selectedQuest = null;
+                }
+            }
         }
 
         /// <summary>

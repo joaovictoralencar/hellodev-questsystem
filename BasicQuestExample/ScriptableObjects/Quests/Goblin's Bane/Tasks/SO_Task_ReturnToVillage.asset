@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf6db4e33c914a4489b1099942e5d684, type: 3}
+  m_Name: SO_Task_ReturnToVillage
+  m_EditorClassIdentifier:
+  _description: "[Task 6/6 - LocationTask] Return to the village to report your victory. Demonstrates LocationTask for quest completion."
+  devName: Task06_ReturnToVillage
+  taskId: b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8e
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795979
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795980
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions: []
+  failureConditions: []
+  targetLocation: {fileID: 11400000, guid: bccf3073465d85e4e954c146dfdec5be, type: 2}
+  references:
+    version: 2
+    RefIds: []

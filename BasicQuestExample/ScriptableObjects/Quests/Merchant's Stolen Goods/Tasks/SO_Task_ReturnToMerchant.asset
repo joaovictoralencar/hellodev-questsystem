@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf6db4e33c914a4489b1099942e5d684, type: 3}
+  m_Name: SO_Task_ReturnToMerchant
+  m_EditorClassIdentifier:
+  _description: "[Task 6/6 - LocationTask] Deliver the recovered goods back to the merchant. Final task to complete the quest."
+  devName: Task06_ReturnToMerchant
+  taskId: 66666666-7777-8888-9999-000011112222
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795991
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 45247112403795992
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions: []
+  failureConditions: []
+  targetLocation: {fileID: 11400000, guid: 1a2b3c4d5e6f789012345678abcd0001, type: 2}
+  references:
+    version: 2
+    RefIds: []

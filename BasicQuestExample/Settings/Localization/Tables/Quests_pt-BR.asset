@@ -26,30 +26,36 @@ MonoBehaviour:
   - m_Id: 735193919963136
     m_Localized: "Miss\xF5es Falhadas"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 735317442215936
     m_Localized: "Miss\xF5es Principais"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 735424451493888
     m_Localized: "Miss\xF5es Especiais"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 735651774382080
     m_Localized: Terra Arrasada
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 736137437036544
     m_Localized: "Perdi\xE7\xE3o dos Goblins"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 736338700713984
     m_Localized: "Um mercador na estrada para a cidade foi assaltado por um bando
       de goblins. Ele conseguiu escapar com vida, mas eles fugiram com sua preciosa
       sacola de mercadorias. Ele pede a um aventureiro capaz que elimine a amea\xE7a
       goblin e, se poss\xEDvel, recupere seus bens perdidos."
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 1815936309968896
     m_Localized: Mate {current}/{required} {target}
     m_Metadata:
@@ -60,7 +66,8 @@ MonoBehaviour:
       o acampamento est\xE1 infestado de goblins. Voc\xEA precisar\xE1 elimin\xE1-los
       antes que seus n\xFAmeros se tornem uma amea\xE7a real."
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 3825140356923392
     m_Localized: Encontre {object} em {location}
     m_Metadata:
@@ -75,9 +82,142 @@ MonoBehaviour:
   - m_Id: 3835554264301568
     m_Localized: Acampamento dos Goblins
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 5682838304243712
     m_Localized: "Miss\xF5es Secund\xE1rias"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112382824448
+    m_Localized: Vila
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795968
+    m_Localized: "Pra\xE7a do Mercado"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795969
+    m_Localized: Acampamento Bandido
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795970
+    m_Localized: Os Bens Roubados do Mercador
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795971
+    m_Localized: "Os bens de um mercador viajante foram roubados por bandidos enquanto
+      passavam pela floresta. Ajude a recuperar a carga roubada e leve os culpados
+      \xE0 justi\xE7a."
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795972
+    m_Localized: Estrada da Floresta
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795973
+    m_Localized: Investigar os Ataques ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795974
+    m_Localized: Examine as pistas deixadas pelos ataques dos goblins ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795975
+    m_Localized: Rastrear o Acampamento Goblin
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795976
+    m_Localized: Siga a trilha para encontrar o esconderijo dos goblins
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795977
+    m_Localized: Derrotar o Chefe Goblin ({remaining})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795978
+    m_Localized: Derrote o chefe antes do tempo acabar! ({time}s restantes)
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795979
+    m_Localized: "Retornar \xE0 Vila"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795980
+    m_Localized: "Relate sua vit\xF3ria ao anci\xE3o da vila"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795981
+    m_Localized: Falar com o Mercador
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795982
+    m_Localized: Converse com o mercador aflito sobre o roubo
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795983
+    m_Localized: Investigar a Cena do Crime ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795984
+    m_Localized: Procure pistas no local do roubo ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795985
+    m_Localized: Seguir a Trilha
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795986
+    m_Localized: "Rastreie os bandidos at\xE9 seu esconderijo"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795987
+    m_Localized: Recuperar os Bens Roubados ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795988
+    m_Localized: Colete as caixas roubadas ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795989
+    m_Localized: "Interrogar o L\xEDder Bandido"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795990
+    m_Localized: "Descubra o nome do l\xEDder bandido"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795991
+    m_Localized: Retornar ao Mercador
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45247112403795992
+    m_Localized: Entregue os bens recuperados ao mercador agradecido
     m_Metadata:
       m_Items: []
   references:
@@ -90,3 +230,37 @@ MonoBehaviour:
         m_SharedEntries:
         - id: 1815936309968896
         - id: 3825140356923392
+        - id: 45247112403795986
+        - id: 45247112403795984
+        - id: 45247112403795985
+        - id: 45247112403795987
+        - id: 45247112403795988
+        - id: 45247112403795989
+        - id: 45247112403795990
+        - id: 45247112403795991
+        - id: 45247112403795983
+        - id: 45247112403795982
+        - id: 45247112403795981
+        - id: 45247112403795980
+        - id: 45247112403795977
+        - id: 5682838304243712
+        - id: 45247112403795973
+        - id: 45247112403795974
+        - id: 45247112403795975
+        - id: 45247112403795976
+        - id: 45247112403795969
+        - id: 3443382889267200
+        - id: 45247112403795978
+        - id: 735651774382080
+        - id: 3835554264301568
+        - id: 45247112382824448
+        - id: 45247112403795968
+        - id: 736338700713984
+        - id: 736137437036544
+        - id: 45247112403795970
+        - id: 45247112403795971
+        - id: 45247112403795972
+        - id: 735193919963136
+        - id: 735317442215936
+        - id: 735424451493888
+        - id: 45247112403795979

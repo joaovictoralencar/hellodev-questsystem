@@ -26,30 +26,36 @@ MonoBehaviour:
   - m_Id: 735193919963136
     m_Localized: Failed Quests
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 735317442215936
     m_Localized: Main Quests
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 735424451493888
     m_Localized: Special Quests
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 735651774382080
     m_Localized: Wasteland
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 736137437036544
     m_Localized: Goblin's Bane
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 736338700713984
     m_Localized: A merchant on the road to town has been waylaid by a band of goblins.
       He managed to escape with his life, but they made off with his prized satchel
       of goods. He's asking for a capable adventurer to clear out the goblin menace
       and, if possible, recover his lost property.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 1815936309968896
     m_Localized: Kill {current}/{required} {target}
     m_Metadata:
@@ -60,7 +66,8 @@ MonoBehaviour:
       with goblins. You'll need to clear them out before their numbers become a real
       threat.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 3825140356923392
     m_Localized: Find the {object} in {location}
     m_Metadata:
@@ -74,9 +81,142 @@ MonoBehaviour:
   - m_Id: 3835554264301568
     m_Localized: Goblin's Campsite
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 5682838304243712
     m_Localized: Secondary Quests
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112382824448
+    m_Localized: Village
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795968
+    m_Localized: Market Square
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795969
+    m_Localized: Bandit Camp
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795970
+    m_Localized: The Merchant's Stolen Goods
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795971
+    m_Localized: A traveling merchant's goods have been stolen by bandits while passing
+      through the forest. Help recover the stolen cargo and bring the culprits to
+      justice.
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795972
+    m_Localized: Forest Road
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795973
+    m_Localized: Investigate the Attacks ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795974
+    m_Localized: Examine the clues left behind by the goblin attacks ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795975
+    m_Localized: Track the Goblin Camp
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795976
+    m_Localized: Follow the trail to find the goblin hideout
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795977
+    m_Localized: Defeat the Goblin Chief ({remaining})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795978
+    m_Localized: Defeat the chief before time runs out! ({time}s remaining)
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795979
+    m_Localized: Return to Village
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795980
+    m_Localized: Report your victory to the village elder
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795981
+    m_Localized: Talk to the Merchant
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795982
+    m_Localized: Speak with the distraught merchant about the robbery
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795983
+    m_Localized: Search the Crime Scene ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795984
+    m_Localized: Look for clues at the robbery site ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795985
+    m_Localized: Follow the Trail
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795986
+    m_Localized: Track the bandits to their hideout
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795987
+    m_Localized: Recover the Stolen Goods ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795988
+    m_Localized: Collect the stolen crates ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795989
+    m_Localized: Interrogate the Bandit Leader
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795990
+    m_Localized: Learn the bandit leader's name
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795991
+    m_Localized: Return to the Merchant
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45247112403795992
+    m_Localized: Deliver the recovered goods to the grateful merchant
     m_Metadata:
       m_Items: []
   references:
@@ -89,3 +229,37 @@ MonoBehaviour:
         m_SharedEntries:
         - id: 1815936309968896
         - id: 3825140356923392
+        - id: 45247112403795986
+        - id: 45247112403795984
+        - id: 45247112403795985
+        - id: 45247112403795987
+        - id: 45247112403795988
+        - id: 45247112403795989
+        - id: 45247112403795990
+        - id: 45247112403795991
+        - id: 45247112403795983
+        - id: 45247112403795982
+        - id: 45247112403795981
+        - id: 45247112403795980
+        - id: 45247112403795977
+        - id: 5682838304243712
+        - id: 45247112403795973
+        - id: 45247112403795974
+        - id: 45247112403795975
+        - id: 45247112403795976
+        - id: 45247112403795969
+        - id: 3443382889267200
+        - id: 45247112403795978
+        - id: 735651774382080
+        - id: 3835554264301568
+        - id: 45247112382824448
+        - id: 45247112403795968
+        - id: 736338700713984
+        - id: 736137437036544
+        - id: 45247112403795970
+        - id: 45247112403795971
+        - id: 45247112403795972
+        - id: 735193919963136
+        - id: 735317442215936
+        - id: 735424451493888
+        - id: 45247112403795979

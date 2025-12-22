@@ -261,6 +261,71 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [Button("Fail Current Quest", ButtonSizes.Medium)]
         [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
         private void QuickFailQuest() => _currentQuest?.FailQuest();
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Location Task")]
+        [PropertyOrder(80)]
+        [Button("Trigger Location Reached", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is LocationTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickTriggerLocation()
+        {
+            if (_currentTask is LocationTask locationTask)
+            {
+                locationTask.OnPlayerEnteredLocation(locationTask.TargetLocation);
+            }
+        }
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Timed Task")]
+        [PropertyOrder(81)]
+        [Button("Add 30 Seconds", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickAddTime()
+        {
+            if (_currentTask is TimedTask timedTask)
+            {
+                timedTask.AddTime(30f);
+            }
+        }
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Timed Task")]
+        [PropertyOrder(82)]
+        [Button("Expire Timer", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickExpireTimer()
+        {
+            if (_currentTask is TimedTask timedTask)
+            {
+                timedTask.UpdateTimer(timedTask.RemainingTime + 1f);
+            }
+        }
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Timed Task")]
+        [PropertyOrder(83)]
+        [Button("Complete Timed Objective", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickCompleteTimedObjective()
+        {
+            if (_currentTask is TimedTask timedTask)
+            {
+                timedTask.MarkObjectiveComplete();
+            }
+        }
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Discovery Task")]
+        [PropertyOrder(84)]
+        [Button("Discover Next Item", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is DiscoveryTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        private void QuickDiscoverItem()
+        {
+            if (_currentTask is DiscoveryTask discoveryTask)
+            {
+                discoveryTask.IncrementStep();
+            }
+        }
 #endif
 #endif
 
@@ -273,12 +338,20 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (ToggleGroup == null) TryGetComponent(out ToggleGroup);
         }
 
+        private void OnDestroy()
+        {
+            UnsubscribeFromQuestEvents();
+        }
+
         #endregion
 
         #region Public Methods
 
         public void Setup(Quest quest)
         {
+            // Unsubscribe from previous quest to prevent memory leaks
+            UnsubscribeFromQuestEvents();
+
             _currentQuest = quest;
 
             QuestNameText.StringReference = quest.QuestData.DisplayName;
@@ -340,6 +413,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 #endif
         }
 
+        /// <summary>
+        /// Unsubscribes from the current quest's events to prevent memory leaks.
+        /// </summary>
+        private void UnsubscribeFromQuestEvents()
+        {
+            if (_currentQuest == null) return;
+            _currentQuest.OnAnyTaskUpdated.SafeUnsubscribe(OnTaskUpdated);
+            _currentQuest.OnAnyTaskCompleted.SafeUnsubscribe(OnTaskUpdated);
+        }
+
         private void SetupNextTask(Quest quest)
         {
             Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
@@ -363,7 +446,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void OnTaskSelected(Task task)
         {
             _currentTask = task;
+            // Disable component to prevent auto-format before variables are set up
+            TaskDescriptionText.enabled = false;
             TaskDescriptionText.StringReference = task.Description;
+            task.Data.SetupTaskLocalizedVariables(TaskDescriptionText, task);
+            TaskDescriptionText.enabled = true;
+            TaskDescriptionText.RefreshString();
             Tween.Alpha(TaskDescriptionTextMesh, 0f, 1f, 0.35f, Ease.OutQuad);
 
 #if UNITY_EDITOR

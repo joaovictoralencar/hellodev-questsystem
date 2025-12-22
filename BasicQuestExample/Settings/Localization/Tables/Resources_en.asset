@@ -22,6 +22,10 @@ MonoBehaviour:
     m_Localized: Experience
     m_Metadata:
       m_Items: []
+  - m_Id: 43141327020408832
+    m_Localized: Gold
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
