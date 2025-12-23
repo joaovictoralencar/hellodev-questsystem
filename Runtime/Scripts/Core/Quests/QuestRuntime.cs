@@ -83,7 +83,13 @@ namespace HelloDev.QuestSystem.Quests
         /// Gets all tasks that are currently in progress (can be multiple for parallel groups).
         /// </summary>
         public IReadOnlyList<TaskRuntime> CurrentTasks =>
-            CurrentGroup.CurrentTasks ?? Array.Empty<TaskRuntime>();
+            CurrentGroup?.CurrentTasks ?? Array.Empty<TaskRuntime>();
+
+        /// <summary>
+        /// Gets the first currently in-progress task, or null if none.
+        /// Use CurrentTasks for parallel groups where multiple tasks may be active.
+        /// </summary>
+        public TaskRuntime CurrentTask => CurrentTasks.FirstOrDefault();
 
         /// <summary>
         /// Gets all tasks across all groups (flattened list for backward compatibility).
@@ -462,6 +468,36 @@ namespace HelloDev.QuestSystem.Quests
 
             return false;
         }
+
+        #region Convenience Methods
+
+        /// <summary>
+        /// Increments the current task's step. No-op if no task is in progress.
+        /// </summary>
+        public void IncrementCurrentTask() => CurrentTask?.IncrementStep();
+
+        /// <summary>
+        /// Decrements the current task's step. No-op if no task is in progress.
+        /// </summary>
+        public void DecrementCurrentTask() => CurrentTask?.DecrementStep();
+
+        /// <summary>
+        /// Force completes all remaining tasks and the quest.
+        /// Useful for debugging or skip functionality.
+        /// </summary>
+        public void ForceComplete()
+        {
+            foreach (var task in Tasks)
+            {
+                if (task.CurrentState != TaskState.Completed)
+                {
+                    task.CompleteTask();
+                }
+            }
+        }
+
+        #endregion
+
         public override bool Equals(object obj)
         {
             if (obj is QuestRuntime other)
@@ -471,7 +507,7 @@ namespace HelloDev.QuestSystem.Quests
 
             return false;
         }
-        
+
         public override int GetHashCode()
         {
             return QuestId.GetHashCode();

@@ -6,13 +6,16 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 
 ### Core System
 - **QuestManager** - Singleton managing quest lifecycle, events, and state
-- **Quest / Quest_SO** - Runtime quest instances with ScriptableObject data
-- **Task / Task_SO** - Abstract task system with typed implementations
+- **QuestRuntime / Quest_SO** - Runtime quest instances with ScriptableObject data
+- **TaskRuntime / Task_SO** - Abstract task system with typed implementations
 
 ### Task Types
 - **IntTask / TaskInt_SO** - Counter-based tasks (collect 5 items, kill 10 enemies)
 - **BoolTask / TaskBool_SO** - Boolean tasks (toggle a switch, trigger an event)
 - **StringTask / TaskString_SO** - String matching tasks (enter password, find code)
+- **LocationTask / TaskLocation_SO** - Location-based tasks (reach a waypoint)
+- **TimedTask / TaskTimed_SO** - Timer-based tasks with countdown
+- **DiscoveryTask / TaskDiscovery_SO** - Discovery tasks (find hidden items)
 
 ### Conditions
 - Start conditions - Control when quests become available
@@ -28,8 +31,8 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 ### Events
 All major state changes fire events for UI and game integration:
 - QuestManager: `QuestAdded`, `QuestStarted`, `QuestCompleted`, `QuestFailed`, `QuestUpdated`
-- Quest: `OnQuestStateChanged`, `OnAnyTaskUpdated`, `OnAnyTaskCompleted`
-- Task: `OnTaskStateChanged`, `OnTaskUpdated`, `OnTaskCompleted`, `OnTaskFailed`
+- Quest: `OnQuestUpdated`, `OnAnyTaskUpdated`, `OnAnyTaskCompleted`, `OnAnyTaskFailed`
+- Task: `OnTaskUpdated`, `OnTaskCompleted`, `OnTaskFailed`
 
 ## Installation
 
@@ -69,8 +72,15 @@ QuestManager.Instance.QuestCompleted.AddListener(OnQuestCompleted);
 // Get active quests
 var activeQuests = QuestManager.Instance.GetActiveQuests();
 
-// Progress a task
-QuestManager.Instance.IncrementTaskStep(questSO);
+// Get a specific quest and work with it
+var quest = QuestManager.Instance.GetActiveQuest(questSO);
+quest?.IncrementCurrentTask();  // Progress current task
+quest?.CurrentTask?.IncrementStep();  // Same effect, more explicit
+
+// Access quest properties
+var tasks = quest.Tasks;
+var currentTask = quest.CurrentTask;
+var progress = quest.CurrentProgress;
 ```
 
 ### Creating Custom Task Types
@@ -80,12 +90,12 @@ QuestManager.Instance.IncrementTaskStep(questSO);
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.ScriptableObjects;
 
-public class TimedTask : Task
+public class TimedTaskRuntime : TaskRuntime
 {
     private readonly TaskTimed_SO _timedData;
     public float TimeRemaining { get; private set; }
 
-    public TimedTask(TaskTimed_SO data) : base(data)
+    public TimedTaskRuntime(TaskTimed_SO data) : base(data)
     {
         _timedData = data;
         TimeRemaining = data.Duration;
@@ -93,7 +103,7 @@ public class TimedTask : Task
 
     public override float Progress => 1f - (TimeRemaining / _timedData.Duration);
 
-    protected override void CheckCompletion(Task task)
+    protected override void CheckCompletion(TaskRuntime task)
     {
         if (TimeRemaining <= 0) CompleteTask();
     }
@@ -110,9 +120,9 @@ public class TaskTimed_SO : Task_SO
     [SerializeField] private float duration = 60f;
     public float Duration => duration;
 
-    public override Task GetRuntimeTask() => new TimedTask(this);
+    public override TaskRuntime GetRuntimeTask() => new TimedTaskRuntime(this);
 
-    public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, Task task)
+    public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
     {
         // Configure localization variables
         taskNameText.RefreshString();
@@ -141,6 +151,8 @@ public class GoldRewardType_SO : QuestRewardType_SO
 
 ### QuestManager
 
+The QuestManager is the entry point for all quest operations. It manages quest lifecycle and provides events for game integration.
+
 #### Configuration Properties
 | Property | Description |
 |----------|-------------|
@@ -151,39 +163,26 @@ public class GoldRewardType_SO : QuestRewardType_SO
 | `FailedQuestCount` | Number of failed quests |
 | `AllowMultipleActiveQuests` | Whether multiple quests can be active |
 | `AllowReplayingCompletedQuests` | Whether completed quests can be replayed |
+| `RequireQuestInDatabase` | Whether quests must be in database to be added |
 
 #### Quest Lifecycle Methods
-All methods have overloads accepting `Guid`, `Quest_SO`, or `Quest`:
 | Method | Description |
 |--------|-------------|
 | `AddQuest(Quest_SO, forceStart)` | Add and optionally start a quest |
-| `CompleteQuest(...)` | Force complete a quest |
-| `FailQuest(...)` | Fail a quest |
-| `RemoveQuest(...)` | Remove a quest from active quests |
-| `RestartQuest(..., forceStart)` | Restart a quest |
-
-#### Task Operations
-| Method | Description |
-|--------|-------------|
-| `IncrementTaskStep(Quest_SO/Guid/Quest)` | Progress current task |
-| `DecrementTaskStep(Quest_SO/Guid/Quest)` | Regress current task |
-| `DecrementTaskStep(Guid questId, Guid taskId)` | Regress specific task |
-| `CompleteTask(Guid questId, Guid taskId)` | Force complete specific task |
-| `FailTask(Guid questId, Guid taskId)` | Fail specific task |
+| `FailQuest(Quest_SO)` | Fail a quest |
+| `RemoveQuest(Quest_SO)` | Remove a quest from active quests |
+| `RestartQuest(Quest_SO, forceStart)` | Restart a quest |
 
 #### Query Methods
 | Method | Description |
 |--------|-------------|
-| `GetActiveQuest(Guid/Quest_SO)` | Get active quest |
+| `GetActiveQuest(Quest_SO)` | Get active quest runtime instance |
 | `GetActiveQuests()` | Get all active quests (read-only) |
 | `GetCompletedQuests()` | Get all completed quests (read-only) |
 | `GetFailedQuests()` | Get all failed quests (read-only) |
-| `GetTasksForQuest(Guid/Quest_SO)` | Get all tasks for a quest |
-| `GetTask(Guid questId, Guid taskId)` | Get specific task |
-| `GetCurrentTask(Guid/Quest/Quest_SO)` | Get current in-progress task |
-| `IsQuestActive(Guid/Quest_SO)` | Check if quest is active |
-| `IsQuestCompleted(Guid/Quest_SO)` | Check if quest is completed |
-| `IsQuestFailed(Guid/Quest_SO)` | Check if quest has failed |
+| `IsQuestActive(Quest_SO)` | Check if quest is active |
+| `IsQuestCompleted(Quest_SO)` | Check if quest is completed |
+| `IsQuestFailed(Quest_SO)` | Check if quest has failed |
 
 #### Events
 | Event | Description |
@@ -196,26 +195,68 @@ All methods have overloads accepting `Guid`, `Quest_SO`, or `Quest`:
 | `QuestRemoved` | Fired when a quest is removed |
 | `QuestRestarted` | Fired when a quest is restarted |
 
-### Quest
+### QuestRuntime
+
+The runtime representation of a quest. Access via `QuestManager.GetActiveQuest(questSO)`.
+
+#### Properties
 | Member | Description |
 |--------|-------------|
 | `QuestId` | Unique GUID |
+| `QuestData` | Reference to Quest_SO |
 | `CurrentState` | NotStarted, InProgress, Completed, Failed |
 | `CurrentProgress` | 0-1 completion percentage |
-| `Tasks` | List of runtime tasks |
+| `Tasks` | List of all runtime tasks |
+| `CurrentTask` | First in-progress task (null if none) |
+| `CurrentTasks` | All in-progress tasks (for parallel groups) |
+| `TaskGroups` | List of task groups |
+| `CurrentGroup` | Currently active task group |
+
+#### Methods
+| Method | Description |
+|--------|-------------|
 | `StartQuest()` | Begin the quest |
 | `CompleteQuest()` | Complete and distribute rewards |
 | `FailQuest()` | Mark as failed |
+| `ResetQuest()` | Reset and restart |
+| `IncrementCurrentTask()` | Progress current task |
+| `DecrementCurrentTask()` | Regress current task |
+| `ForceComplete()` | Complete all remaining tasks |
 
-### Task
+#### Events
+| Event | Description |
+|-------|-------------|
+| `OnQuestStarted` | Quest started |
+| `OnQuestCompleted` | Quest completed |
+| `OnQuestFailed` | Quest failed |
+| `OnQuestRestarted` | Quest restarted |
+| `OnQuestUpdated` | Progress changed |
+| `OnAnyTaskStarted` | Any task started |
+| `OnAnyTaskUpdated` | Any task updated |
+| `OnAnyTaskCompleted` | Any task completed |
+| `OnAnyTaskFailed` | Any task failed |
+
+### TaskRuntime
+
+The runtime representation of a task.
+
+#### Properties
 | Member | Description |
 |--------|-------------|
 | `TaskId` | Unique GUID |
+| `Data` | Reference to Task_SO |
 | `CurrentState` | NotStarted, InProgress, Completed, Failed |
 | `Progress` | 0-1 completion percentage |
+
+#### Methods
+| Method | Description |
+|--------|-------------|
+| `StartTask()` | Begin the task |
 | `IncrementStep()` | Progress the task |
+| `DecrementStep()` | Regress the task |
 | `CompleteTask()` | Force complete |
 | `FailTask()` | Mark as failed |
+| `ResetTask()` | Reset to initial state |
 
 ## Dependencies
 
@@ -230,6 +271,42 @@ All methods have overloads accepting `Guid`, `Quest_SO`, or `Quest`:
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v1.3.0 (2025-12-23)
+**Architecture Cleanup:**
+- Refactored QuestManager into partial class with editor code separated (`QuestManager.Editor.cs`)
+- Reduced QuestManager from ~1050 lines to ~527 lines
+- Simplified API: removed redundant overloads, kept only Quest_SO parameter versions
+- Task operations moved from QuestManager to QuestRuntime
+
+**New QuestRuntime Methods:**
+- `IncrementCurrentTask()` - Progress current task
+- `DecrementCurrentTask()` - Regress current task
+- `ForceComplete()` - Complete all remaining tasks
+- `CurrentTask` property - First in-progress task
+
+**New Configuration:**
+- `RequireQuestInDatabase` - Optional database validation (configurable)
+
+**Removed Methods (use QuestRuntime instead):**
+- `QuestManager.IncrementTaskStep()` -> `quest.IncrementCurrentTask()`
+- `QuestManager.DecrementTaskStep()` -> `quest.DecrementCurrentTask()`
+- `QuestManager.CompleteTask()` -> `quest.CurrentTask?.CompleteTask()`
+- `QuestManager.FailTask()` -> `quest.CurrentTask?.FailTask()`
+- `QuestManager.GetCurrentTask()` -> `quest.CurrentTask`
+- `QuestManager.GetTasksForQuest()` -> `quest.Tasks`
+
+**Migration Guide:**
+```csharp
+// Before (v1.2.0):
+QuestManager.Instance.IncrementTaskStep(questSO);
+QuestManager.Instance.GetCurrentTask(questSO);
+
+// After (v1.3.0):
+var quest = QuestManager.Instance.GetActiveQuest(questSO);
+quest?.IncrementCurrentTask();
+var task = quest?.CurrentTask;
+```
 
 ### v1.2.0 (2025-12-21)
 **QuestManager Improvements:**

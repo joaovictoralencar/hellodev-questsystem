@@ -516,13 +516,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void DebugFailQuest()
         {
             if (_currentQuest == null) return;
-            QuestManager.Instance.FailQuest(_currentQuest);
+            _currentQuest.FailQuest();
         }
 
         private void DebugResetQuest()
         {
             if (_currentQuest == null) return;
-            QuestManager.Instance.RestartQuest(_currentQuest);
+            QuestManager.Instance.RestartQuest(_currentQuest.QuestData);
         }
 
         private void DebugCompleteQuest()
