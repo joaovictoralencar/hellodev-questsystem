@@ -1005,6 +1005,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   QuestNameText: {fileID: 3722481088743689468}
+  QuestImage: {fileID: 5983883175375689409}
   QuestDescriptionText: {fileID: 7786197372110466664}
   QuestLocationText: {fileID: 3364007533689434016}
   LevelText: {fileID: 790998769684700447}
@@ -1745,7 +1746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: m_fontSize
-      value: 40
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: m_fontAsset
@@ -1773,7 +1774,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: m_fontSizeBase
-      value: 40
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: m_sharedMaterial
@@ -1794,7 +1795,7 @@ PrefabInstance:
     - target: {fileID: 9145296832163672100, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: textStyle
       value: 
-      objectReference: {fileID: 11400000, guid: 1be724c9c77710342835d1b1c3855d54, type: 2}
+      objectReference: {fileID: 11400000, guid: 0263ea7be1e4747449f1362e5876dc1d, type: 2}
     - target: {fileID: 9145296832163672100, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: textColour
       value: 
@@ -4786,7 +4787,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 197674538510629784, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_Size
-      value: 0.8082785
+      value: 0.8178512
       objectReference: {fileID: 0}
     - target: {fileID: 197674538510629784, guid: f1960d76060f02e4c8dc764bead3514a, type: 3}
       propertyPath: m_Value
@@ -5581,6 +5582,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 140022568939325686}
     m_Modifications:
+    - target: {fileID: 5072530985497966329, guid: 89a5e906db2354647865d23b137524ff, type: 3}
+      propertyPath: m_MinWidth
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5072530985497966329, guid: 89a5e906db2354647865d23b137524ff, type: 3}
+      propertyPath: m_MinHeight
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5072530985497966329, guid: 89a5e906db2354647865d23b137524ff, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5072530985497966329, guid: 89a5e906db2354647865d23b137524ff, type: 3}
+      propertyPath: m_PreferredHeight
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 5096212385274787735, guid: 89a5e906db2354647865d23b137524ff, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

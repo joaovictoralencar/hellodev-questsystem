@@ -78,7 +78,7 @@ namespace HelloDev.QuestSystem.Tasks
 
             _remainingTime += seconds;
             QuestLogger.Log($"Task '{DevName}' - Added {seconds}s to timer. New remaining: {_remainingTime}s");
-            OnTaskUpdated?.SafeInvoke(this);
+            OnTaskUpdated.SafeInvoke(this);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace HelloDev.QuestSystem.Tasks
 
             _isCompleted = true;
             QuestLogger.Log($"Task '{DevName}' - Objective completed with {_remainingTime}s remaining!");
-            OnTaskUpdated?.SafeInvoke(this);
+            OnTaskUpdated.SafeInvoke(this);
         }
 
         public override void ForceCompleteState()
@@ -123,7 +123,7 @@ namespace HelloDev.QuestSystem.Tasks
             base.ResetTask();
             _remainingTime = TimeLimit;
             _isCompleted = false;
-            OnTaskUpdated?.SafeInvoke(this);
+            OnTaskUpdated.SafeInvoke(this);
         }
 
         protected override void CheckCompletion(Task task)

@@ -48,7 +48,7 @@ namespace HelloDev.QuestSystem.Tasks
             {
                 _hasReached = true;
                 QuestLogger.Log($"Task '{DevName}' - Player reached location '{locationId.DevName}'.");
-                OnTaskUpdated?.SafeInvoke(this);
+                OnTaskUpdated.SafeInvoke(this);
             }
         }
 
@@ -81,7 +81,7 @@ namespace HelloDev.QuestSystem.Tasks
         {
             base.ResetTask();
             _hasReached = false;
-            OnTaskUpdated?.SafeInvoke(this);
+            OnTaskUpdated.SafeInvoke(this);
         }
 
         protected override void CheckCompletion(Task task)

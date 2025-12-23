@@ -102,7 +102,7 @@ namespace HelloDev.QuestSystem.Tasks
         {
             base.ResetTask();
             _currentCount = 0;
-            OnTaskUpdated?.SafeInvoke(this);
+            OnTaskUpdated.SafeInvoke(this);
         }
 
         protected override void CheckCompletion(Task task)
