@@ -38,23 +38,29 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [TitleGroup("Quest Info")]
         [PropertyOrder(1)]
 #endif
-        [SerializeField] private LocalizeStringEvent QuestDescriptionText;
-
+        [SerializeField] private Image QuestImage;
+        
 #if ODIN_INSPECTOR
         [TitleGroup("Quest Info")]
         [PropertyOrder(2)]
 #endif
-        [SerializeField] private LocalizeStringEvent QuestLocationText;
+        [SerializeField] private LocalizeStringEvent QuestDescriptionText;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Quest Info")]
         [PropertyOrder(3)]
 #endif
-        [SerializeField] private TextMeshProUGUI LevelText;
+        [SerializeField] private LocalizeStringEvent QuestLocationText;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Quest Info")]
         [PropertyOrder(4)]
+#endif
+        [SerializeField] private TextMeshProUGUI LevelText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Quest Info")]
+        [PropertyOrder(5)]
 #endif
         [SerializeField] private TextMeshProUGUI ProgressionText;
 
@@ -372,6 +378,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             TasksHolder.DestroyAllChildren();
             _taskUiItems.Clear();
+            if (quest.QuestData.QuestSprite != null) QuestImage.sprite = quest.QuestData.QuestSprite;
             foreach (Task task in quest.Tasks)
             {
                 if (task.CurrentState == TaskState.NotStarted) continue;
@@ -387,6 +394,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             // Rewards
             RewardsUI.Setup(quest);
+
+            // Subscribe to Quest aggregate events (bubbled up from TaskGroupRuntime)
+            quest.OnAnyTaskStarted.SafeSubscribe(OnTaskUpdated);
             quest.OnAnyTaskUpdated.SafeSubscribe(OnTaskUpdated);
             quest.OnAnyTaskCompleted.SafeSubscribe(OnTaskUpdated);
 
@@ -419,24 +429,38 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void UnsubscribeFromQuestEvents()
         {
             if (_currentQuest == null) return;
+            _currentQuest.OnAnyTaskStarted.SafeUnsubscribe(OnTaskUpdated);
             _currentQuest.OnAnyTaskUpdated.SafeUnsubscribe(OnTaskUpdated);
             _currentQuest.OnAnyTaskCompleted.SafeUnsubscribe(OnTaskUpdated);
         }
 
         private void SetupNextTask(Quest quest)
         {
-            Task nextTask = quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
-            if (nextTask == null) return;
+            // Find all in-progress tasks (can be multiple for parallel groups)
+            List<Task> inProgressTasks = quest.Tasks.Where(t => t.CurrentState == TaskState.InProgress).ToList();
+            if (inProgressTasks.Count == 0) return;
 
-            UI_TaskItem taskItem = _taskUiItems.FirstOrDefault(t => t.Task == nextTask);
-            if (taskItem == null)
+            bool needsSelection = false;
+            foreach (Task nextTask in inProgressTasks)
             {
-                taskItem = Instantiate(TaskItemPrefab, TasksHolder);
-                _taskUiItems.Add(taskItem);
-            }
+                UI_TaskItem taskItem = _taskUiItems.FirstOrDefault(t => t.Task == nextTask);
+                if (taskItem == null)
+                {
+                    taskItem = Instantiate(TaskItemPrefab, TasksHolder);
+                    _taskUiItems.Add(taskItem);
+                    needsSelection = true;
+                }
 
-            taskItem.Setup(nextTask, OnTaskSelected);
-            taskItem.SetToggleGroup(ToggleGroup);
+                taskItem.Setup(nextTask, OnTaskSelected);
+                taskItem.SetToggleGroup(ToggleGroup);
+            }
+            
+            // Select the first new task if we added any
+            if (needsSelection && _currentTask?.CurrentState != TaskState.InProgress)
+            {
+                var firstTaskItem = _taskUiItems.FirstOrDefault(t => t.Task.CurrentState == TaskState.InProgress);
+                firstTaskItem?.Select();
+            }
 
 #if UNITY_EDITOR
             UpdateDebugButtons();

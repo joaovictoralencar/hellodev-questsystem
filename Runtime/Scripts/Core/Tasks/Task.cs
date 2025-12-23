@@ -15,10 +15,6 @@ namespace HelloDev.QuestSystem.Tasks
     public abstract class Task
     {
         #region Events
-        /// <summary>
-        /// Fired when the task's state changes. Provides the task and the new state.
-        /// </summary>
-        public UnityEvent<Task, TaskState> OnTaskStateChanged = new();
 
         /// <summary>
         /// Fired when the task's progress has changed. Provides the task and an update info object.
@@ -235,7 +231,6 @@ namespace HelloDev.QuestSystem.Tasks
         {
             CurrentState = state;
             QuestLogger.Log($"Task '{DevName}' state changed to {state}.");
-            OnTaskStateChanged?.SafeInvoke(this, CurrentState);
         }
         
         public override bool Equals(object obj)

@@ -324,10 +324,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         private void UnsubscribeFromQuestEvents()
         {
-            if (quest?.OnQuestUpdated != null)
-            {
-                quest.OnQuestUpdated.SafeUnsubscribe(OnQuestUpdated);
-            }
+            if (quest == null) return;
+
+            quest.OnQuestUpdated.SafeUnsubscribe(OnQuestUpdated);
+            quest.OnQuestCompleted.SafeUnsubscribe(OnQuestCompleted);
         }
 
         /// <summary>

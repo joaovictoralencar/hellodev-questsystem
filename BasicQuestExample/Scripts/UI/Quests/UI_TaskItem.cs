@@ -4,6 +4,7 @@ using HelloDev.QuestSystem.Tasks;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
@@ -25,6 +26,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private TextStyleUpdater TextStyleUpdater;
         private Task _task;
         private Action<Task> OnTaskSelected;
+        private UnityAction<Task> _onTaskStartedCallback;
 
         public Task Task => _task;
 
@@ -88,6 +90,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _task.OnTaskUpdated.SafeUnsubscribe(OnTaskUpdated);
             _task.OnTaskCompleted.SafeUnsubscribe(OnTaskCompleted);
             _task.OnTaskFailed.SafeUnsubscribe(OnTaskFailed);
+            if (_onTaskStartedCallback != null)
+            {
+                _task.OnTaskStarted.SafeUnsubscribe(_onTaskStartedCallback);
+                _onTaskStartedCallback = null;
+            }
         }
 
 
@@ -110,13 +117,18 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             TaskCheck.SetActive(false);
             TextStyleUpdater.TextColourSO = NotCompletedColour;
-            _task.OnTaskStarted.SafeUnsubscribe((t)=> OnTaskInProgress());
+            if (_onTaskStartedCallback != null)
+            {
+                _task.OnTaskStarted.SafeUnsubscribe(_onTaskStartedCallback);
+                _onTaskStartedCallback = null;
+            }
         }
 
         private void OnTaskNotStarted()
         {
             gameObject.SetActive(false);
-            _task.OnTaskStarted.SafeSubscribe((t)=> OnTaskInProgress());
+            _onTaskStartedCallback = _ => OnTaskInProgress();
+            _task.OnTaskStarted.SafeSubscribe(_onTaskStartedCallback);
         }
 
         public void Select()

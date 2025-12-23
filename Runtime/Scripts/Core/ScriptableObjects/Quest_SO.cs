@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
 using HelloDev.QuestSystem.Quests;
+using HelloDev.QuestSystem.TaskGroups;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -98,7 +99,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             GUILayout.Space(8);
             DrawStatBadge(recommendedLevel > 0 ? $"LVL {recommendedLevel}" : "ANY LVL", new Color(0.5f, 0.5f, 0.55f));
             GUILayout.Space(8);
-            DrawStatBadge($"{tasks?.Count ?? 0} TASKS", new Color(0.4f, 0.5f, 0.6f));
+            DrawStatBadge($"{AllTasks?.Count ?? 0} TASKS", new Color(0.4f, 0.5f, 0.6f));
             GUILayout.Space(8);
             DrawStatBadge($"{rewards?.Count ?? 0} REWARDS", new Color(0.5f, 0.45f, 0.3f));
 
@@ -116,7 +117,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             GUILayout.Space(12);
 
             // Task Table
-            if (tasks != null && tasks.Count > 0)
+            var allTasksList = AllTasks;
+            if (allTasksList != null && allTasksList.Count > 0)
             {
                 // Table Header
                 var headerRect = EditorGUILayout.BeginHorizontal();
@@ -136,9 +138,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 EditorGUI.DrawRect(separatorRect, BorderColor);
 
                 // Table Rows
-                for (int i = 0; i < tasks.Count; i++)
+                for (int i = 0; i < allTasksList.Count; i++)
                 {
-                    var task = tasks[i];
+                    var task = allTasksList[i];
                     bool isEven = i % 2 == 0;
 
                     var rowRect = EditorGUILayout.BeginHorizontal(GUILayout.Height(22));
@@ -201,7 +203,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     fontSize = 11,
                     normal = { textColor = new Color(0.8f, 0.6f, 0.4f) }
                 };
-                EditorGUILayout.LabelField("No tasks configured - quest will complete immediately", warningStyle);
+                EditorGUILayout.LabelField("No task groups configured - quest will complete immediately", warningStyle);
             }
 
             GUILayout.Space(8);
@@ -350,20 +352,18 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         #endregion
 
-        #region Tasks
+        #region Task Groups
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup("Tasks", expanded: true)]
-        [PropertyOrder(20)]
+        [FoldoutGroup("Task Groups", expanded: true)]
+        [PropertyOrder(18)]
         [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
-        [ValidateInput(nameof(ValidateTasks), "One or more tasks are invalid. Check for null or duplicate entries.")]
-        [InfoBox("$" + nameof(GetTasksInfoMessage), InfoMessageType.Warning, nameof(HasTaskWarnings))]
 #else
-        [Header("Tasks")]
+        [Header("Task Groups")]
 #endif
-        [Tooltip("The list of tasks that make up this quest. Tasks are executed sequentially.")]
+        [Tooltip("Task groups allow parallel, optional, and any-order task execution. Groups execute sequentially.")]
         [SerializeField]
-        private List<Task_SO> tasks;
+        private List<TaskGroup> taskGroups = new();
 
         #endregion
 
@@ -447,9 +447,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         public Sprite QuestSprite => questSprite;
 
         /// <summary>
-        /// Gets the list of tasks that compose this quest.
+        /// Gets the list of task groups for this quest.
         /// </summary>
-        public List<Task_SO> Tasks => tasks;
+        public List<TaskGroup> TaskGroups => taskGroups ?? new List<TaskGroup>();
+
+        /// <summary>
+        /// Gets all tasks across all groups (flattened list).
+        /// Use this when you need all tasks regardless of grouping.
+        /// </summary>
+        public List<Task_SO> AllTasks => taskGroups?.SelectMany(g => g.Tasks).Where(t => t != null).ToList() ?? new List<Task_SO>();
 
         /// <summary>
         /// Gets the list of conditions required to start the quest.
@@ -515,41 +521,35 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             ValidateConfiguration();
+            ValidateTaskGroups();
+        }
+
+        private void ValidateTaskGroups()
+        {
+            if (taskGroups == null) return;
+
+            foreach (var group in taskGroups)
+            {
+                var warnings = group.Validate();
+                foreach (var warning in warnings)
+                {
+                    Debug.LogWarning($"[Quest_SO] '{devName}': {warning}", this);
+                }
+            }
         }
 
         private void ValidateConfiguration()
         {
-            // Validate tasks list
-            if (tasks == null || tasks.Count == 0)
+            // Validate task groups
+            if (taskGroups == null || taskGroups.Count == 0)
             {
-                Debug.LogWarning($"[Quest_SO] '{devName}': Tasks list is empty. Quest will complete immediately.", this);
+                Debug.LogWarning($"[Quest_SO] '{devName}': No task groups configured. Quest will complete immediately.", this);
             }
-            else
-            {
-                // Check for null entries
-                for (int i = 0; i < tasks.Count; i++)
-                {
-                    if (tasks[i] == null)
-                    {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': Task at index {i} is null.", this);
-                    }
-                }
 
-                // Check for duplicates
-                var seen = new HashSet<Task_SO>();
-                for (int i = 0; i < tasks.Count; i++)
-                {
-                    if (tasks[i] != null && !seen.Add(tasks[i]))
-                    {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': Duplicate task '{tasks[i].DevName}' at index {i}.", this);
-                    }
-                }
-            }
- 
             // Validate start conditions
             if (startConditions != null)
             {
-                for (int i = 0; i < startConditions.Count; i++) 
+                for (int i = 0; i < startConditions.Count; i++)
                 {
                     if (startConditions[i] == null)
                     {
@@ -580,26 +580,6 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         }
 
 #if ODIN_INSPECTOR
-        private bool ValidateTasks(List<Task_SO> taskList)
-        {
-            if (taskList == null || taskList.Count == 0) return true; // Empty is valid for warning, not error
-            if (taskList.Any(t => t == null)) return false;
-            if (taskList.Count != taskList.Distinct().Count()) return false;
-            return true;
-        }
-
-        private bool HasTaskWarnings()
-        {
-            return tasks == null || tasks.Count == 0;
-        }
-
-        private string GetTasksInfoMessage()
-        {
-            if (tasks == null || tasks.Count == 0)
-                return "No tasks configured. The quest will complete immediately when started.";
-            return string.Empty;
-        }
-
         private bool ValidateRewards(List<RewardInstance> rewardList)
         {
             if (rewardList == null) return true;
@@ -633,6 +613,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private void ValidateButton()
         {
             ValidateConfiguration();
+            ValidateTaskGroups();
             Debug.Log($"[Quest_SO] '{devName}': Validation complete. Check console for warnings.", this);
         }
 #endif
