@@ -25,7 +25,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         public override TaskRuntime GetRuntimeTask()
         {
-            return new StringTask(this);
+            return new StringTaskRuntime(this);
         }
 
         protected override void OnScriptableObjectReset()
@@ -41,7 +41,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            if (task is not StringTask stringTask)
+            if (task is not StringTaskRuntime stringTask)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a StringTask.");
                 return;

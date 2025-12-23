@@ -14,7 +14,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     {
         public override TaskRuntime GetRuntimeTask()
         {
-            return new BoolTask(this);
+            return new BoolTaskRuntime(this);
         }
 
         protected override void OnScriptableObjectReset()
@@ -30,7 +30,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            if (task is not BoolTask boolTask)
+            if (task is not BoolTaskRuntime boolTask)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: task is not an BoolTask.");
                 return;

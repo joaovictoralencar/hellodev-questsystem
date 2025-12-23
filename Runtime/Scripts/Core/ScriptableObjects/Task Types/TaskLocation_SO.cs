@@ -25,7 +25,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         public override TaskRuntime GetRuntimeTask()
         {
-            return new LocationTask(this);
+            return new LocationTaskRuntime(this);
         }
 
         protected override void OnScriptableObjectReset()
@@ -41,7 +41,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            if (task is not LocationTask locationTask)
+            if (task is not LocationTaskRuntime locationTask)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a LocationTask.");
                 return;

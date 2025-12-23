@@ -52,7 +52,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         public override TaskRuntime GetRuntimeTask()
         {
-            return new IntTask(this);
+            return new IntTaskRuntime(this);
         }
 
         protected override void OnScriptableObjectReset()
@@ -69,9 +69,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            if (task is not IntTask intTask)
+            if (task is not IntTaskRuntime intTask)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not an IntTask.");
+                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not an IntTaskRuntime.");
                 return;
             }
 

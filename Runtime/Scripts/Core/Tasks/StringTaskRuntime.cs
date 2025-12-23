@@ -5,7 +5,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// <summary>
     /// Runtime task for string-based objectives. Completes when the current value matches the target value.
     /// </summary>
-    public class StringTask : TaskRuntime
+    public class StringTaskRuntime : TaskRuntime
     {
         private string _currentValue = string.Empty;
         private readonly TaskString_SO _stringTaskData;
@@ -20,7 +20,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         public string TargetValue => _stringTaskData?.TargetValue ?? string.Empty;
 
-        public StringTask(Task_SO taskData) : base(taskData)
+        public StringTaskRuntime(Task_SO taskData) : base(taskData)
         {
             _stringTaskData = taskData as TaskString_SO;
         }

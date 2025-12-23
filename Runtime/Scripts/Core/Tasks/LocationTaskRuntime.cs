@@ -9,7 +9,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// A runtime task that completes when the player enters a specific location.
     /// Used for objectives like "Go to the goblin camp" or "Return to the village".
     /// </summary>
-    public class LocationTask : TaskRuntime
+    public class LocationTaskRuntime : TaskRuntime
     {
         public override float Progress => HasReached ? 1f : 0f;
 
@@ -29,7 +29,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// Initializes a new instance of the LocationTask class.
         /// </summary>
         /// <param name="data">The ScriptableObject containing the task's data.</param>
-        public LocationTask(TaskLocation_SO data) : base(data)
+        public LocationTaskRuntime(TaskLocation_SO data) : base(data)
         {
             _hasReached = false;
         }

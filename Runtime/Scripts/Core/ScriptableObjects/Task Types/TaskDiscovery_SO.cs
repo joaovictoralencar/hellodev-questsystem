@@ -53,7 +53,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         public override TaskRuntime GetRuntimeTask()
         {
-            return new DiscoveryTask(this);
+            return new DiscoveryTaskRuntime(this);
         }
 
         protected override void OnScriptableObjectReset()
@@ -69,7 +69,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            if (task is not DiscoveryTask discoveryTask)
+            if (task is not DiscoveryTaskRuntime discoveryTask)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a DiscoveryTask.");
                 return;

@@ -3,9 +3,9 @@ using HelloDev.QuestSystem.ScriptableObjects;
 
 namespace HelloDev.QuestSystem.Tasks
 {
-    public class BoolTask : TaskRuntime
+    public class BoolTaskRuntime : TaskRuntime
     {
-        public BoolTask(Task_SO taskData) : base(taskData)
+        public BoolTaskRuntime(Task_SO taskData) : base(taskData)
         {
         }
 

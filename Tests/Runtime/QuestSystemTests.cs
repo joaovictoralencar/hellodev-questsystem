@@ -164,7 +164,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         {
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
-            IntTask task = quest.Tasks[0] as IntTask;
+            IntTaskRuntime task = quest.Tasks[0] as IntTaskRuntime;
 
             Assert.AreEqual(0, task.CurrentCount);
 
@@ -178,7 +178,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         {
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
-            IntTask task = quest.Tasks[0] as IntTask;
+            IntTaskRuntime task = quest.Tasks[0] as IntTaskRuntime;
 
             // Increment to required count (3)
             task.IncrementStep();
@@ -193,7 +193,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         {
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
-            IntTask task = quest.Tasks[0] as IntTask;
+            IntTaskRuntime task = quest.Tasks[0] as IntTaskRuntime;
 
             Assert.AreEqual(0f, task.Progress, 0.001f);
 
@@ -224,7 +224,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         {
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
-            IntTask task = quest.Tasks[0] as IntTask;
+            IntTaskRuntime task = quest.Tasks[0] as IntTaskRuntime;
 
             task.IncrementStep();
             task.IncrementStep();
@@ -322,7 +322,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         {
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
-            IntTask task = quest.Tasks[0] as IntTask;
+            IntTaskRuntime task = quest.Tasks[0] as IntTaskRuntime;
 
             task.IncrementStep();
             task.IncrementStep();

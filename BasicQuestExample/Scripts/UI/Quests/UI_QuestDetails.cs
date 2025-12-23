@@ -275,7 +275,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is LocationTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
         private void QuickTriggerLocation()
         {
-            if (_currentTask is LocationTask locationTask)
+            if (_currentTask is LocationTaskRuntime locationTask)
             {
                 locationTask.OnPlayerEnteredLocation(locationTask.TargetLocation);
             }
@@ -288,7 +288,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
         private void QuickAddTime()
         {
-            if (_currentTask is TimedTask timedTask)
+            if (_currentTask is TimedTaskRuntime timedTask)
             {
                 timedTask.AddTime(30f);
             }
@@ -301,7 +301,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
         private void QuickExpireTimer()
         {
-            if (_currentTask is TimedTask timedTask)
+            if (_currentTask is TimedTaskRuntime timedTask)
             {
                 timedTask.UpdateTimer(timedTask.RemainingTime + 1f);
             }
@@ -314,7 +314,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
         private void QuickCompleteTimedObjective()
         {
-            if (_currentTask is TimedTask timedTask)
+            if (_currentTask is TimedTaskRuntime timedTask)
             {
                 timedTask.MarkObjectiveComplete();
             }
@@ -327,7 +327,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is DiscoveryTask && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
         private void QuickDiscoverItem()
         {
-            if (_currentTask is DiscoveryTask discoveryTask)
+            if (_currentTask is DiscoveryTaskRuntime discoveryTask)
             {
                 discoveryTask.IncrementStep();
             }

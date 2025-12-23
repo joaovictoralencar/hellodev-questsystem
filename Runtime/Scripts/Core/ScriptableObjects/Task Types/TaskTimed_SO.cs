@@ -37,7 +37,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         public override TaskRuntime GetRuntimeTask()
         {
-            return new TimedTask(this);
+            return new TimedTaskRuntime(this);
         }
 
         protected override void OnScriptableObjectReset()
@@ -53,7 +53,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            if (task is not TimedTask timedTask)
+            if (task is not TimedTaskRuntime timedTask)
             {
                 QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a TimedTask.");
                 return;

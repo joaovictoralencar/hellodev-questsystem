@@ -8,7 +8,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// A runtime task with a time limit. The task fails if time runs out before completion.
     /// Used for objectives like "Defeat the boss within 2 minutes".
     /// </summary>
-    public class TimedTask : TaskRuntime
+    public class TimedTaskRuntime : TaskRuntime
     {
         public override float Progress => IsCompleted ? 1f : 0f;
 
@@ -44,7 +44,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// Initializes a new instance of the TimedTask class.
         /// </summary>
         /// <param name="data">The ScriptableObject containing the task's data.</param>
-        public TimedTask(TaskTimed_SO data) : base(data)
+        public TimedTaskRuntime(TaskTimed_SO data) : base(data)
         {
             _remainingTime = data.TimeLimit;
             _isCompleted = false;
