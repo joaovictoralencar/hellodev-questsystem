@@ -22,6 +22,13 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 - Failure conditions - Quest-level failure triggers
 - Global task failure conditions - Fail current task when met
 - Task conditions - Task completion triggers via event-driven conditions
+- **ConditionQuestState_SO** - Quest chains (Quest B requires Quest A completed)
+
+### Quest Chains
+- **Sequential chains** - Quest B starts only after Quest A completes
+- **Branching paths** - Quest C requires Quest A OR Quest B (CompositeCondition with OR)
+- **Locked content** - Quest D requires Quest A AND Quest B (CompositeCondition with AND)
+- **Exclusive paths** - Quest E only available if Quest A NOT failed (IsInverted)
 
 ### Rewards
 - **QuestRewardType_SO** - Abstract base for custom reward types
@@ -147,6 +154,52 @@ public class GoldRewardType_SO : QuestRewardType_SO
 }
 ```
 
+### Creating Quest Chains
+
+Quest chains allow you to create prerequisites between quests. Use `ConditionQuestState_SO` to check if a quest is in a specific state.
+
+**Sequential Chain (Quest B requires Quest A completed):**
+1. Create > HelloDev > Quest System > Conditions > Quest State Condition
+2. Set "Quest To Check" to Quest A
+3. Set "Target State" to `Completed`
+4. Set "Comparison Type" to `Equals`
+5. Add this condition to Quest B's Start Conditions
+
+**Branching Paths (Quest C requires Quest A OR Quest B):**
+1. Create two `ConditionQuestState_SO` assets (one for each prerequisite quest)
+2. Create a `CompositeCondition_SO` with `LogicType = OR`
+3. Add both quest state conditions to the composite
+4. Add the composite to Quest C's Start Conditions
+
+**Locked Content (Quest D requires Quest A AND Quest B):**
+1. Create two `ConditionQuestState_SO` assets
+2. Create a `CompositeCondition_SO` with `LogicType = AND`
+3. Add both conditions to the composite
+4. Add the composite to Quest D's Start Conditions
+
+**Exclusive Paths (Quest E only if Quest A NOT failed):**
+1. Create a `ConditionQuestState_SO` for Quest A
+2. Set "Target State" to `Failed`
+3. Set "Comparison Type" to `Equals`
+4. Enable "Is Inverted" on the condition
+5. Add to Quest E's Start Conditions
+
+**Available States to Check:**
+- `NotStarted` - Quest has never been added
+- `InProgress` - Quest is currently active
+- `Completed` - Quest was completed successfully
+- `Failed` - Quest was failed
+
+```csharp
+// Programmatic check
+var questStateCondition = ScriptableObject.CreateInstance<ConditionQuestState_SO>();
+// Configure via inspector, or check programmatically:
+if (QuestManager.Instance.IsQuestCompleted(prerequisiteQuest))
+{
+    QuestManager.Instance.AddQuest(nextQuest, forceStart: true);
+}
+```
+
 ## API Reference
 
 ### QuestManager
@@ -258,6 +311,39 @@ The runtime representation of a task.
 | `FailTask()` | Mark as failed |
 | `ResetTask()` | Reset to initial state |
 
+### ConditionQuestState_SO
+
+An event-driven condition for creating quest chains. Checks if a quest is in a specific state.
+
+#### Properties
+| Property | Description |
+|----------|-------------|
+| `QuestToCheck` | The quest whose state will be checked |
+| `TargetState` | The state to compare against (NotStarted, InProgress, Completed, Failed) |
+| `ComparisonType` | How to compare: Equals or NotEquals |
+| `IsInverted` | Inherited from Condition_SO - inverts the result |
+
+#### Methods
+| Method | Description |
+|--------|-------------|
+| `Evaluate()` | Returns true if condition is met |
+| `SubscribeToEvent(Action)` | Subscribe to quest state changes |
+| `UnsubscribeFromEvent()` | Unsubscribe from events |
+| `ForceFulfillCondition()` | Debug: Force-trigger the callback |
+
+#### Usage Example
+```csharp
+// The condition automatically subscribes to QuestManager events:
+// - QuestStarted
+// - QuestCompleted
+// - QuestFailed
+// - QuestRestarted
+// - QuestAdded
+
+// When the tracked quest changes state, the condition re-evaluates
+// and fires the callback if the condition becomes true.
+```
+
 ## Dependencies
 
 ### Required
@@ -271,6 +357,21 @@ The runtime representation of a task.
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v1.4.0 (2025-12-23)
+**Quest Chains:**
+- Added `ConditionQuestState_SO` for creating quest prerequisites
+- Supports all quest states: NotStarted, InProgress, Completed, Failed
+- Supports Equals/NotEquals comparison types
+- Event-driven: automatically re-evaluates when quest states change
+- Composable with `CompositeCondition_SO` for AND/OR logic
+- Works with `IsInverted` for negative conditions (e.g., "not failed")
+
+**Usage Examples:**
+- Sequential chains: Quest B requires Quest A completed
+- Branching paths: Quest C requires Quest A OR Quest B
+- Locked content: Quest D requires Quest A AND Quest B
+- Exclusive paths: Quest E only available if Quest A not failed
 
 ### v1.3.0 (2025-12-23)
 **Architecture Cleanup:**
