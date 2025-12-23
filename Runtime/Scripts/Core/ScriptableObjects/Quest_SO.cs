@@ -499,9 +499,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Creates and returns a new runtime instance of this quest.
         /// </summary>
-        public Quest GetRuntimeQuest()
+        public QuestRuntime GetRuntimeQuest()
         {
-            return new Quest(this);
+            return new QuestRuntime(this);
         }
 
         #endregion

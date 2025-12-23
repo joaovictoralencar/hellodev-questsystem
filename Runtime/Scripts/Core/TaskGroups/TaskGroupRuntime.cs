@@ -34,22 +34,22 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// <summary>
         /// Fired when any task in this group is updated.
         /// </summary>
-        public UnityEvent<TaskGroupRuntime, Task> OnTaskInGroupUpdated = new();
+        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupUpdated = new();
 
         /// <summary>
         /// Fired when any task in this group completes.
         /// </summary>
-        public UnityEvent<TaskGroupRuntime, Task> OnTaskInGroupCompleted = new();
+        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupCompleted = new();
 
         /// <summary>
         /// Fired when any task in this group fails.
         /// </summary>
-        public UnityEvent<TaskGroupRuntime, Task> OnTaskInGroupFailed = new();
+        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupFailed = new();
 
         /// <summary>
         /// Fired when any task in this group starts.
         /// </summary>
-        public UnityEvent<TaskGroupRuntime, Task> OnTaskInGroupStarted = new();
+        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupStarted = new();
 
         #endregion
 
@@ -73,7 +73,7 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// <summary>
         /// All runtime tasks in this group.
         /// </summary>
-        public List<Task> Tasks { get; }
+        public List<TaskRuntime> Tasks { get; }
 
         /// <summary>
         /// Current state of this group.
@@ -85,7 +85,7 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// For Sequential mode, this is at most 1 task.
         /// For Parallel/AnyOrder/OptionalXofY, this can be multiple tasks.
         /// </summary>
-        public IReadOnlyList<Task> CurrentTasks =>
+        public IReadOnlyList<TaskRuntime> CurrentTasks =>
             Tasks.Where(t => t.CurrentState == TaskState.InProgress).ToList();
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// For Sequential: only the current InProgress task.
         /// For other modes: all InProgress tasks.
         /// </summary>
-        public IReadOnlyList<Task> AvailableTasks => CurrentTasks;
+        public IReadOnlyList<TaskRuntime> AvailableTasks => CurrentTasks;
 
         /// <summary>
         /// Number of completed tasks in this group.
@@ -276,7 +276,7 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// </summary>
         /// <param name="taskId">The task's GUID.</param>
         /// <returns>The task, or null if not found.</returns>
-        public Task GetTask(Guid taskId)
+        public TaskRuntime GetTask(Guid taskId)
         {
             return Tasks.FirstOrDefault(t => t.TaskId == taskId);
         }
@@ -307,13 +307,13 @@ namespace HelloDev.QuestSystem.TaskGroups
             }
         }
 
-        private void HandleTaskStarted(Task task)
+        private void HandleTaskStarted(TaskRuntime task)
         {
             QuestLogger.Log($"Task '{task.DevName}' started in group '{GroupName}'.");
             OnTaskInGroupStarted.SafeInvoke(this, task);
         }
 
-        private void HandleTaskCompleted(Task task)
+        private void HandleTaskCompleted(TaskRuntime task)
         {
             QuestLogger.Log($"Task '{task.DevName}' completed in group '{GroupName}'.");
             OnTaskInGroupCompleted.SafeInvoke(this, task);
@@ -334,12 +334,12 @@ namespace HelloDev.QuestSystem.TaskGroups
             }
         }
 
-        private void HandleTaskUpdated(Task task)
+        private void HandleTaskUpdated(TaskRuntime task)
         {
             OnTaskInGroupUpdated.SafeInvoke(this, task);
         }
 
-        private void HandleTaskFailed(Task task)
+        private void HandleTaskFailed(TaskRuntime task)
         {
             QuestLogger.Log($"Task '{task.DevName}' failed in group '{GroupName}'.");
             OnTaskInGroupFailed.SafeInvoke(this, task);

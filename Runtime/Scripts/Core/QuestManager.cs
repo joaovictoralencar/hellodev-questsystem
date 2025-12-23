@@ -89,34 +89,34 @@ namespace HelloDev.QuestSystem
         #region Private Fields
 
         private Dictionary<Guid, Quest_SO> _availableQuestsData = new();
-        private Dictionary<Guid, Quest> _activeQuests = new();
-        private Dictionary<Guid, Quest> _completedQuests = new();
-        private Dictionary<Guid, Quest> _failedQuests = new();
+        private Dictionary<Guid, QuestRuntime> _activeQuests = new();
+        private Dictionary<Guid, QuestRuntime> _completedQuests = new();
+        private Dictionary<Guid, QuestRuntime> _failedQuests = new();
 
         #endregion
 
         #region Events
 
         /// <summary>Fired when a quest is added to the active quests.</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestAdded = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestAdded = new();
 
         /// <summary>Fired when a quest starts (transitions to InProgress).</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestStarted = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestStarted = new();
 
         /// <summary>Fired when a quest is removed from the active quests.</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestRemoved = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestRemoved = new();
 
         /// <summary>Fired when a quest is restarted.</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestRestarted = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestRestarted = new();
 
         /// <summary>Fired when a quest fails.</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestFailed = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestFailed = new();
 
         /// <summary>Fired when a quest is updated (task progress, etc.).</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestUpdated = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestUpdated = new();
 
         /// <summary>Fired when a quest is completed.</summary>
-        [HideInInspector] public UnityEvent<Quest> QuestCompleted = new();
+        [HideInInspector] public UnityEvent<QuestRuntime> QuestCompleted = new();
 
         #endregion
 
@@ -324,7 +324,7 @@ namespace HelloDev.QuestSystem
             if (Instance == this)
             {
                 // Clean up all active quest subscriptions
-                foreach (Quest quest in _activeQuests.Values)
+                foreach (QuestRuntime quest in _activeQuests.Values)
                 {
                     UnsubscribeFromQuestEvents(quest);
                 }
@@ -372,7 +372,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void ShutdownManager()
         {
-            foreach (Quest quest in _activeQuests.Values)
+            foreach (QuestRuntime quest in _activeQuests.Values)
             {
                 UnsubscribeFromQuestEvents(quest);
             }
@@ -439,7 +439,7 @@ namespace HelloDev.QuestSystem
                 return false;
             }
 
-            Quest newQuest = _availableQuestsData[questId].GetRuntimeQuest();
+            QuestRuntime newQuest = _availableQuestsData[questId].GetRuntimeQuest();
             _activeQuests.Add(questId, newQuest);
             SubscribeToQuestEvents(newQuest);
 
@@ -470,9 +470,9 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void CompleteQuest(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
-                foreach (Task task in quest.Tasks)
+                foreach (TaskRuntime task in quest.Tasks)
                 {
                     if (task.CurrentState != TaskState.Completed)
                     {
@@ -498,7 +498,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Force completes a quest.
         /// </summary>
-        public void CompleteQuest(Quest quest)
+        public void CompleteQuest(QuestRuntime quest)
         {
             if (quest == null) return;
             CompleteQuest(quest.QuestId);
@@ -509,7 +509,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void FailQuest(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 quest.FailQuest();
             }
@@ -531,7 +531,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Fails a quest.
         /// </summary>
-        public void FailQuest(Quest quest)
+        public void FailQuest(QuestRuntime quest)
         {
             if (quest == null) return;
             FailQuest(quest.QuestId);
@@ -543,7 +543,7 @@ namespace HelloDev.QuestSystem
         /// <returns>True if the quest was successfully removed.</returns>
         public bool RemoveQuest(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 UnsubscribeFromQuestEvents(quest);
                 _activeQuests.Remove(questId);
@@ -568,7 +568,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Removes a quest from the active quests.
         /// </summary>
-        public bool RemoveQuest(Quest quest)
+        public bool RemoveQuest(QuestRuntime quest)
         {
             if (quest == null) return false;
             return RemoveQuest(quest.QuestId);
@@ -582,7 +582,7 @@ namespace HelloDev.QuestSystem
         /// <returns>True if the quest was successfully restarted.</returns>
         public bool RestartQuest(Guid questId, bool forceStart = false)
         {
-            Quest quest = null;
+            QuestRuntime quest = null;
 
             // Check active quests first
             if (_activeQuests.TryGetValue(questId, out quest))
@@ -627,7 +627,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Restarts a quest.
         /// </summary>
-        public bool RestartQuest(Quest quest, bool forceStart = false)
+        public bool RestartQuest(QuestRuntime quest, bool forceStart = false)
         {
             if (quest == null) return false;
             return RestartQuest(quest.QuestId, forceStart);
@@ -637,7 +637,7 @@ namespace HelloDev.QuestSystem
 
         #region Event Subscription Management
 
-        private void SubscribeToQuestEvents(Quest quest)
+        private void SubscribeToQuestEvents(QuestRuntime quest)
         {
             quest.OnQuestStarted.SafeSubscribe(HandleQuestStarted);
             quest.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
@@ -646,7 +646,7 @@ namespace HelloDev.QuestSystem
             quest.OnQuestRestarted.SafeSubscribe(HandleQuestRestarted);
         }
 
-        private void UnsubscribeFromQuestEvents(Quest quest)
+        private void UnsubscribeFromQuestEvents(QuestRuntime quest)
         {
             if (quest == null) return;
 
@@ -657,12 +657,12 @@ namespace HelloDev.QuestSystem
             quest.OnQuestRestarted.SafeUnsubscribe(HandleQuestRestarted);
         }
 
-        private void HandleQuestStarted(Quest quest)
+        private void HandleQuestStarted(QuestRuntime quest)
         {
             QuestStarted.SafeInvoke(quest);
         }
 
-        private void HandleQuestCompleted(Quest quest)
+        private void HandleQuestCompleted(QuestRuntime quest)
         {
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
@@ -671,7 +671,7 @@ namespace HelloDev.QuestSystem
             QuestCompleted.SafeInvoke(quest);
         }
 
-        private void HandleQuestFailed(Quest quest)
+        private void HandleQuestFailed(QuestRuntime quest)
         {
             UnsubscribeFromQuestEvents(quest);
             _activeQuests.Remove(quest.QuestId);
@@ -680,12 +680,12 @@ namespace HelloDev.QuestSystem
             QuestFailed.SafeInvoke(quest);
         }
 
-        private void HandleQuestUpdated(Quest quest)
+        private void HandleQuestUpdated(QuestRuntime quest)
         {
             QuestUpdated.SafeInvoke(quest);
         }
 
-        private void HandleQuestRestarted(Quest quest)
+        private void HandleQuestRestarted(QuestRuntime quest)
         {
             QuestRestarted.SafeInvoke(quest);
         }
@@ -718,14 +718,14 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void IncrementTaskStep(Guid questId)
         {
-            Task task = GetCurrentTask(questId);
+            TaskRuntime task = GetCurrentTask(questId);
             task?.IncrementStep();
         }
 
         /// <summary>
         /// Increments the current task's step for a quest.
         /// </summary>
-        public void IncrementTaskStep(Quest quest)
+        public void IncrementTaskStep(QuestRuntime quest)
         {
             if (quest == null) return;
             IncrementTaskStep(quest.QuestId);
@@ -745,14 +745,14 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void DecrementTaskStep(Guid questId)
         {
-            Task task = GetCurrentTask(questId);
+            TaskRuntime task = GetCurrentTask(questId);
             task?.DecrementStep();
         }
 
         /// <summary>
         /// Decrements the current task's step for a quest.
         /// </summary>
-        public void DecrementTaskStep(Quest quest)
+        public void DecrementTaskStep(QuestRuntime quest)
         {
             if (quest == null) return;
             DecrementTaskStep(quest.QuestId);
@@ -763,7 +763,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void DecrementTaskStep(Guid questId, Guid taskId)
         {
-            Task task = GetTask(questId, taskId);
+            TaskRuntime task = GetTask(questId, taskId);
             task?.DecrementStep();
         }
 
@@ -772,7 +772,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void CompleteTask(Guid questId, Guid taskId)
         {
-            Task task = GetTask(questId, taskId);
+            TaskRuntime task = GetTask(questId, taskId);
             task?.CompleteTask();
         }
 
@@ -781,7 +781,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void FailTask(Guid questId, Guid taskId)
         {
-            Task task = GetTask(questId, taskId);
+            TaskRuntime task = GetTask(questId, taskId);
             task?.FailTask();
         }
 
@@ -792,16 +792,16 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets an active quest by its ID.
         /// </summary>
-        public Quest GetActiveQuest(Guid questId)
+        public QuestRuntime GetActiveQuest(Guid questId)
         {
-            _activeQuests.TryGetValue(questId, out Quest quest);
+            _activeQuests.TryGetValue(questId, out QuestRuntime quest);
             return quest;
         }
 
         /// <summary>
         /// Gets an active quest by its data.
         /// </summary>
-        public Quest GetActiveQuest(Quest_SO questData)
+        public QuestRuntime GetActiveQuest(Quest_SO questData)
         {
             if (questData == null) return null;
             return GetActiveQuest(questData.QuestId);
@@ -810,7 +810,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all active quests as a read-only collection.
         /// </summary>
-        public ReadOnlyCollection<Quest> GetActiveQuests()
+        public ReadOnlyCollection<QuestRuntime> GetActiveQuests()
         {
             return _activeQuests.Values.ToList().AsReadOnly();
         }
@@ -818,7 +818,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all completed quests as a read-only collection.
         /// </summary>
-        public ReadOnlyCollection<Quest> GetCompletedQuests()
+        public ReadOnlyCollection<QuestRuntime> GetCompletedQuests()
         {
             return _completedQuests.Values.ToList().AsReadOnly();
         }
@@ -826,7 +826,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all failed quests as a read-only collection.
         /// </summary>
-        public ReadOnlyCollection<Quest> GetFailedQuests()
+        public ReadOnlyCollection<QuestRuntime> GetFailedQuests()
         {
             return _failedQuests.Values.ToList().AsReadOnly();
         }
@@ -834,9 +834,9 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all tasks for a quest as a read-only collection.
         /// </summary>
-        public ReadOnlyCollection<Task> GetTasksForQuest(Guid questId)
+        public ReadOnlyCollection<TaskRuntime> GetTasksForQuest(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 return quest.Tasks.AsReadOnly();
             }
@@ -846,7 +846,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all tasks for a quest as a read-only collection.
         /// </summary>
-        public ReadOnlyCollection<Task> GetTasksForQuest(Quest_SO questData)
+        public ReadOnlyCollection<TaskRuntime> GetTasksForQuest(Quest_SO questData)
         {
             if (questData == null) return null;
             return GetTasksForQuest(questData.QuestId);
@@ -855,9 +855,9 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets a specific task from a quest.
         /// </summary>
-        public Task GetTask(Guid questId, Guid taskId)
+        public TaskRuntime GetTask(Guid questId, Guid taskId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 return quest.Tasks.FirstOrDefault(t => t.TaskId == taskId);
             }
@@ -867,9 +867,9 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets the current in-progress task for a quest.
         /// </summary>
-        public Task GetCurrentTask(Guid questId)
+        public TaskRuntime GetCurrentTask(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 return quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
             }
@@ -879,7 +879,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets the current in-progress task for a quest.
         /// </summary>
-        public Task GetCurrentTask(Quest quest)
+        public TaskRuntime GetCurrentTask(QuestRuntime quest)
         {
             if (quest == null) return null;
             return quest.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
@@ -888,7 +888,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets the current in-progress task for a quest.
         /// </summary>
-        public Task GetCurrentTask(Quest_SO questData)
+        public TaskRuntime GetCurrentTask(Quest_SO questData)
         {
             if (questData == null) return null;
             return GetCurrentTask(questData.QuestId);
@@ -952,30 +952,30 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all currently in-progress tasks for a quest (can be multiple for parallel groups).
         /// </summary>
-        public IReadOnlyList<Task> GetCurrentTasks(Guid questId)
+        public IReadOnlyList<TaskRuntime> GetCurrentTasks(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 return quest.CurrentTasks;
             }
-            return Array.Empty<Task>();
+            return Array.Empty<TaskRuntime>();
         }
 
         /// <summary>
         /// Gets all currently in-progress tasks for a quest.
         /// </summary>
-        public IReadOnlyList<Task> GetCurrentTasks(Quest_SO questData)
+        public IReadOnlyList<TaskRuntime> GetCurrentTasks(Quest_SO questData)
         {
-            if (questData == null) return Array.Empty<Task>();
+            if (questData == null) return Array.Empty<TaskRuntime>();
             return GetCurrentTasks(questData.QuestId);
         }
 
         /// <summary>
         /// Gets all currently in-progress tasks for a quest.
         /// </summary>
-        public IReadOnlyList<Task> GetCurrentTasks(Quest quest)
+        public IReadOnlyList<TaskRuntime> GetCurrentTasks(QuestRuntime quest)
         {
-            if (quest == null) return Array.Empty<Task>();
+            if (quest == null) return Array.Empty<TaskRuntime>();
             return quest.CurrentTasks;
         }
 
@@ -984,7 +984,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public TaskGroupRuntime GetCurrentTaskGroup(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 return quest.CurrentGroup;
             }
@@ -1003,7 +1003,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets the current task group for a quest.
         /// </summary>
-        public TaskGroupRuntime GetCurrentTaskGroup(Quest quest)
+        public TaskGroupRuntime GetCurrentTaskGroup(QuestRuntime quest)
         {
             return quest.CurrentGroup;
         }
@@ -1013,7 +1013,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public IReadOnlyList<TaskGroupRuntime> GetTaskGroups(Guid questId)
         {
-            if (_activeQuests.TryGetValue(questId, out Quest quest))
+            if (_activeQuests.TryGetValue(questId, out QuestRuntime quest))
             {
                 return quest.TaskGroups.AsReadOnly();
             }
@@ -1032,7 +1032,7 @@ namespace HelloDev.QuestSystem
         /// <summary>
         /// Gets all task groups for a quest.
         /// </summary>
-        public IReadOnlyList<TaskGroupRuntime> GetTaskGroups(Quest quest)
+        public IReadOnlyList<TaskGroupRuntime> GetTaskGroups(QuestRuntime quest)
         {
             if (quest == null) return Array.Empty<TaskGroupRuntime>();
             return quest.TaskGroups.AsReadOnly();
@@ -1043,7 +1043,7 @@ namespace HelloDev.QuestSystem
         /// </summary>
         public void IncrementTaskStep(Guid questId, Guid taskId)
         {
-            Task task = GetTask(questId, taskId);
+            TaskRuntime task = GetTask(questId, taskId);
             task?.IncrementStep();
         }
 

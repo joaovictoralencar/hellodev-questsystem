@@ -9,7 +9,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// A concrete runtime task that tracks an integer counter.
     /// This task type is used for objectives like "kill X enemies" or "collect Y items".
     /// </summary>
-    public class IntTask : Task
+    public class IntTask : TaskRuntime
     {
         public override float Progress => RequiredCount == 0 ? 1 : (float)_currentCount / RequiredCount;
 
@@ -105,7 +105,7 @@ namespace HelloDev.QuestSystem.Tasks
             OnTaskUpdated.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(Task task)
+        protected override void CheckCompletion(TaskRuntime task)
         {
             if (_currentCount >= RequiredCount)
             {

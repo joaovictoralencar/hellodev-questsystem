@@ -50,7 +50,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             set => currentCount = value;
         }
 
-        public override Task GetRuntimeTask()
+        public override TaskRuntime GetRuntimeTask()
         {
             return new IntTask(this);
         }
@@ -61,7 +61,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             currentCount = 0;
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, Task task)
+        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
         {
             if (taskNameText == null)
             {

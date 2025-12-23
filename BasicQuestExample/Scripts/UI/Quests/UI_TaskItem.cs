@@ -24,11 +24,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private Colour_SO CompletedColour;
         [SerializeField] private Colour_SO FailedColour;
         [SerializeField] private TextStyleUpdater TextStyleUpdater;
-        private Task _task;
-        private Action<Task> OnTaskSelected;
-        private UnityAction<Task> _onTaskStartedCallback;
+        private TaskRuntime _task;
+        private Action<TaskRuntime> OnTaskSelected;
+        private UnityAction<TaskRuntime> _onTaskStartedCallback;
 
-        public Task Task => _task;
+        public TaskRuntime Task => _task;
 
         private void Awake()
         {
@@ -44,7 +44,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             Tween.StopAll(selectedBackground);
         }
 
-        public void Setup(Task task, Action<Task> onTaskSelected)
+        public void Setup(TaskRuntime task, Action<TaskRuntime> onTaskSelected)
         {
             gameObject.name = task.Data.DevName;
             _task = task;
@@ -79,7 +79,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _task.OnTaskCompleted.SafeSubscribe(OnTaskCompleted);
             _task.OnTaskFailed.SafeSubscribe(OnTaskFailed);
         }
-        private void OnTaskUpdated(Task task)
+        private void OnTaskUpdated(TaskRuntime task)
         {
             task.Data.SetupTaskLocalizedVariables(TaskNameText, task);
         }
@@ -98,14 +98,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         }
 
 
-        private void OnTaskCompleted(Task task)
+        private void OnTaskCompleted(TaskRuntime task)
         {
             gameObject.SetActive(true);
             TaskCheck.SetActive(true);
             TextStyleUpdater.TextColourSO = CompletedColour;
         }
 
-        private void OnTaskFailed(Task task)
+        private void OnTaskFailed(TaskRuntime task)
         {
             gameObject.SetActive(true);
             TaskCheck.SetActive(false);

@@ -3,7 +3,7 @@ using HelloDev.QuestSystem.ScriptableObjects;
 
 namespace HelloDev.QuestSystem.Tasks
 {
-    public class BoolTask : Task
+    public class BoolTask : TaskRuntime
     {
         public BoolTask(Task_SO taskData) : base(taskData)
         {
@@ -27,7 +27,7 @@ namespace HelloDev.QuestSystem.Tasks
             return true;
         }
 
-        protected override void CheckCompletion(Task task)
+        protected override void CheckCompletion(TaskRuntime task)
         {
             if (task.Data.Conditions.All(condition => condition.Evaluate()))
             {

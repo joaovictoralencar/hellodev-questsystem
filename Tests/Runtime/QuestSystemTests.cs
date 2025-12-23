@@ -60,7 +60,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Creation_InitializesWithCorrectState()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
 
             Assert.IsNotNull(quest);
             Assert.AreEqual(QuestState.NotStarted, quest.CurrentState);
@@ -71,9 +71,9 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Creation_TasksAreNotStarted()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
 
-            foreach (Task task in quest.Tasks)
+            foreach (TaskRuntime task in quest.Tasks)
             {
                 Assert.AreEqual(TaskState.NotStarted, task.CurrentState);
             }
@@ -86,7 +86,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Start_ChangesStateToInProgress()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
 
             quest.StartQuest();
 
@@ -96,7 +96,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Start_StartsFirstTask()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
 
             quest.StartQuest();
 
@@ -107,7 +107,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Start_FiresOnQuestStartedEvent()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             bool eventFired = false;
             quest.OnQuestStarted.AddListener(_ => eventFired = true);
 
@@ -119,11 +119,11 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Complete_ChangesStateToCompleted()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
 
             // Complete all tasks
-            foreach (Task task in quest.Tasks)
+            foreach (TaskRuntime task in quest.Tasks)
             {
                 task.CompleteTask();
             }
@@ -134,7 +134,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Fail_ChangesStateToFailed()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
 
             quest.FailQuest();
@@ -145,7 +145,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Fail_FiresOnQuestFailedEvent()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
             quest.OnQuestFailed.AddListener(_ => eventFired = true);
@@ -162,7 +162,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void IntTask_IncrementStep_IncreasesProgress()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             IntTask task = quest.Tasks[0] as IntTask;
 
@@ -176,7 +176,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void IntTask_IncrementToRequired_CompletesTask()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             IntTask task = quest.Tasks[0] as IntTask;
 
@@ -191,7 +191,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void IntTask_Progress_CalculatesCorrectly()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             IntTask task = quest.Tasks[0] as IntTask;
 
@@ -207,7 +207,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Task_Complete_StartsNextTask()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
 
             Assert.AreEqual(TaskState.InProgress, quest.Tasks[0].CurrentState);
@@ -222,7 +222,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Task_DecrementStep_DecreasesCount()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             IntTask task = quest.Tasks[0] as IntTask;
 
@@ -241,7 +241,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_CurrentProgress_CalculatesFromTasks()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
 
             // Initial progress should be 0
@@ -258,7 +258,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_AllTasksComplete_CompletesQuest()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool completedEventFired = false;
             quest.OnQuestCompleted.AddListener(_ => completedEventFired = true);
@@ -277,7 +277,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Task_OnTaskUpdated_FiresOnIncrement()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
             quest.Tasks[0].OnTaskUpdated.AddListener(_ => eventFired = true);
@@ -290,7 +290,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Task_OnTaskCompleted_FiresOnComplete()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
             quest.Tasks[0].OnTaskCompleted.AddListener(_ => eventFired = true);
@@ -303,7 +303,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Task_OnTaskFailed_FiresOnFail()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
             quest.Tasks[0].OnTaskFailed.AddListener(_ => eventFired = true);
@@ -320,7 +320,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Task_Reset_ResetsToNotStarted()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             IntTask task = quest.Tasks[0] as IntTask;
 
@@ -336,7 +336,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         [Test]
         public void Quest_Reset_RestartsQuest()
         {
-            Quest quest = _questData.GetRuntimeQuest();
+            QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             quest.Tasks[0].CompleteTask();
 

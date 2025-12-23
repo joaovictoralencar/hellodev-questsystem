@@ -11,7 +11,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// A runtime task that requires discovering/examining specific items or clues.
     /// Used for objectives like "Examine 3 clues" or "Find all the witnesses".
     /// </summary>
-    public class DiscoveryTask : Task
+    public class DiscoveryTask : TaskRuntime
     {
         public override float Progress => RequiredDiscoveries == 0 ? 1f : (float)DiscoveredCount / RequiredDiscoveries;
 
@@ -134,7 +134,7 @@ namespace HelloDev.QuestSystem.Tasks
             OnTaskUpdated?.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(Task task)
+        protected override void CheckCompletion(TaskRuntime task)
         {
             if (_discoveredItems.Count >= RequiredDiscoveries)
             {

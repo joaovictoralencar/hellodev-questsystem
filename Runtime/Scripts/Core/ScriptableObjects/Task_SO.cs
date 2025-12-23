@@ -130,12 +130,12 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Creates and returns a new runtime instance of this task.
         /// </summary>
-        public abstract Task GetRuntimeTask();
+        public abstract TaskRuntime GetRuntimeTask();
 
         /// <summary>
         /// Sets up localized variables for the task UI display.
         /// </summary>
-        public abstract void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, Task task);
+        public abstract void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task);
 
         #endregion
 

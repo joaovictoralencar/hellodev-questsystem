@@ -5,7 +5,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// <summary>
     /// Runtime task for string-based objectives. Completes when the current value matches the target value.
     /// </summary>
-    public class StringTask : Task
+    public class StringTask : TaskRuntime
     {
         private string _currentValue = string.Empty;
         private readonly TaskString_SO _stringTaskData;
@@ -57,7 +57,7 @@ namespace HelloDev.QuestSystem.Tasks
             return true;
         }
 
-        protected override void CheckCompletion(Task task)
+        protected override void CheckCompletion(TaskRuntime task)
         {
             if (CurrentState != TaskState.InProgress) return;
 

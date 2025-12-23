@@ -91,12 +91,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// <summary>
         /// Callback invoked when this quest item is selected
         /// </summary>
-        private Action<Quest> onQuestSelected;
+        private Action<QuestRuntime> onQuestSelected;
         
         /// <summary>
         /// The quest data associated with this UI item
         /// </summary>
-        private Quest quest;
+        private QuestRuntime quest;
 
         private Color originalColor;
         
@@ -107,7 +107,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// <summary>
         /// Gets the quest associated with this UI item
         /// </summary>
-        public Quest Quest => quest;
+        public QuestRuntime Quest => quest;
         
         #endregion
 
@@ -139,7 +139,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         /// <param name="newQuest">The quest to display</param>
         /// <param name="onQuestSelectedCallback">Callback invoked when quest is selected</param>
-        public void Setup(Quest newQuest, Action<Quest> onQuestSelectedCallback)
+        public void Setup(QuestRuntime newQuest, Action<QuestRuntime> onQuestSelectedCallback)
         {
             if (newQuest?.QuestData == null) return;
 
@@ -169,12 +169,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Shows the next active task and subscribes to completion events.
         /// </summary>
         /// <param name="questData">The quest in progress</param>
-        private void OnQuestInProgress(Quest questData)
+        private void OnQuestInProgress(QuestRuntime questData)
         {
             ClearStatusText();
             questData.OnQuestCompleted.SafeSubscribe(OnQuestCompleted);
             
-            Task nextActiveTask = GetNextActiveTask(questData);
+            TaskRuntime nextActiveTask = GetNextActiveTask(questData);
             if (nextActiveTask != null)
             {
                 DisplayNextTask(nextActiveTask);
@@ -186,7 +186,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Shows completion indicators and unsubscribes from events.
         /// </summary>
         /// <param name="questData">The completed quest</param>
-        private void OnQuestCompleted(Quest questData)
+        private void OnQuestCompleted(QuestRuntime questData)
         {
             ClearStatusText();
             ClearStatusIndicators();
@@ -202,7 +202,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Shows failure indicators and clears previous status.
         /// </summary>
         /// <param name="questData">The failed quest</param>
-        private void OnQuestFailed(Quest questData)
+        private void OnQuestFailed(QuestRuntime questData)
         {
             ClearStatusText();
             ClearStatusIndicators();
@@ -219,7 +219,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Handles quest update events to refresh the progress display.
         /// </summary>
         /// <param name="updatedQuest">The quest that was updated</param>
-        private void OnQuestUpdated(Quest updatedQuest)
+        private void OnQuestUpdated(QuestRuntime updatedQuest)
         {
             if (progressionText != null)
             {
@@ -335,7 +335,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         /// <param name="questData">The quest to search</param>
         /// <returns>The next active task, or null if none found</returns>
-        private Task GetNextActiveTask(Quest questData)
+        private TaskRuntime GetNextActiveTask(QuestRuntime questData)
         {
             return questData.Tasks.FirstOrDefault(task => task.CurrentState == TaskState.InProgress);
         }
@@ -344,7 +344,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Displays information about the next active task.
         /// </summary>
         /// <param name="task">The task to display</param>
-        private void DisplayNextTask(Task task)
+        private void DisplayNextTask(TaskRuntime task)
         {
             if (nextTaskTextPrefab == null || questStatusHolder == null) return;
 

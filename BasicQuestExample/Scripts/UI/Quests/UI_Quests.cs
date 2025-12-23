@@ -48,7 +48,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// <summary>
         /// Currently selected quest for detailed display
         /// </summary>
-        private Quest selectedQuest;
+        private QuestRuntime selectedQuest;
 
         #endregion
 
@@ -132,12 +132,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 QuestType_SO questType = questGroup.Key;
                 if (questType == completedQuestType) continue;
 
-                List<Quest> questGroupValue = questGroup.Value;
+                List<QuestRuntime> questGroupValue = questGroup.Value;
                 AddQuestToSection(questType, questGroupValue);
             }
         }
 
-        private void AddQuestToSection(QuestType_SO questType, List<Quest> questList)
+        private void AddQuestToSection(QuestType_SO questType, List<QuestRuntime> questList)
         {
             UI_QuestSection questSection = GetOrCreateQuestSection(questType);
             questSection.Setup(questType);
@@ -193,7 +193,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Creates or updates the appropriate quest section and adds the new quest.
         /// </summary>
         /// <param name="quest">The newly started quest</param>
-        private void OnQuestStarted(Quest quest)
+        private void OnQuestStarted(QuestRuntime quest)
         {
             if (quest?.QuestData?.QuestType == null) return;
 
@@ -213,7 +213,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Removes the quest from its current section and moves it to the completed quests section.
         /// </summary>
         /// <param name="quest">The completed quest</param>
-        private void OnQuestCompleted(Quest quest)
+        private void OnQuestCompleted(QuestRuntime quest)
         {
             if (quest?.QuestData?.QuestType == null || completedQuestType == null) return;
 
@@ -226,7 +226,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         }
 
 
-        private void OnQuestRestarted(Quest quest)
+        private void OnQuestRestarted(QuestRuntime quest)
         {
             if (quest?.QuestData?.QuestType == null) return;
 
@@ -234,7 +234,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             //try to remove the quest from the completed section
             RemoveQuestFromSection(quest, completedQuestType);
-            AddQuestToSection(originalQuestType, new List<Quest>() { quest });
+            AddQuestToSection(originalQuestType, new List<QuestRuntime>() { quest });
             OnQuestSelected(quest);
         }
 
@@ -242,7 +242,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Handles quest selection and updates the details display.
         /// </summary>
         /// <param name="quest">The selected quest</param>
-        private void OnQuestSelected(Quest quest)
+        private void OnQuestSelected(QuestRuntime quest)
         {
             if (selectedQuest == quest) return;
 
@@ -288,7 +288,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// </summary>
         /// <param name="quest">The quest to remove</param>
         /// <param name="questType">The quest type section to remove from</param>
-        private void RemoveQuestFromSection(Quest quest, QuestType_SO questType)
+        private void RemoveQuestFromSection(QuestRuntime quest, QuestType_SO questType)
         {
             if (questSections.TryGetValue(questType, out UI_QuestSection questSection))
             {
@@ -301,7 +301,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Creates the section if it doesn't exist.
         /// </summary>
         /// <param name="quest">The completed quest to add</param>
-        private void AddQuestToCompletedSection(Quest quest)
+        private void AddQuestToCompletedSection(QuestRuntime quest)
         {
             var completedSection = GetOrCreateQuestSection(completedQuestType);
 
@@ -319,7 +319,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// If the completed quest was selected, attempts to select another quest.
         /// </summary>
         /// <param name="completedQuest">The quest that was just completed</param>
-        private void HandleCompletedQuestSelection(Quest completedQuest)
+        private void HandleCompletedQuestSelection(QuestRuntime completedQuest)
         {
             if (selectedQuest != completedQuest) return;
 
@@ -339,7 +339,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Prioritizes active quests over completed ones.
         /// </summary>
         /// <returns>The next quest to select, or null if none available</returns>
-        private Quest FindNextSelectableQuest()
+        private QuestRuntime FindNextSelectableQuest()
         {
             foreach (var section in questSections.Values)
             {
@@ -369,7 +369,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// </summary>
         /// <param name="questType">The quest type to filter by</param>
         /// <returns>List of active quests of the specified type</returns>
-        private List<Quest> GetActiveQuestsOfType(QuestType_SO questType)
+        private List<QuestRuntime> GetActiveQuestsOfType(QuestType_SO questType)
         {
             return QuestManager.Instance.GetActiveQuests()
                 .Where(quest => quest.QuestData.QuestType == questType)
@@ -380,7 +380,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Gets all completed quests from the quest manager.
         /// </summary>
         /// <returns>List of completed quests</returns>
-        private List<Quest> GetCompletedQuests()
+        private List<QuestRuntime> GetCompletedQuests()
         {
             return QuestManager.Instance.GetCompletedQuests().ToList();
         }
@@ -389,9 +389,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Groups all active quests by their quest type.
         /// </summary>
         /// <returns>Dictionary mapping quest types to their active quests</returns>
-        private Dictionary<QuestType_SO, List<Quest>> GroupActiveQuestsByType()
+        private Dictionary<QuestType_SO, List<QuestRuntime>> GroupActiveQuestsByType()
         {
-            var groupedQuests = new Dictionary<QuestType_SO, List<Quest>>();
+            var groupedQuests = new Dictionary<QuestType_SO, List<QuestRuntime>>();
 
             foreach (var quest in QuestManager.Instance.GetActiveQuests())
             {
@@ -399,7 +399,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
                 if (!groupedQuests.ContainsKey(questType))
                 {
-                    groupedQuests[questType] = new List<Quest>();
+                    groupedQuests[questType] = new List<QuestRuntime>();
                 }
 
                 groupedQuests[questType].Add(quest);
@@ -439,7 +439,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Moves the quest to failed state in the UI.
         /// </summary>
         /// <param name="quest">The failed quest</param>
-        private void OnQuestFailed(Quest quest)
+        private void OnQuestFailed(QuestRuntime quest)
         {
             if (quest?.QuestData?.QuestType == null) return;
 
@@ -463,7 +463,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         /// Removes the quest from its section in the UI.
         /// </summary>
         /// <param name="quest">The removed quest</param>
-        private void OnQuestRemoved(Quest quest)
+        private void OnQuestRemoved(QuestRuntime quest)
         {
             if (quest?.QuestData?.QuestType == null) return;
 

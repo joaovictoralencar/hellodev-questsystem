@@ -111,8 +111,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         #region Runtime State
 
-        private Quest _currentQuest;
-        private Task _currentTask;
+        private QuestRuntime _currentQuest;
+        private TaskRuntime _currentTask;
         private List<UI_TaskItem> _taskUiItems = new();
 
 #if ODIN_INSPECTOR
@@ -353,7 +353,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         #region Public Methods
 
-        public void Setup(Quest quest)
+        public void Setup(QuestRuntime quest)
         {
             // Unsubscribe from previous quest to prevent memory leaks
             UnsubscribeFromQuestEvents();
@@ -367,9 +367,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             ProgressionText.text = $"{QuestUtils.GetPercentage(quest.CurrentProgress)}%";
 
             // Select next in progress task
-            Task nextTask = quest.Tasks.FirstOrDefault(t => IsFirstValidTask(quest, t));
+            TaskRuntime nextTask = quest.Tasks.FirstOrDefault(t => IsFirstValidTask(quest, t));
 
-            bool IsFirstValidTask(Quest q, Task t)
+            bool IsFirstValidTask(QuestRuntime q, TaskRuntime t)
             {
                 return (q.CurrentState is QuestState.InProgress && t.CurrentState == TaskState.InProgress) ||
                        (q.CurrentState == QuestState.Completed && t.CurrentState == TaskState.Completed) ||
@@ -379,7 +379,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             TasksHolder.DestroyAllChildren();
             _taskUiItems.Clear();
             if (quest.QuestData.QuestSprite != null) QuestImage.sprite = quest.QuestData.QuestSprite;
-            foreach (Task task in quest.Tasks)
+            foreach (TaskRuntime task in quest.Tasks)
             {
                 if (task.CurrentState == TaskState.NotStarted) continue;
                 UI_TaskItem taskItem = Instantiate(TaskItemPrefab, TasksHolder);
@@ -413,7 +413,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         #region Private Methods
 
-        private void OnTaskUpdated(Task task)
+        private void OnTaskUpdated(TaskRuntime task)
         {
             ProgressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
             SetupNextTask(_currentQuest);
@@ -434,14 +434,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _currentQuest.OnAnyTaskCompleted.SafeUnsubscribe(OnTaskUpdated);
         }
 
-        private void SetupNextTask(Quest quest)
+        private void SetupNextTask(QuestRuntime quest)
         {
             // Find all in-progress tasks (can be multiple for parallel groups)
-            List<Task> inProgressTasks = quest.Tasks.Where(t => t.CurrentState == TaskState.InProgress).ToList();
+            List<TaskRuntime> inProgressTasks = quest.Tasks.Where(t => t.CurrentState == TaskState.InProgress).ToList();
             if (inProgressTasks.Count == 0) return;
 
             bool needsSelection = false;
-            foreach (Task nextTask in inProgressTasks)
+            foreach (TaskRuntime nextTask in inProgressTasks)
             {
                 UI_TaskItem taskItem = _taskUiItems.FirstOrDefault(t => t.Task == nextTask);
                 if (taskItem == null)
@@ -467,7 +467,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 #endif
         }
 
-        private void OnTaskSelected(Task task)
+        private void OnTaskSelected(TaskRuntime task)
         {
             _currentTask = task;
             // Disable component to prevent auto-format before variables are set up
@@ -528,7 +528,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void DebugCompleteQuest()
         {
             if (_currentQuest == null) return;
-            foreach (Task task in _currentQuest.Tasks)
+            foreach (TaskRuntime task in _currentQuest.Tasks)
             {
                 task.CompleteTask();
             }

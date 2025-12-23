@@ -8,7 +8,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// A runtime task with a time limit. The task fails if time runs out before completion.
     /// Used for objectives like "Defeat the boss within 2 minutes".
     /// </summary>
-    public class TimedTask : Task
+    public class TimedTask : TaskRuntime
     {
         public override float Progress => IsCompleted ? 1f : 0f;
 
@@ -126,7 +126,7 @@ namespace HelloDev.QuestSystem.Tasks
             OnTaskUpdated.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(Task task)
+        protected override void CheckCompletion(TaskRuntime task)
         {
             if (_isCompleted)
             {

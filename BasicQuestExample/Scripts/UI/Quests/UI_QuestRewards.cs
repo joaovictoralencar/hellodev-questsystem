@@ -11,7 +11,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private Transform RewardsContainer;
         [SerializeField] private GameObject NoRewardsText;
 
-        public void Setup(Quest quest)
+        public void Setup(QuestRuntime quest)
         {
             RewardsContainer.DestroyAllChildren();
             if (quest.QuestData.Rewards.Count == 0)

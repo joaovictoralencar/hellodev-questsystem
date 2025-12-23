@@ -23,7 +23,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// </summary>
         public string TargetValue => targetValue;
 
-        public override Task GetRuntimeTask()
+        public override TaskRuntime GetRuntimeTask()
         {
             return new StringTask(this);
         }
@@ -33,7 +33,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             base.OnScriptableObjectReset();
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, Task task)
+        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
         {
             if (taskNameText == null)
             {

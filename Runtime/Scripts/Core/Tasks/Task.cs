@@ -12,29 +12,29 @@ namespace HelloDev.QuestSystem.Tasks
     /// Represents a single objective within a quest. This abstract class provides the
     /// core functionality for all task types. Specific tasks must inherit from it.
     /// </summary>
-    public abstract class Task
+    public abstract class TaskRuntime
     {
         #region Events
 
         /// <summary>
         /// Fired when the task's progress has changed. Provides the task and an update info object.
         /// </summary>
-        public UnityEvent<Task> OnTaskUpdated = new();
+        public UnityEvent<TaskRuntime> OnTaskUpdated = new();
 
         /// <summary>
         /// Fired specifically when the task is started.
         /// </summary>
-        public UnityEvent<Task> OnTaskStarted = new();
+        public UnityEvent<TaskRuntime> OnTaskStarted = new();
 
         /// <summary>
         /// Fired specifically when the task is completed.
         /// </summary>
-        public UnityEvent<Task> OnTaskCompleted = new();
+        public UnityEvent<TaskRuntime> OnTaskCompleted = new();
 
         /// <summary>
         /// Fired specifically when the task fails.
         /// </summary>
-        public UnityEvent<Task> OnTaskFailed = new();
+        public UnityEvent<TaskRuntime> OnTaskFailed = new();
 
         #endregion
 
@@ -78,7 +78,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// Initializes a new task instance from a ScriptableObject.
         /// </summary>
         /// <param name="data">The ScriptableObject containing the task's data.</param>
-        protected Task(Task_SO data)
+        protected TaskRuntime(Task_SO data)
         {
             Data = data;
             TaskId = data.TaskId;
@@ -205,7 +205,7 @@ namespace HelloDev.QuestSystem.Tasks
             OnTaskUpdated.SafeSubscribe(CheckCompletion);
         }
 
-        protected abstract void CheckCompletion(Task task);
+        protected abstract void CheckCompletion(TaskRuntime task);
 
         /// <summary>
         /// Unsubscribes from events to prevent memory leaks.
@@ -235,7 +235,7 @@ namespace HelloDev.QuestSystem.Tasks
         
         public override bool Equals(object obj)
         {
-            if (obj is Task other)
+            if (obj is TaskRuntime other)
             {
                 return TaskId == other.TaskId;
             }

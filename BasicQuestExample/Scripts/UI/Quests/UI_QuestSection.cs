@@ -53,7 +53,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// <summary>
         /// Dictionary mapping quests to their corresponding UI items for efficient lookup
         /// </summary>
-        private readonly Dictionary<Quest, UI_QuestItem> questItems = new Dictionary<Quest, UI_QuestItem>();
+        private readonly Dictionary<QuestRuntime, UI_QuestItem> questItems = new Dictionary<QuestRuntime, UI_QuestItem>();
         
         #endregion
 
@@ -80,7 +80,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// <summary>
         /// Dictionary mapping quests to their corresponding UI items for efficient lookup
         /// </summary>
-        public Dictionary<Quest, UI_QuestItem> QuestItems => questItems;
+        public Dictionary<QuestRuntime, UI_QuestItem> QuestItems => questItems;
 
         #endregion
 
@@ -106,11 +106,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         /// <param name="quests">List of quests to display</param>
         /// <param name="onQuestSelected">Callback invoked when a quest is selected</param>
-        public void SpawnQuestsItems(List<Quest> quests, Action<Quest> onQuestSelected)
+        public void SpawnQuestsItems(List<QuestRuntime> quests, Action<QuestRuntime> onQuestSelected)
         {
             if (quests == null || quests.Count == 0) return;
             
-            foreach (Quest quest in quests)
+            foreach (QuestRuntime quest in quests)
             {
                 CreateQuestItem(quest, onQuestSelected);
             }
@@ -122,7 +122,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         /// <param name="newQuest">The quest to add</param>
         /// <param name="onQuestSelected">Callback invoked when the quest is selected</param>
-        public void AddQuest(Quest newQuest, Action<Quest> onQuestSelected)
+        public void AddQuest(QuestRuntime newQuest, Action<QuestRuntime> onQuestSelected)
         {
             if (newQuest?.QuestData?.QuestType == null) return;
 
@@ -145,7 +145,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Destroys the associated UI item and cleans up references.
         /// </summary>
         /// <param name="quest">The quest to remove</param>
-        public void RemoveQuest(Quest quest)
+        public void RemoveQuest(QuestRuntime quest)
         {
             if (quest == null || !questItems.ContainsKey(quest)) return;
 
@@ -162,7 +162,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Gets the first quest in this section.
         /// </summary>
         /// <returns>The first quest, or null if section is empty</returns>
-        public Quest GetFirstQuest()
+        public QuestRuntime GetFirstQuest()
         {
             UI_QuestItem firstQuestItem = GetFirstQuestItem();
             return firstQuestItem?.Quest;
@@ -235,7 +235,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// <param name="quest">The quest to create an item for</param>
         /// <param name="onQuestSelected">Callback for quest selection</param>
         /// <returns>The created quest item component</returns>
-        private UI_QuestItem CreateQuestItem(Quest quest, Action<Quest> onQuestSelected)
+        private UI_QuestItem CreateQuestItem(QuestRuntime quest, Action<QuestRuntime> onQuestSelected)
         {
             if (questItems.ContainsKey(quest))
             {
@@ -278,7 +278,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         /// <param name="quest">The quest to check for</param>
         /// <returns>True if the quest exists in this section</returns>
-        public bool ContainsQuest(Quest quest)
+        public bool ContainsQuest(QuestRuntime quest)
         {
             return questItems.ContainsKey(quest);
         }
@@ -287,7 +287,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// Gets all quests currently in this section.
         /// </summary>
         /// <returns>Collection of all quests in the section</returns>
-        public IEnumerable<Quest> GetAllQuests()
+        public IEnumerable<QuestRuntime> GetAllQuests()
         {
             return questItems.Keys;
         }

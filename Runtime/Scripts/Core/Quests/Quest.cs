@@ -16,36 +16,36 @@ namespace HelloDev.QuestSystem.Quests
     /// state management for all quests. It now listens for game events to
     /// evaluate its conditions.
     /// </summary>
-    public class Quest
+    public class QuestRuntime
     {
         #region Events
 
         /// <summary>Fired when the quest starts.</summary>
-        public UnityEvent<Quest> OnQuestStarted = new();
+        public UnityEvent<QuestRuntime> OnQuestStarted = new();
 
         /// <summary>Fired when the quest completes successfully.</summary>
-        public UnityEvent<Quest> OnQuestCompleted = new();
+        public UnityEvent<QuestRuntime> OnQuestCompleted = new();
 
         /// <summary>Fired when the quest fails.</summary>
-        public UnityEvent<Quest> OnQuestFailed = new();
+        public UnityEvent<QuestRuntime> OnQuestFailed = new();
 
         /// <summary>Fired when the quest is reset and restarted.</summary>
-        public UnityEvent<Quest> OnQuestRestarted = new();
+        public UnityEvent<QuestRuntime> OnQuestRestarted = new();
 
         /// <summary>Fired when quest progress changes (group advances, task completes, etc.).</summary>
-        public UnityEvent<Quest> OnQuestUpdated = new();
+        public UnityEvent<QuestRuntime> OnQuestUpdated = new();
 
         /// <summary>Fired when any task in this quest starts.</summary>
-        public UnityEvent<Task> OnAnyTaskStarted = new();
+        public UnityEvent<TaskRuntime> OnAnyTaskStarted = new();
 
         /// <summary>Fired when any task in this quest is updated.</summary>
-        public UnityEvent<Task> OnAnyTaskUpdated = new();
+        public UnityEvent<TaskRuntime> OnAnyTaskUpdated = new();
 
         /// <summary>Fired when any task in this quest completes.</summary>
-        public UnityEvent<Task> OnAnyTaskCompleted = new();
+        public UnityEvent<TaskRuntime> OnAnyTaskCompleted = new();
 
         /// <summary>Fired when any task in this quest fails.</summary>
-        public UnityEvent<Task> OnAnyTaskFailed = new();
+        public UnityEvent<TaskRuntime> OnAnyTaskFailed = new();
 
         #endregion
 
@@ -82,13 +82,13 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Gets all tasks that are currently in progress (can be multiple for parallel groups).
         /// </summary>
-        public IReadOnlyList<Task> CurrentTasks =>
-            CurrentGroup.CurrentTasks ?? Array.Empty<Task>();
+        public IReadOnlyList<TaskRuntime> CurrentTasks =>
+            CurrentGroup.CurrentTasks ?? Array.Empty<TaskRuntime>();
 
         /// <summary>
         /// Gets all tasks across all groups (flattened list for backward compatibility).
         /// </summary>
-        public List<Task> Tasks => TaskGroups.SelectMany(g => g.Tasks).ToList();
+        public List<TaskRuntime> Tasks => TaskGroups.SelectMany(g => g.Tasks).ToList();
 
         /// <summary>
         /// Gets the overall progress of this quest (0-1).
@@ -122,14 +122,14 @@ namespace HelloDev.QuestSystem.Quests
         #endregion
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Quest"/> class.
+        /// Initializes a new instance of the <see cref="QuestRuntime"/> class.
         /// </summary>
         /// <param name="questData">The quest data.</param>
         /// <remarks>
         /// This constructor is used to create a runtime instance of a quest from a <see cref="Quest_SO"/> asset.
         /// Creates TaskGroupRuntime instances from the quest's task groups.
         /// </remarks>
-        public Quest(Quest_SO questData)
+        public QuestRuntime(Quest_SO questData)
         {
             QuestData = questData;
             QuestId = questData.QuestId;
@@ -365,7 +365,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Handles when a task within a group starts.
         /// </summary>
-        private void HandleTaskInGroupStarted(TaskGroupRuntime group, Task task)
+        private void HandleTaskInGroupStarted(TaskGroupRuntime group, TaskRuntime task)
         {
             QuestLogger.Log($"Task '{task.DevName}' in group '{group.GroupName}' started.");
             OnAnyTaskStarted.SafeInvoke(task);
@@ -374,7 +374,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Handles when a task within a group is updated.
         /// </summary>
-        private void HandleTaskInGroupUpdated(TaskGroupRuntime group, Task task)
+        private void HandleTaskInGroupUpdated(TaskGroupRuntime group, TaskRuntime task)
         {
             OnAnyTaskUpdated.SafeInvoke(task);
             NotifyQuestUpdated();
@@ -383,7 +383,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Handles when a task within a group completes.
         /// </summary>
-        private void HandleTaskInGroupCompleted(TaskGroupRuntime group, Task task)
+        private void HandleTaskInGroupCompleted(TaskGroupRuntime group, TaskRuntime task)
         {
             QuestLogger.Log($"Task '{task.DevName}' in group '{group.GroupName}' completed.");
             OnAnyTaskCompleted.SafeInvoke(task);
@@ -392,7 +392,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Handles when a task within a group fails.
         /// </summary>
-        private void HandleTaskInGroupFailed(TaskGroupRuntime group, Task task)
+        private void HandleTaskInGroupFailed(TaskGroupRuntime group, TaskRuntime task)
         {
             QuestLogger.Log($"Task '{task.DevName}' in group '{group.GroupName}' failed.");
             OnAnyTaskFailed.SafeInvoke(task);
@@ -464,7 +464,7 @@ namespace HelloDev.QuestSystem.Quests
         }
         public override bool Equals(object obj)
         {
-            if (obj is Quest other)
+            if (obj is QuestRuntime other)
             {
                 return QuestId == other.QuestId;
             }
