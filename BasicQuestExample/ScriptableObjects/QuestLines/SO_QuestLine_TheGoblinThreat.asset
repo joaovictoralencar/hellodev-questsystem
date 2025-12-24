@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9d640fb551b0b34cbebe3937f33484c, type: 3}
+  m_Name: SO_QuestLine_TheGoblinThreat
+  m_EditorClassIdentifier:
+  _description: 'Main storyline: The Goblin Threat. Follow the trail from initial goblin attacks, through uncovering the bandit connection, to stopping the greater conspiracy.'
+  devName: TheGoblinThreat
+  questLineId: f1e2d3c4-b5a6-4789-8012-345678abcdef
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  description:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  icon: {fileID: 0}
+  quests:
+  - {fileID: 11400000, guid: 3cac897ba4197f042a40a8fd3f026926, type: 2}
+  - {fileID: 11400000, guid: ad58925db22c21747b172b41f834c8e5, type: 2}
+  - {fileID: 11400000, guid: d89730124d6bb154ca47e80972743d2f, type: 2}
+  requireSequentialCompletion: 1
+  prerequisiteLine: {fileID: 0}
+  failOnAnyQuestFailed: 0
+  completionRewards: []
+  references:
+    version: 2
+    RefIds: []
