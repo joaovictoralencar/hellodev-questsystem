@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 816565eeb74b83f46afd5a1992ad8c3e, type: 3}
+  m_Name: SO_Task_ReportToCaptain
+  m_EditorClassIdentifier:
+  _description: "[Task 5/5 - BoolTask] Report your findings to the guard captain at the barracks."
+  devName: BanditsEmployer_Task05_ReportToCaptain
+  taskId: ee555555-6666-7777-8888-9999aaaabbbb
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Task_ReportToCaptain_Name
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Task_ReportToCaptain_Desc
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions: []
+  failureConditions: []
+  references:
+    version: 2
+    RefIds: []

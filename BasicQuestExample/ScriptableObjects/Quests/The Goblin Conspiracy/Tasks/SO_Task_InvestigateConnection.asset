@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee1313f47e859a8418598bde4081a472, type: 3}
+  m_Name: SO_Task_InvestigateConnection
+  m_EditorClassIdentifier:
+  _description: "[Task 1/5 - DiscoveryTask] Search for evidence connecting the bandits and goblins. Find the cult symbol and ritual scroll."
+  devName: GoblinConspiracy_Task01_InvestigateConnection
+  taskId: 11aaaaaa-bbbb-cccc-dddd-eeeeffffffff
+  displayName:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Task_InvestigateConnection_Name
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  taskDescription:
+    m_TableReference:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Task_InvestigateConnection_Desc
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  conditions: []
+  failureConditions: []
+  discoverableItems: []
+  requiredDiscoveries: 2
+  references:
+    version: 2
+    RefIds: []
