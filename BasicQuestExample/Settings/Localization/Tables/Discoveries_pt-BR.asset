@@ -38,6 +38,22 @@ MonoBehaviour:
     m_Localized: Pano Rasgado
     m_Metadata:
       m_Items: []
+  - m_Id: 608501993881600
+    m_Localized: Livro de Pagamentos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502040018944
+    m_Localized: Ordens Seladas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502040018945
+    m_Localized: "S\xEDmbolo do Culto"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502044213248
+    m_Localized: Pergaminho do Ritual
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -134,6 +134,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         public void Select()
         {
             if (Toggle.IsOn) return;
+            if (_task == null || OnTaskSelected == null) return;
             OnTaskSelected.Invoke(_task);
             Toggle.SetIsOn(true);
         }

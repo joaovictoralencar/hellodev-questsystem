@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _description: Be level 5 condition
   _isInverted: 0
-  _targetValue: 5
+  targetValue: 5
   _comparisonType: 3
   GameEventInt: {fileID: 11400000, guid: 93069d475df0d0945832eea18dcaf055, type: 2}

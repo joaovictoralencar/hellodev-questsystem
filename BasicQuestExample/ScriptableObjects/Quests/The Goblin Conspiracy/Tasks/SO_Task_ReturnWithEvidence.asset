@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf6db4e33c914a4489b1099942e5d684, type: 3}
   m_Name: SO_Task_ReturnWithEvidence
   m_EditorClassIdentifier:
-  _description: "[Task 5/5 - LocationTask] Return to the village elder with evidence of the conspiracy."
+  _description: "[Task 5/5 - LocationTask] Return to the village with evidence of the cult's activities to warn the authorities."
   devName: GoblinConspiracy_Task05_ReturnWithEvidence
-  taskId: 55eeeeee-ffff-aaaa-bbbb-cccdddeeeefff
+  taskId: 55eeeeee-ffff-0000-1111-222333444555
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_ReturnWithEvidence_Name
+      m_KeyId: 45854794508714010
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -28,14 +28,14 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_ReturnWithEvidence_Desc
+      m_KeyId: 45854794508714011
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   conditions: []
   failureConditions: []
-  targetLocation: {}
+  targetLocation: {fileID: 11400000, guid: bccf3073465d85e4e954c146dfdec5be, type: 2}
   references:
     version: 2
     RefIds: []

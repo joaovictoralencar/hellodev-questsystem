@@ -16,7 +16,7 @@ MonoBehaviour:
     the chief, and return to report. Demonstrates all task types: Discovery, Location,
     Int, Bool, Timed.'
   devName: GoblinsBane
-  questId: 48a11618-643f-41c1-a4e5-7d840982537c
+  questId: 8d2a2220-1f56-4561-a04f-471478376098
   questType: {fileID: 11400000, guid: 947fb211615943e4b8922a83a03c77fa, type: 2}
   recommendedLevel: 1
   displayName:
@@ -58,8 +58,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 8a22e26044994db4fb14f3ccb0249a54, type: 2}
     - {fileID: 11400000, guid: dbe16b038ff22bd4fa3c52cb3ca53322, type: 2}
     - {fileID: 11400000, guid: 1f68f8e0a49f1954d8f118ea9b5316ee, type: 2}
-  usesTaskGroups: 1
-  tasks: []
   startConditions:
   - {fileID: 11400000, guid: c49ce0457922ab740985a6eab990c1dd, type: 2}
   - {fileID: 11400000, guid: e1f2a3b4c5d6789012345678abcdef11, type: 2}

@@ -11,8 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_TheBanditsEmployer
-  m_EditorClassIdentifier:
-  _description: "CHAIN QUEST 1: Sequel to Merchant's Stolen Goods. Investigate who hired the bandits. Requires completing Merchant's Stolen Goods first."
+  m_EditorClassIdentifier: 
+  _description: 'CHAIN QUEST 1: Sequel to Merchant''s Stolen Goods. Investigate who
+    hired the bandits. Requires completing Merchant''s Stolen Goods first.'
   devName: TheBanditsEmployer
   questId: ff888888-9999-aaaa-bbbb-ccccddddeeee
   questType: {fileID: 11400000, guid: 955a193800c30ce41b19879861efbd2f, type: 2}
@@ -21,8 +22,8 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Quest_TheBanditsEmployer_Name
+      m_KeyId: 45854794491936768
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -30,8 +31,8 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Quest_TheBanditsEmployer_Desc
+      m_KeyId: 45854794508713984
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -39,20 +40,24 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Quest_TheBanditsEmployer_Location
+      m_KeyId: 45854794508713985
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  questSprite: {fileID: 0}
+  questSprite: {fileID: 21300000, guid: 4f087569ea3509b4d89908f892316bac, type: 3}
   taskGroups:
   - groupName: Investigation
     executionMode: 0
     requiredCount: 5
-    tasks: []
-  usesTaskGroups: 1
-  tasks: []
-  startConditions: []
+    tasks:
+    - {fileID: 11400000, guid: 62980a88ce9a135418d69ce6478734ef, type: 2}
+    - {fileID: 11400000, guid: 270c681c7b2cee149af2317f710cc705, type: 2}
+    - {fileID: 11400000, guid: a921f316218fda842a71266e15418e89, type: 2}
+    - {fileID: 11400000, guid: 585e6ac9748dee94eb81be2d7f5bbcc0, type: 2}
+    - {fileID: 11400000, guid: 8b3d4d9654111ed44a6f0ced85bc049f, type: 2}
+  startConditions:
+  - {fileID: 11400000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 2}
   failureConditions: []
   globalTaskFailureConditions: []
   rewards:

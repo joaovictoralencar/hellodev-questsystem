@@ -11,18 +11,19 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_TheGoblinConspiracy
-  m_EditorClassIdentifier:
-  _description: "CHAIN QUEST 2: Unlocks after completing EITHER The Bandit's Employer OR Goblin's Bane. Uncover the dark cult manipulating the region's threats."
+  m_EditorClassIdentifier: 
+  _description: 'CHAIN QUEST 2: Unlocks after completing EITHER The Bandit''s Employer
+    OR Goblin''s Bane. Uncover the dark cult manipulating the region''s threats.'
   devName: TheGoblinConspiracy
-  questId: aabbccdd-eeff-0011-2233-445566778899
+  questId: 3cbcf0ed-0a4f-4ee8-8cb7-0bbee221de95
   questType: {fileID: 11400000, guid: 947fb211615943e4b8922a83a03c77fa, type: 2}
   recommendedLevel: 6
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Quest_TheGoblinConspiracy_Name
+      m_KeyId: 45854794508713986
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -30,8 +31,8 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Quest_TheGoblinConspiracy_Desc
+      m_KeyId: 45854794508713987
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -39,20 +40,24 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Quest_TheGoblinConspiracy_Location
+      m_KeyId: 45854794508713988
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  questSprite: {fileID: 0}
+  questSprite: {fileID: 21300000, guid: c5e3a97e218bbe449bb2aa3a2fa4a554, type: 3}
   taskGroups:
   - groupName: Uncover the Conspiracy
     executionMode: 0
     requiredCount: 5
-    tasks: []
-  usesTaskGroups: 1
-  tasks: []
-  startConditions: []
+    tasks:
+    - {fileID: 11400000, guid: 3015b9da2f37e6344b3c1a0ffe897ad3, type: 2}
+    - {fileID: 11400000, guid: 4dfb80cc7d7e9c34f9b66c0afbde4d52, type: 2}
+    - {fileID: 11400000, guid: 98ae935358d983044ab779a6fd9ce853, type: 2}
+    - {fileID: 11400000, guid: 40ff2fd3fd6c96648b782e053be1e8d4, type: 2}
+    - {fileID: 11400000, guid: 66ae43606d8633a4288604930b45039b, type: 2}
+  startConditions:
+  - {fileID: 11400000, guid: c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8, type: 2}
   failureConditions: []
   globalTaskFailureConditions: []
   rewards:

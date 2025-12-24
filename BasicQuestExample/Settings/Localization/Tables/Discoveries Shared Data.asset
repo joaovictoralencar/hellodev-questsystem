@@ -35,6 +35,22 @@ MonoBehaviour:
     m_Key: Discovery_TornCloth
     m_Metadata:
       m_Items: []
+  - m_Id: 608501993881600
+    m_Key: Discovery_PaymentLedger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502040018944
+    m_Key: Discovery_SealedOrders
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502040018945
+    m_Key: Discovery_CultSymbol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502044213248
+    m_Key: Discovery_RitualScroll
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

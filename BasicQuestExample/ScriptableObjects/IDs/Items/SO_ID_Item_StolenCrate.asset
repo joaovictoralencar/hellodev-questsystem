@@ -11,16 +11,16 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01832525b390a974fb7a9febe5472edf, type: 3}
   m_Name: SO_ID_Item_StolenCrate
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   _description: Stolen merchant crate for recovery task
   devName: Item_StolenCrate
   id: b2c3d4e5-f6a7-4890-1bcd-ef0123456789
   displayName:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:983eef58dff86de49a1cfb10028234c3
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 185647284225
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []

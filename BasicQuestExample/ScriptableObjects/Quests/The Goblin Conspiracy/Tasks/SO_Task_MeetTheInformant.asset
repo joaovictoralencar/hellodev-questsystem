@@ -19,8 +19,8 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_MeetTheInformant_Name
+      m_KeyId: 45854794508714004
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -28,8 +28,8 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_MeetTheInformant_Desc
+      m_KeyId: 45854794508714005
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []

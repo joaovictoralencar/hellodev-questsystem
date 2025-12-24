@@ -219,6 +219,152 @@ MonoBehaviour:
   - m_Id: 45247112403795992
     m_Localized: Entregue os bens recuperados ao mercador agradecido
     m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794491936768
+    m_Localized: O Empregador dos Bandidos
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713984
+    m_Localized: "Os bandidos foram contratados por algu\xE9m. Investigue quem est\xE1
+      por tr\xE1s do roubo e leve-os \xE0 justi\xE7a."
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713985
+    m_Localized: Acampamento Bandido
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713986
+    m_Localized: "A Conspira\xE7\xE3o Goblin"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713987
+    m_Localized: "Um culto sombrio est\xE1 manipulando tanto bandidos quanto goblins.
+      Descubra seus planos e pare o ritual antes que seja tarde demais."
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713988
+    m_Localized: "Ru\xEDnas Antigas"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713989
+    m_Localized: Esconderijo das Sombras
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713990
+    m_Localized: Quartel da Guarda
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713991
+    m_Localized: Local do Ritual
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713992
+    m_Localized: Retornar ao Acampamento Bandido
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713993
+    m_Localized: "Procure no acampamento por evid\xEAncias de quem contratou os bandidos"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713994
+    m_Localized: "Procurar Evid\xEAncias ({current}/{required})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45854794508713995
+    m_Localized: Encontre o livro de pagamentos e as ordens seladas ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713996
+    m_Localized: "Interrogar o L\xEDder Bandido Novamente"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713997
+    m_Localized: "Confronte o bandido capturado com as evid\xEAncias"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713998
+    m_Localized: Encontrar o Contato
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508713999
+    m_Localized: Rastreie o contato misterioso no Esconderijo das Sombras
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714000
+    m_Localized: "Relatar ao Capit\xE3o da Guarda"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714001
+    m_Localized: "Compartilhe suas descobertas com o capit\xE3o da guarda"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714002
+    m_Localized: "Investigar a Conex\xE3o ({current}/{required})"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714003
+    m_Localized: "Encontre evid\xEAncias ligando os bandidos aos goblins ({current}/{required})"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714004
+    m_Localized: Encontrar o Informante
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714005
+    m_Localized: Fale com o informante misterioso sobre o culto
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714006
+    m_Localized: "Infiltrar a Reuni\xE3o do Culto"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714007
+    m_Localized: "Entre furtivamente nas ru\xEDnas antigas onde o culto se re\xFAne"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714008
+    m_Localized: Parar o Ritual ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714009
+    m_Localized: Derrote os cultistas antes que completem o ritual ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714010
+    m_Localized: "Retornar com Evid\xEAncias"
+    m_Metadata:
+      m_Items:
+      - rid: 1502424919329210480
+  - m_Id: 45854794508714011
+    m_Localized: "Leve provas da conspira\xE7\xE3o ao anci\xE3o da vila"
+    m_Metadata:
       m_Items: []
   references:
     version: 2
@@ -264,3 +410,31 @@ MonoBehaviour:
         - id: 735317442215936
         - id: 735424451493888
         - id: 45247112403795979
+        - id: 45854794508714008
+        - id: 45854794508714009
+        - id: 45854794508714010
+        - id: 45854794508714007
+        - id: 45854794508714006
+        - id: 45854794508714005
+        - id: 45854794508714004
+        - id: 45854794508714003
+        - id: 45854794508714001
+        - id: 45854794508714002
+        - id: 45854794508714000
+        - id: 45854794508713999
+        - id: 45854794508713997
+        - id: 45854794508713996
+        - id: 45854794508713995
+        - id: 45854794508713993
+        - id: 45854794508713992
+        - id: 45854794508713991
+        - id: 45854794508713990
+        - id: 45854794508713989
+        - id: 45854794508713988
+        - id: 45854794508713998
+        - id: 45854794508713987
+        - id: 45854794508713986
+        - id: 45854794508713985
+        - id: 45854794508713984
+        - id: 45854794491936768
+        - id: 45247112403795992

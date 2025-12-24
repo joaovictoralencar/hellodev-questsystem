@@ -19,8 +19,8 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_SearchForEvidence_Name
+      m_KeyId: 45854794508713994
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -28,14 +28,16 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_SearchForEvidence_Desc
+      m_KeyId: 45854794508713995
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   conditions: []
   failureConditions: []
-  discoverableItems: []
+  discoverableItems:
+  - {fileID: 11400000, guid: ce2ca3bccacb89e4a86651cfca4e58db, type: 2}
+  - {fileID: 11400000, guid: aa454f891599f7b49843f6dc33f2417d, type: 2}
   requiredDiscoveries: 2
   references:
     version: 2

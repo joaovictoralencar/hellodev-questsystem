@@ -38,6 +38,22 @@ MonoBehaviour:
     m_Localized: Torn Cloth
     m_Metadata:
       m_Items: []
+  - m_Id: 608501993881600
+    m_Localized: Payment Ledger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502040018944
+    m_Localized: Sealed Orders
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502040018945
+    m_Localized: Cult Symbol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608502044213248
+    m_Localized: Ritual Scroll
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

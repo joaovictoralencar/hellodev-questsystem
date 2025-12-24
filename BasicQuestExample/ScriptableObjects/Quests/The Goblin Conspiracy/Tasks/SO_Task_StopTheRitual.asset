@@ -9,18 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b122bf07d976e74eb0fbbd145996568, type: 3}
+  m_Script: {fileID: 11500000, guid: c0d99648521bc004e92675dc6661ef11, type: 3}
   m_Name: SO_Task_StopTheRitual
   m_EditorClassIdentifier:
-  _description: "[Task 4/5 - IntTask] Defeat the cultists and stop their dark ritual. Kill 5 cult members."
+  _description: "[Task 4/5 - TimedTask] Stop the cult's ritual before it completes. You have 120 seconds to disrupt the ceremony."
   devName: GoblinConspiracy_Task04_StopTheRitual
-  taskId: 44dddddd-eeee-ffff-aaaa-bbbcccdddeeef
+  taskId: 44dddddd-eeee-ffff-0000-111222333444
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_StopTheRitual_Name
+      m_KeyId: 45854794508714008
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -28,14 +28,14 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: Task_StopTheRitual_Desc
+      m_KeyId: 45854794508714009
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   conditions: []
   failureConditions: []
-  requiredAmount: 5
+  duration: 120
   references:
     version: 2
     RefIds: []

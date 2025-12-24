@@ -218,6 +218,153 @@ MonoBehaviour:
   - m_Id: 45247112403795992
     m_Localized: Deliver the recovered goods to the grateful merchant
     m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794491936768
+    m_Localized: The Bandit's Employer
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713984
+    m_Localized: The bandits were hired by someone. Investigate who is behind the
+      theft and bring them to justice.
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713985
+    m_Localized: Bandit Camp
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713986
+    m_Localized: The Goblin Conspiracy
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713987
+    m_Localized: A dark cult is manipulating both bandits and goblins. Uncover their
+      plans and stop the ritual before it's too late.
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713988
+    m_Localized: Ancient Ruins
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713989
+    m_Localized: Shadow Hideout
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713990
+    m_Localized: Guard Barracks
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713991
+    m_Localized: Ritual Site
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713992
+    m_Localized: Return to the Bandit Camp
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713993
+    m_Localized: Search the camp for evidence about who hired the bandits
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713994
+    m_Localized: Search for Evidence ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713995
+    m_Localized: Find the payment ledger and sealed orders ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713996
+    m_Localized: Interrogate the Bandit Leader Again
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713997
+    m_Localized: Confront the captured bandit with the evidence
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713998
+    m_Localized: Find the Contact
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508713999
+    m_Localized: Track down the mysterious contact at the Shadow Hideout
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714000
+    m_Localized: Report to the Guard Captain
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714001
+    m_Localized: Share your findings with the guard captain
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714002
+    m_Localized: Investigate the Connection ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714003
+    m_Localized: Find evidence linking the bandits and goblins ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714004
+    m_Localized: Meet the Informant
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714005
+    m_Localized: Speak with the mysterious informant about the cult
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714006
+    m_Localized: Infiltrate the Cult Meeting
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714007
+    m_Localized: Sneak into the ancient ruins where the cult gathers
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714008
+    m_Localized: Stop the Ritual ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714009
+    m_Localized: Defeat the cultists before they complete the ritual ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714010
+    m_Localized: Return with Evidence
+    m_Metadata:
+      m_Items:
+      - rid: 1502424905934962797
+  - m_Id: 45854794508714011
+    m_Localized: Bring proof of the conspiracy to the village elder
+    m_Metadata:
       m_Items: []
   references:
     version: 2
@@ -263,3 +410,32 @@ MonoBehaviour:
         - id: 735317442215936
         - id: 735424451493888
         - id: 45247112403795979
+        - id: 45854794508714008
+        - id: 45854794508714009
+        - id: 45854794508714010
+        - id: 45854794508714007
+        - id: 45854794508714006
+        - id: 45854794508714005
+        - id: 45854794508714004
+        - id: 45854794508714003
+        - id: 45854794508714001
+        - id: 45854794508714002
+        - id: 45854794508714000
+        - id: 45854794508713999
+        - id: 45854794508713997
+        - id: 45854794508713996
+        - id: 45854794508713995
+        - id: 45854794508713994
+        - id: 45854794508713993
+        - id: 45854794508713992
+        - id: 45854794508713991
+        - id: 45854794508713990
+        - id: 45854794508713989
+        - id: 45854794508713988
+        - id: 45854794508713998
+        - id: 45854794508713987
+        - id: 45854794508713986
+        - id: 45854794508713985
+        - id: 45854794508713984
+        - id: 45854794491936768
+        - id: 45247112403795992
