@@ -5,8 +5,9 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 ## Features
 
 ### Core System
-- **QuestManager** - Singleton managing quest lifecycle, events, and state
+- **QuestManager** - Singleton managing quest and questline lifecycle, events, and state
 - **QuestRuntime / Quest_SO** - Runtime quest instances with ScriptableObject data
+- **QuestLineRuntime / QuestLine_SO** - Narrative grouping of related quests (story arcs)
 - **TaskRuntime / Task_SO** - Abstract task system with typed implementations
 
 ### Task Types
@@ -23,12 +24,29 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 - Global task failure conditions - Fail current task when met
 - Task conditions - Task completion triggers via event-driven conditions
 - **ConditionQuestState_SO** - Quest chains (Quest B requires Quest A completed)
+- **ConditionQuestLineState_SO** - QuestLine prerequisites (unlock content after completing a questline)
 
 ### Quest Chains
 - **Sequential chains** - Quest B starts only after Quest A completes
 - **Branching paths** - Quest C requires Quest A OR Quest B (CompositeCondition with OR)
 - **Locked content** - Quest D requires Quest A AND Quest B (CompositeCondition with AND)
 - **Exclusive paths** - Quest E only available if Quest A NOT failed (IsInverted)
+
+### QuestLines (Story Arcs)
+A **QuestLine** is a narrative grouping of related quests that together tell a complete story. Unlike quest chains (execution dependencies), a QuestLine is a thematic container.
+
+**AAA Examples:**
+- Skyrim: "Companions Questline", "Thieves Guild Questline"
+- Witcher 3: Story "threads" within narrative phases
+- Cyberpunk 2077: Character arcs (Panam's arc, Judy's arc)
+
+**Features:**
+- Groups quests belonging to the same storyline
+- Tracks overall progress across all contained quests (0-100%)
+- Completion rewards when all quests in the line are done
+- Optional prerequisite questlines (unlock Questline B after completing Questline A)
+- Configurable failure behavior (fail line if any quest fails)
+- Works alongside quest chains (not replacing them)
 
 ### Rewards
 - **QuestRewardType_SO** - Abstract base for custom reward types
@@ -38,7 +56,9 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 ### Events
 All major state changes fire events for UI and game integration:
 - QuestManager: `QuestAdded`, `QuestStarted`, `QuestCompleted`, `QuestFailed`, `QuestUpdated`
+- QuestManager (QuestLines): `QuestLineAdded`, `QuestLineStarted`, `QuestLineCompleted`, `QuestLineFailed`, `QuestLineUpdated`
 - Quest: `OnQuestUpdated`, `OnAnyTaskUpdated`, `OnAnyTaskCompleted`, `OnAnyTaskFailed`
+- QuestLine: `OnQuestLineStarted`, `OnQuestLineCompleted`, `OnQuestLineUpdated`, `OnQuestInLineCompleted`
 - Task: `OnTaskUpdated`, `OnTaskCompleted`, `OnTaskFailed`
 
 ## Installation
@@ -200,6 +220,58 @@ if (QuestManager.Instance.IsQuestCompleted(prerequisiteQuest))
 }
 ```
 
+### Creating QuestLines
+
+QuestLines group related quests into narrative arcs. They work alongside quest chains (execution dependencies).
+
+**Creating a QuestLine:**
+1. Create > HelloDev > Quest System > Scriptable Objects > Quest Line
+2. Set DevName and localized DisplayName/Description
+3. Add Quest_SO references to the quests list (order matters for UI)
+4. (Optional) Set a Prerequisite Line (another questline that must complete first)
+5. (Optional) Add completion rewards
+
+**Adding QuestLine Prerequisites:**
+Use `ConditionQuestLineState_SO` to unlock content after completing a questline:
+1. Create > HelloDev > Quest System > Conditions > Quest Line State Condition
+2. Set "QuestLine To Check" to the prerequisite questline
+3. Set "Target State" to `Completed`
+4. Add this condition to a quest's Start Conditions
+
+**Using QuestLines in Code:**
+```csharp
+using HelloDev.QuestSystem;
+using HelloDev.QuestSystem.QuestLines;
+using HelloDev.QuestSystem.ScriptableObjects;
+
+// Add a questline to tracking
+QuestManager.Instance.AddQuestLine(questLineSO);
+
+// Subscribe to questline events
+QuestManager.Instance.QuestLineCompleted.AddListener(OnQuestLineCompleted);
+
+// Get active questlines
+var activeLines = QuestManager.Instance.GetActiveQuestLines();
+
+// Check progress
+var line = QuestManager.Instance.GetQuestLine(questLineSO);
+float progress = line.Progress;  // 0.0 to 1.0
+int completed = line.CompletedQuestCount;
+int total = line.TotalQuestCount;
+
+// Check state
+bool isComplete = QuestManager.Instance.IsQuestLineCompleted(questLineSO);
+bool isActive = QuestManager.Instance.IsQuestLineActive(questLineSO);
+```
+
+**QuestLine vs Quest Chain:**
+| Concept | Purpose | Mechanism |
+|---------|---------|-----------|
+| Quest Chain | Execution dependency | `ConditionQuestState_SO` in startConditions |
+| QuestLine | Narrative grouping | `QuestLine_SO` containing multiple quests |
+
+Both can be used together: a QuestLine can contain quests that have chain dependencies.
+
 ## API Reference
 
 ### QuestManager
@@ -211,9 +283,12 @@ The QuestManager is the entry point for all quest operations. It manages quest l
 |----------|-------------|
 | `Instance` | Singleton instance |
 | `QuestsDatabase` | Read-only access to the quest database |
+| `QuestLinesDatabase` | Read-only access to the questline database |
 | `ActiveQuestCount` | Number of currently active quests |
 | `CompletedQuestCount` | Number of completed quests |
 | `FailedQuestCount` | Number of failed quests |
+| `ActiveQuestLineCount` | Number of currently active questlines |
+| `CompletedQuestLineCount` | Number of completed questlines |
 | `AllowMultipleActiveQuests` | Whether multiple quests can be active |
 | `AllowReplayingCompletedQuests` | Whether completed quests can be replayed |
 | `RequireQuestInDatabase` | Whether quests must be in database to be added |
@@ -237,6 +312,16 @@ The QuestManager is the entry point for all quest operations. It manages quest l
 | `IsQuestCompleted(Quest_SO)` | Check if quest is completed |
 | `IsQuestFailed(Quest_SO)` | Check if quest has failed |
 
+#### QuestLine Lifecycle Methods
+| Method | Description |
+|--------|-------------|
+| `AddQuestLine(QuestLine_SO)` | Add a questline to tracking |
+| `GetQuestLine(QuestLine_SO)` | Get active or completed questline |
+| `GetActiveQuestLines()` | Get all active questlines (read-only) |
+| `GetCompletedQuestLines()` | Get all completed questlines (read-only) |
+| `IsQuestLineActive(QuestLine_SO)` | Check if questline is active |
+| `IsQuestLineCompleted(QuestLine_SO)` | Check if questline is completed |
+
 #### Events
 | Event | Description |
 |-------|-------------|
@@ -247,6 +332,11 @@ The QuestManager is the entry point for all quest operations. It manages quest l
 | `QuestUpdated` | Fired when quest progress changes |
 | `QuestRemoved` | Fired when a quest is removed |
 | `QuestRestarted` | Fired when a quest is restarted |
+| `QuestLineAdded` | Fired when a questline is added |
+| `QuestLineStarted` | Fired when a questline starts |
+| `QuestLineCompleted` | Fired when a questline completes |
+| `QuestLineFailed` | Fired when a questline fails |
+| `QuestLineUpdated` | Fired when questline progress changes |
 
 ### QuestRuntime
 
@@ -344,6 +434,55 @@ An event-driven condition for creating quest chains. Checks if a quest is in a s
 // and fires the callback if the condition becomes true.
 ```
 
+### QuestLineRuntime
+
+The runtime representation of a questline. Access via `QuestManager.GetQuestLine(questLineSO)`.
+
+#### Properties
+| Member | Description |
+|--------|-------------|
+| `QuestLineId` | Unique GUID |
+| `Data` | Reference to QuestLine_SO |
+| `CurrentState` | Locked, Available, InProgress, Completed, Failed |
+| `Progress` | 0-1 completion percentage |
+| `CompletedQuestCount` | Number of completed quests in the line |
+| `TotalQuestCount` | Total number of quests in the line |
+| `IsComplete` | True if all quests are completed |
+| `IsAvailable` | True if questline can be started |
+| `IsInProgress` | True if at least one quest has started |
+| `IsFailed` | True if questline has failed |
+| `NextQuest` | Next incomplete quest in the line |
+| `FirstQuest` | First quest in the line |
+
+#### Events
+| Event | Description |
+|-------|-------------|
+| `OnQuestLineStarted` | QuestLine started |
+| `OnQuestLineCompleted` | QuestLine completed |
+| `OnQuestLineUpdated` | Progress changed |
+| `OnQuestLineFailed` | QuestLine failed |
+| `OnQuestInLineCompleted` | A quest in the line completed |
+
+### ConditionQuestLineState_SO
+
+An event-driven condition for questline prerequisites. Checks if a questline is in a specific state.
+
+#### Properties
+| Property | Description |
+|----------|-------------|
+| `QuestLineToCheck` | The questline whose state will be checked |
+| `TargetState` | The state to compare against (Locked, Available, InProgress, Completed, Failed) |
+| `ComparisonType` | How to compare: Equals or NotEquals |
+| `IsInverted` | Inherited from Condition_SO - inverts the result |
+
+#### Methods
+| Method | Description |
+|--------|-------------|
+| `Evaluate()` | Returns true if condition is met |
+| `SubscribeToEvent(Action)` | Subscribe to questline state changes |
+| `UnsubscribeFromEvent()` | Unsubscribe from events |
+| `ForceFulfillCondition()` | Debug: Force-trigger the callback |
+
 ## Dependencies
 
 ### Required
@@ -357,6 +496,30 @@ An event-driven condition for creating quest chains. Checks if a quest is in a s
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v1.8.0 (2025-12-24)
+**QuestLines (Story Arcs):**
+- Added `QuestLine_SO` for grouping related quests into narrative arcs
+- Added `QuestLineRuntime` for tracking progress across questline quests
+- Added `QuestLineState` enum: Locked, Available, InProgress, Completed, Failed
+- Added `ConditionQuestLineState_SO` for questline prerequisites
+- QuestManager now tracks questlines with full event support
+- Completion rewards when all quests in a line are done
+- Prerequisite questlines (unlock Questline B after completing Questline A)
+- Configurable failure behavior (fail line if any quest fails)
+
+**New QuestManager API:**
+- `AddQuestLine(QuestLine_SO)` - Add questline to tracking
+- `GetQuestLine(QuestLine_SO)` - Get questline runtime
+- `GetActiveQuestLines()` - Get all active questlines
+- `GetCompletedQuestLines()` - Get all completed questlines
+- `IsQuestLineActive(QuestLine_SO)` - Check if active
+- `IsQuestLineCompleted(QuestLine_SO)` - Check if completed
+
+**New Events:**
+- `QuestLineAdded`, `QuestLineStarted`, `QuestLineCompleted`, `QuestLineFailed`, `QuestLineUpdated`
+
+**Note:** A visual graph tool for designing quests and questlines is planned for a future release.
 
 ### v1.4.0 (2025-12-23)
 **Quest Chains:**

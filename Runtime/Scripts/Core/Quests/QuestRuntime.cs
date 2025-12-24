@@ -313,9 +313,25 @@ namespace HelloDev.QuestSystem.Quests
         {
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
-                if (condition is IConditionEventDriven conditionEventDriven) 
-                    conditionEventDriven.SubscribeToEvent(StartQuest);
-                QuestLogger.Log($"Subscribed event {condition.name} to start conditions for quest '{QuestData.DevName}'.");
+                if (condition is IConditionEventDriven conditionEventDriven)
+                    conditionEventDriven.SubscribeToEvent(TryStartQuestIfConditionsMet);
+                QuestLogger.Log($"Subscribed to '{condition.name}' for quest '{QuestData.DevName}' start conditions.");
+            }
+        }
+
+        /// <summary>
+        /// Called when any start condition event fires. Re-checks ALL conditions before starting.
+        /// </summary>
+        private void TryStartQuestIfConditionsMet()
+        {
+            // Already started
+            if (CurrentState != QuestState.NotStarted) return;
+
+            // Re-check ALL conditions
+            if (CheckStartConditions())
+            {
+                QuestLogger.Log($"All start conditions met for quest '{QuestData.DevName}'. Starting quest.");
+                StartQuest();
             }
         }
 

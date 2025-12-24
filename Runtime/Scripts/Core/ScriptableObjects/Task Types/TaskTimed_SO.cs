@@ -108,6 +108,28 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     existingLimit.Value = limitString;
             }
 
+            // Add "current" and "required" for compatibility with common localization patterns
+            // For timed tasks: current = remaining time, required = time limit
+            if (!stringReference.TryGetValue("current", out IVariable currentVariable))
+            {
+                stringReference.Add("current", new StringVariable { Value = timeString });
+            }
+            else
+            {
+                if (currentVariable is StringVariable existingCurrent)
+                    existingCurrent.Value = timeString;
+            }
+
+            if (!stringReference.TryGetValue("required", out IVariable requiredVariable))
+            {
+                stringReference.Add("required", new StringVariable { Value = limitString });
+            }
+            else
+            {
+                if (requiredVariable is StringVariable existingRequired)
+                    existingRequired.Value = limitString;
+            }
+
             // Refresh the localized string so UI updates immediately
             taskNameText.RefreshString();
         }

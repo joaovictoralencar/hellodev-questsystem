@@ -1,8 +1,8 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "1.4.0",
+  "version": "1.8.0",
   "displayName": "Quest System",
-  "description": "A comprehensive quest system for Unity games with support for objectives, rewards, and progression tracking.",
+  "description": "A comprehensive quest system for Unity games with support for quests, questlines, objectives, rewards, and progression tracking.",
   "unity": "6000.1",
   "unityRelease": "1f1",
   "documentationUrl": "https://github.com/joaovictoralencar/unity-quest-system#readme",
@@ -10,6 +10,7 @@
   "licensesUrl": "https://github.com/joaovictoralencar/unity-quest-system/blob/main/LICENSE.md",
   "keywords": [
     "quest",
+    "questline",
     "rpg",
     "game system",
     "objectives",

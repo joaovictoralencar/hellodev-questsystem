@@ -1,3 +1,6 @@
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 using UnityEngine;
 using UnityEngine.Localization;
 
@@ -18,6 +21,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [SerializeField]
         private Color color;
         
+#if ODIN_INSPECTOR
+        [PreviewField]
+#endif
         [SerializeField]
         private Sprite icon;
 
