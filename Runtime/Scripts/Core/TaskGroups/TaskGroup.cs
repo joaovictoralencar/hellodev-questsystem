@@ -55,17 +55,29 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// <summary>
         /// Optional name for this task group.
         /// </summary>
-        public string GroupName => groupName;
+        public string GroupName
+        {
+            get => groupName;
+            set => groupName = value;
+        }
 
         /// <summary>
         /// How tasks in this group should be executed.
         /// </summary>
-        public TaskExecutionMode ExecutionMode => executionMode;
+        public TaskExecutionMode ExecutionMode
+        {
+            get => executionMode;
+            set => executionMode = value;
+        }
 
         /// <summary>
         /// For OptionalXofY mode: minimum number of tasks required to complete the group.
         /// </summary>
-        public int RequiredCount => requiredCount;
+        public int RequiredCount
+        {
+            get => requiredCount;
+            set => requiredCount = value;
+        }
 
         /// <summary>
         /// Tasks in this group.
