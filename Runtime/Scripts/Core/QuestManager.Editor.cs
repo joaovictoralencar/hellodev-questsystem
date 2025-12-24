@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.ScriptableObjects;
 using UnityEngine;
 #if ODIN_INSPECTOR
@@ -64,6 +65,43 @@ namespace HelloDev.QuestSystem
             int validCount = questsDatabase.Count(q => q != null);
             return $"{validCount} quest(s) in database.";
         }
+
+        private string GetQuestLineDatabaseInfoMessage()
+        {
+            if (questLinesDatabase == null || questLinesDatabase.Count == 0)
+                return "No questlines in database. Add QuestLine_SO assets to enable questlines.";
+            int validCount = questLinesDatabase.Count(l => l != null);
+            return $"{validCount} questline(s) in database.";
+        }
+
+        [TitleGroup("QuestLine Runtime State")]
+        [PropertyOrder(55)]
+        [ShowInInspector, ReadOnly]
+        [ShowIf(nameof(IsPlayingWithActiveQuestLines))]
+        private string QuestLineStatusSummary => Application.isPlaying
+            ? $"Active: {ActiveQuestLineCount} | Completed: {CompletedQuestLineCount}"
+            : "Not in Play mode";
+
+        [TitleGroup("QuestLine Runtime State")]
+        [PropertyOrder(56)]
+        [ShowInInspector, ReadOnly]
+        [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
+        [ShowIf(nameof(IsPlayingWithActiveQuestLines))]
+        private List<string> ActiveQuestLineNames => _activeQuestLines.Values
+            .Select(l => $"{l.Data.DevName} ({l.Progress:P0})")
+            .ToList() ?? new List<string>();
+
+        [TitleGroup("QuestLine Runtime State")]
+        [PropertyOrder(57)]
+        [ShowInInspector, ReadOnly]
+        [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
+        [ShowIf(nameof(IsPlayingWithCompletedQuestLines))]
+        private List<string> CompletedQuestLineNames => _completedQuestLines.Values
+            .Select(l => l.Data.DevName)
+            .ToList() ?? new List<string>();
+
+        private bool IsPlayingWithActiveQuestLines => Application.isPlaying && _activeQuestLines.Count > 0;
+        private bool IsPlayingWithCompletedQuestLines => Application.isPlaying && _completedQuestLines.Count > 0;
 #endif
 
         #endregion
