@@ -15,32 +15,16 @@ MonoBehaviour:
   m_TableCollectionName: Quests
   m_TableCollectionNameGuidString: 05b8775364730764ab5bf1891aa1cb86
   m_Entries:
-  - m_Id: 735651774382080
-    m_Key: Location_Wasteland
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3835554264301568
-    m_Key: Location_Campsite_Goblins
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112382824448
-    m_Key: Location_Village
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795968
-    m_Key: Location_Market
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795969
-    m_Key: Location_BanditCamp
+  - m_Id: 736137437036544
+    m_Key: Quest_Name_MQ001_GoblinsBane
     m_Metadata:
       m_Items: []
   - m_Id: 736338700713984
     m_Key: Quest_Description_MQ001_GoblinsBane
     m_Metadata:
       m_Items: []
-  - m_Id: 736137437036544
-    m_Key: Quest_Name_MQ001_GoblinsBane
+  - m_Id: 47741405567696896
+    m_Key: Quest_Location_MQ001_GoblinsBane
     m_Metadata:
       m_Items: []
   - m_Id: 45247112403795970
@@ -53,122 +37,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 45247112403795972
     m_Key: Quest_Location_SQ001_MerchantsStolenGoods
-    m_Metadata:
-      m_Items: []
-  - m_Id: 734280610267136
-    m_Key: QuestType_Completed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 735193919963136
-    m_Key: QuestType_Failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 735317442215936
-    m_Key: QuestType_Main
-    m_Metadata:
-      m_Items: []
-  - m_Id: 735424451493888
-    m_Key: QuesType_Special
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5682838304243712
-    m_Key: QuestType_Secondary
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795973
-    m_Key: Task_Name_InvestigateAttacks
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795974
-    m_Key: Task_Description_InvestigateAttacks
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795975
-    m_Key: Task_Name_TrackGoblinCamp
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795976
-    m_Key: Task_Description_TrackGoblinCamp
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3834205569073152
-    m_Key: Task_Description_FindGoblinsCampsite
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3443382889267200
-    m_Key: Task_Description_KillGoblins
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3825140356923392
-    m_Key: Task_Name_FindLocation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1815936309968896
-    m_Key: Task_Name_Kill_Count_Target
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795977
-    m_Key: Task_Name_DefeatGoblinChief
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795978
-    m_Key: Task_Description_DefeatGoblinChief
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795979
-    m_Key: Task_Name_ReturnToVillage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795980
-    m_Key: Task_Description_ReturnToVillage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795981
-    m_Key: Task_Name_TalkToMerchant
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795982
-    m_Key: Task_Description_TalkToMerchant
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795983
-    m_Key: Task_Name_SearchCrimeScene
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795984
-    m_Key: Task_Description_SearchCrimeScene
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795985
-    m_Key: Task_Name_FollowTheTrail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795986
-    m_Key: Task_Description_FollowTheTrail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795987
-    m_Key: Task_Name_RecoverGoods
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795988
-    m_Key: Task_Description_RecoverGoods
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795989
-    m_Key: Task_Name_InterrogateBanditLeader
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795990
-    m_Key: Task_Description_InterrogateBanditLeader
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795991
-    m_Key: Task_Name_ReturnToMerchant
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45247112403795992
-    m_Key: Task_Description_ReturnToMerchant
     m_Metadata:
       m_Items: []
   - m_Id: 45854794491936768
@@ -195,96 +63,24 @@ MonoBehaviour:
     m_Key: Quest_Location_TheGoblinConspiracy
     m_Metadata:
       m_Items: []
-  - m_Id: 45854794508713989
-    m_Key: Location_ShadowHideout
+  - m_Id: 734280610267136
+    m_Key: QuestType_Completed
     m_Metadata:
       m_Items: []
-  - m_Id: 45854794508713990
-    m_Key: Location_GuardBarracks
+  - m_Id: 735193919963136
+    m_Key: QuestType_Failed
     m_Metadata:
       m_Items: []
-  - m_Id: 45854794508713991
-    m_Key: Location_RitualSite
+  - m_Id: 735317442215936
+    m_Key: QuestType_Main
     m_Metadata:
       m_Items: []
-  - m_Id: 45854794508713992
-    m_Key: Task_Name_ReturnToBanditCamp
+  - m_Id: 735424451493888
+    m_Key: QuestType_Special
     m_Metadata:
       m_Items: []
-  - m_Id: 45854794508713993
-    m_Key: Task_Description_ReturnToBanditCamp
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508713994
-    m_Key: Task_Name_SearchForEvidence
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508713995
-    m_Key: Task_Description_SearchForEvidence
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508713996
-    m_Key: Task_Name_InterrogateBanditAgain
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508713997
-    m_Key: Task_Description_InterrogateBanditAgain
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508713998
-    m_Key: Task_Name_FindTheContact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508713999
-    m_Key: Task_Description_FindTheContact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714000
-    m_Key: Task_Name_ReportToCaptain
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714001
-    m_Key: Task_Description_ReportToCaptain
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714002
-    m_Key: Task_Name_InvestigateConnection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714003
-    m_Key: Task_Description_InvestigateConnection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714004
-    m_Key: Task_Name_MeetTheInformant
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714005
-    m_Key: Task_Description_MeetTheInformant
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714006
-    m_Key: Task_Name_InfiltrateCultMeeting
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714007
-    m_Key: Task_Description_InfiltrateCultMeeting
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714008
-    m_Key: Task_Name_StopTheRitual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714009
-    m_Key: Task_Description_StopTheRitual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714010
-    m_Key: Task_Name_ReturnWithEvidence
-    m_Metadata:
-      m_Items: []
-  - m_Id: 45854794508714011
-    m_Key: Task_Description_ReturnWithEvidence
+  - m_Id: 5682838304243712
+    m_Key: QuestType_Secondary
     m_Metadata:
       m_Items: []
   m_Metadata:

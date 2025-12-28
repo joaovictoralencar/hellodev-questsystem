@@ -39,9 +39,9 @@ MonoBehaviour:
     m_LocalVariables: []
   questLocation:
     m_TableReference:
-      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+      m_TableCollectionName: GUID:007160a1500c2c4449d3173c3765232f
     m_TableEntryReference:
-      m_KeyId: 45247112403795972
+      m_KeyId: 273798971392
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
@@ -52,9 +52,9 @@ MonoBehaviour:
     stageName: Introduction
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 47952478221
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -79,9 +79,9 @@ MonoBehaviour:
     stageName: Investigation
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 47952478217
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -107,9 +107,9 @@ MonoBehaviour:
     stageName: Recovery
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 47952478222
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -135,9 +135,9 @@ MonoBehaviour:
     stageName: Resolution
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 47952478220
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0

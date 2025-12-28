@@ -1,0 +1,204 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Tasks Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Tasks
+  m_TableCollectionNameGuidString: 59db1f323ac856541907d820639446db
+  m_Entries:
+  - m_Id: 269210402816
+    m_Key: Task_Name_InvestigateAttacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374336
+    m_Key: Task_Description_InvestigateAttacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374337
+    m_Key: Task_Name_TrackGoblinCamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374338
+    m_Key: Task_Description_TrackGoblinCamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3834205569073152
+    m_Key: Task_Description_FindGoblinsCampsite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3443382889267200
+    m_Key: Task_Description_KillGoblins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3825140356923392
+    m_Key: Task_Name_FindLocation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815936309968896
+    m_Key: Task_Name_Kill_Count_Target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374339
+    m_Key: Task_Name_DefeatGoblinChief
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374340
+    m_Key: Task_Description_DefeatGoblinChief
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374341
+    m_Key: Task_Name_ReturnToVillage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374342
+    m_Key: Task_Description_ReturnToVillage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374343
+    m_Key: Task_Name_TalkToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374344
+    m_Key: Task_Description_TalkToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374345
+    m_Key: Task_Name_SearchCrimeScene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374346
+    m_Key: Task_Description_SearchCrimeScene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374347
+    m_Key: Task_Name_FollowTheTrail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374348
+    m_Key: Task_Description_FollowTheTrail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374349
+    m_Key: Task_Name_RecoverGoods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374350
+    m_Key: Task_Description_RecoverGoods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374351
+    m_Key: Task_Name_InterrogateBanditLeader
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374352
+    m_Key: Task_Description_InterrogateBanditLeader
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374353
+    m_Key: Task_Name_ReturnToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374354
+    m_Key: Task_Description_ReturnToMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374355
+    m_Key: Task_Name_ReturnToBanditCamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374356
+    m_Key: Task_Description_ReturnToBanditCamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374357
+    m_Key: Task_Name_SearchForEvidence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374358
+    m_Key: Task_Description_SearchForEvidence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374359
+    m_Key: Task_Name_InterrogateBanditAgain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374360
+    m_Key: Task_Description_InterrogateBanditAgain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374361
+    m_Key: Task_Name_FindTheContact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374362
+    m_Key: Task_Description_FindTheContact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374363
+    m_Key: Task_Name_ReportToCaptain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374364
+    m_Key: Task_Description_ReportToCaptain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374365
+    m_Key: Task_Name_InvestigateConnection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374366
+    m_Key: Task_Description_InvestigateConnection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374367
+    m_Key: Task_Name_MeetTheInformant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374368
+    m_Key: Task_Description_MeetTheInformant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374369
+    m_Key: Task_Name_InfiltrateCultMeeting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374370
+    m_Key: Task_Description_InfiltrateCultMeeting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374371
+    m_Key: Task_Name_StopTheRitual
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374372
+    m_Key: Task_Description_StopTheRitual
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374373
+    m_Key: Task_Name_ReturnWithEvidence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374374
+    m_Key: Task_Description_ReturnWithEvidence
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 8674111653083349232
+  references:
+    version: 2
+    RefIds:
+    - rid: 8674111653083349232
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1766948699131

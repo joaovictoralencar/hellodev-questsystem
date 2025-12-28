@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Stages_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: ccbd9d2a3cd282b4d94cebc2587a2f74, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 47914729472
+    m_Localized: Investigation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478208
+    m_Localized: Tracking & Combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478209
+    m_Localized: Boss Confrontation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478210
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478211
+    m_Localized: Introduction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478212
+    m_Localized: Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478213
+    m_Localized: Evidence Gathering
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478214
+    m_Localized: Confrontation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478215
+    m_Localized: Infiltration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478216
+    m_Localized: Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478217
+    m_Localized: Begin your investigation by gathering clues and speaking with witnesses.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478218
+    m_Localized: Track down the enemy hideout and engage hostile forces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478219
+    m_Localized: Confront the leader and put an end to the threat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478220
+    m_Localized: Return to report your success and claim your reward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478221
+    m_Localized: Learn about the situation and accept the quest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478222
+    m_Localized: Recover the stolen items and deal with the culprits.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478223
+    m_Localized: Search for evidence that reveals who is behind this.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478224
+    m_Localized: Confront those responsible with your findings.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478225
+    m_Localized: Sneak into the enemy stronghold undetected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478226
+    m_Localized: Act quickly before time runs out!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478227
+    m_Localized: Skip to Boss (campsite found)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478228
+    m_Localized: Skip to Resolution (sealed orders found)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478229
+    m_Localized: Skip to Action (informant revealed location)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478230
+    m_Localized: Skip to Resolution (cult leader defeated)
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

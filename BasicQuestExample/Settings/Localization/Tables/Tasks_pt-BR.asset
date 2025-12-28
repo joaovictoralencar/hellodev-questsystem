@@ -1,0 +1,203 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Tasks_pt-BR
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: pt-BR
+  m_SharedData: {fileID: 11400000, guid: 59db1f323ac856541907d820639446db, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 269210402816
+    m_Localized: Investigar os Ataques ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374336
+    m_Localized: Examine as pistas deixadas pelos ataques dos goblins ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374337
+    m_Localized: Rastrear o Acampamento Goblin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374338
+    m_Localized: Siga a trilha para encontrar o esconderijo dos goblins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3834205569073152
+    m_Localized: "Siga a trilha de mercadorias descartadas para encontrar a origem
+      dos ataques dos goblins. Parece que eles est\xE3o operando a partir de um antigo
+      acampamento abandonado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3443382889267200
+    m_Localized: "A sacola do mercador n\xE3o foi encontrada em lugar nenhum, mas
+      o acampamento est\xE1 infestado de goblins. Voc\xEA precisar\xE1 elimin\xE1-los
+      antes que seus n\xFAmeros se tornem uma amea\xE7a real."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3825140356923392
+    m_Localized: Encontre {object} em {location}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815936309968896
+    m_Localized: Mate {current}/{required} {target}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374339
+    m_Localized: Derrotar o Chefe Goblin ({remaining})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374340
+    m_Localized: Derrote o chefe antes do tempo acabar! ({time}s restantes)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374341
+    m_Localized: "Retornar \xE0 Vila"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374342
+    m_Localized: "Relate sua vit\xF3ria ao anci\xE3o da vila"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374343
+    m_Localized: Falar com o Mercador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374344
+    m_Localized: Converse com o mercador aflito sobre o roubo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374345
+    m_Localized: Investigar a Cena do Crime ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374346
+    m_Localized: Procure pistas no local do roubo ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374347
+    m_Localized: Seguir a Trilha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374348
+    m_Localized: "Rastreie os bandidos at\xE9 seu esconderijo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374349
+    m_Localized: Recuperar os Bens Roubados ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374350
+    m_Localized: Colete as caixas roubadas ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374351
+    m_Localized: "Interrogar o L\xEDder Bandido"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374352
+    m_Localized: "Descubra o nome do l\xEDder bandido"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374353
+    m_Localized: Retornar ao Mercador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374354
+    m_Localized: Entregue os bens recuperados ao mercador agradecido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374355
+    m_Localized: Retornar ao Acampamento Bandido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374356
+    m_Localized: "Procure no acampamento por evid\xEAncias de quem contratou os bandidos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374357
+    m_Localized: "Procurar Evid\xEAncias ({current}/{required})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374358
+    m_Localized: Encontre o livro de pagamentos e as ordens seladas ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374359
+    m_Localized: "Interrogar o L\xEDder Bandido Novamente"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374360
+    m_Localized: "Confronte o bandido capturado com as evid\xEAncias"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374361
+    m_Localized: Encontrar o Contato
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374362
+    m_Localized: Rastreie o contato misterioso no Esconderijo das Sombras
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374363
+    m_Localized: "Relatar ao Capit\xE3o da Guarda"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374364
+    m_Localized: "Compartilhe suas descobertas com o capit\xE3o da guarda"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374365
+    m_Localized: "Investigar a Conex\xE3o ({current}/{required})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374366
+    m_Localized: "Encontre evid\xEAncias ligando os bandidos aos goblins ({current}/{required})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374367
+    m_Localized: Encontrar o Informante
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374368
+    m_Localized: Fale com o informante misterioso sobre o culto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374369
+    m_Localized: "Infiltrar a Reuni\xE3o do Culto"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374370
+    m_Localized: "Entre furtivamente nas ru\xEDnas antigas onde o culto se re\xFAne"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374371
+    m_Localized: Parar o Ritual ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374372
+    m_Localized: Derrote os cultistas antes que completem o ritual ({current}/{required})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374373
+    m_Localized: "Retornar com Evid\xEAncias"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 269231374374
+    m_Localized: "Leve provas da conspira\xE7\xE3o ao anci\xE3o da vila"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

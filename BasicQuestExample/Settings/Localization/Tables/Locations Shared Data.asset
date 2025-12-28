@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Locations Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Locations
+  m_TableCollectionNameGuidString: 007160a1500c2c4449d3173c3765232f
+  m_Entries:
+  - m_Id: 735651774382080
+    m_Key: Location_Wasteland
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3835554264301568
+    m_Key: Location_Campsite_Goblins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273782194176
+    m_Key: Location_Village
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971392
+    m_Key: Location_Market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971393
+    m_Key: Location_BanditCamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971394
+    m_Key: Location_ShadowHideout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971395
+    m_Key: Location_GuardBarracks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971396
+    m_Key: Location_RitualSite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971397
+    m_Key: Location_ForestRoad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 273798971398
+    m_Key: Location_AncientRuins
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 8674111653083349231
+  references:
+    version: 2
+    RefIds:
+    - rid: 8674111653083349231
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1766948688637

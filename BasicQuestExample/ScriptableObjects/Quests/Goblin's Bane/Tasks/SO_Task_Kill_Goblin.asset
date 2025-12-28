@@ -17,7 +17,7 @@ MonoBehaviour:
   taskId: 28573f7a-f56f-42e3-b9a6-d821621ff44b
   displayName:
     m_TableReference:
-      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
       m_KeyId: 1815936309968896
       m_Key: 
@@ -35,7 +35,7 @@ MonoBehaviour:
         rid: 1502424905934962801
   taskDescription:
     m_TableReference:
-      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
       m_KeyId: 3443382889267200
       m_Key: 

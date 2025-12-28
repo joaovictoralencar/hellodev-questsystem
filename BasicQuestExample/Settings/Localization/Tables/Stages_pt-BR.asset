@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Stages_pt-BR
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: pt-BR
+  m_SharedData: {fileID: 11400000, guid: ccbd9d2a3cd282b4d94cebc2587a2f74, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 47914729472
+    m_Localized: "Investiga\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478208
+    m_Localized: Rastreamento & Combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478209
+    m_Localized: Confronto com o Chefe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478210
+    m_Localized: "Resolu\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478211
+    m_Localized: "Introdu\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478212
+    m_Localized: "Recupera\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478213
+    m_Localized: "Coleta de Evid\xEAncias"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478214
+    m_Localized: Confronto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478215
+    m_Localized: "Infiltra\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478216
+    m_Localized: "A\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478217
+    m_Localized: "Comece sua investiga\xE7\xE3o coletando pistas e falando com testemunhas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478218
+    m_Localized: "Rastreie o esconderijo inimigo e enfrente as for\xE7as hostis."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478219
+    m_Localized: "Confronte o l\xEDder e ponha fim \xE0 amea\xE7a."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478220
+    m_Localized: Retorne para relatar seu sucesso e receba sua recompensa.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478221
+    m_Localized: "Aprenda sobre a situa\xE7\xE3o e aceite a miss\xE3o."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478222
+    m_Localized: Recupere os itens roubados e lide com os culpados.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478223
+    m_Localized: "Procure por evid\xEAncias que revelem quem est\xE1 por tr\xE1s
+      disso."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478224
+    m_Localized: "Confronte os respons\xE1veis com suas descobertas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478225
+    m_Localized: Entre furtivamente na fortaleza inimiga sem ser detectado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478226
+    m_Localized: Aja rapidamente antes que o tempo acabe!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478227
+    m_Localized: Ir ao Chefe (acampamento encontrado)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478228
+    m_Localized: "Ir \xE0 Resolu\xE7\xE3o (ordens seladas encontradas)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478229
+    m_Localized: "Ir \xE0 A\xE7\xE3o (informante revelou localiza\xE7\xE3o)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478230
+    m_Localized: "Ir \xE0 Resolu\xE7\xE3o (l\xEDder do culto derrotado)"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

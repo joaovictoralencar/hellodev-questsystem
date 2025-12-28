@@ -1,0 +1,124 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Stages Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Stages
+  m_TableCollectionNameGuidString: ccbd9d2a3cd282b4d94cebc2587a2f74
+  m_Entries:
+  - m_Id: 47914729472
+    m_Key: Stage_Investigation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478208
+    m_Key: Stage_TrackingCombat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478209
+    m_Key: Stage_BossConfrontation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478210
+    m_Key: Stage_Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478211
+    m_Key: Stage_Introduction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478212
+    m_Key: Stage_Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478213
+    m_Key: Stage_EvidenceGathering
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478214
+    m_Key: Stage_Confrontation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478215
+    m_Key: Stage_Infiltration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478216
+    m_Key: Stage_Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478217
+    m_Key: Stage_Journal_Investigation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478218
+    m_Key: Stage_Journal_TrackingCombat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478219
+    m_Key: Stage_Journal_BossConfrontation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478220
+    m_Key: Stage_Journal_Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478221
+    m_Key: Stage_Journal_Introduction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478222
+    m_Key: Stage_Journal_Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478223
+    m_Key: Stage_Journal_EvidenceGathering
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478224
+    m_Key: Stage_Journal_Confrontation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478225
+    m_Key: Stage_Journal_Infiltration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478226
+    m_Key: Stage_Journal_Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478227
+    m_Key: Transition_SkipToBoss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478228
+    m_Key: Transition_SkipToResolution_Evidence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478229
+    m_Key: Transition_SkipToAction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47952478230
+    m_Key: Transition_SkipToResolution_Leader
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 8674111653083349233
+  references:
+    version: 2
+    RefIds:
+    - rid: 8674111653083349233
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1766948706776
