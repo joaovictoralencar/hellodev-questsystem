@@ -54,6 +54,12 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [ShowInInspector, HideLabel, ReadOnly, DisplayAsString]
         private string _conditionsPlaceholder => "";
 
+        [TabGroup("Tabs", "Overview")]
+        [OnInspectorGUI("DrawQuestLinesSection")]
+        [PropertyOrder(-40)]
+        [ShowInInspector, HideLabel, ReadOnly, DisplayAsString]
+        private string _questLinesPlaceholder => "";
+
         #endregion
 
         #region Quick Actions Tab
@@ -806,6 +812,114 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             DrawConditionList("Global Task Failure", globalTaskFailureConditions, new Color(0.9f, 0.6f, 0.3f));
         }
 
+        private void DrawQuestLinesSection()
+        {
+            GUILayout.Space(8);
+            DrawSectionHeader("Part of QuestLines", new Color(0.6f, 0.4f, 0.8f));
+
+            var containingQuestLines = FindContainingQuestLines();
+
+            if (containingQuestLines.Count == 0)
+            {
+                DrawEmptyState("Not part of any questline");
+                return;
+            }
+
+            var cardBg = new Color(0.2f, 0.2f, 0.2f);
+            var accentColor = new Color(0.6f, 0.4f, 0.8f);
+
+            foreach (var questLine in containingQuestLines)
+            {
+                float rowHeight = 44f;
+                var rowRect = GUILayoutUtility.GetRect(0, rowHeight, GUILayout.ExpandWidth(true));
+                DrawRoundedRect(rowRect, cardBg, 4f);
+
+                float padding = 8f;
+
+                // QuestLine icon
+                float iconSize = 32f;
+                var iconRect = new Rect(rowRect.x + padding, rowRect.y + (rowHeight - iconSize) / 2f, iconSize, iconSize);
+                if (questLine.Icon != null)
+                {
+                    GUI.DrawTexture(iconRect, questLine.Icon.texture, ScaleMode.ScaleToFit);
+                }
+                else
+                {
+                    EditorGUI.DrawRect(iconRect, new Color(0.25f, 0.25f, 0.25f));
+                    var placeholderStyle = new GUIStyle(EditorStyles.miniLabel)
+                    {
+                        fontSize = 10,
+                        alignment = TextAnchor.MiddleCenter,
+                        normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
+                    };
+                    GUI.Label(iconRect, "QL", placeholderStyle);
+                }
+
+                // QuestLine name
+                var nameRect = new Rect(iconRect.xMax + 10, rowRect.y + 6, rowRect.width - 220, 18);
+                GUI.Label(nameRect, questLine.DevName, Styles.ItemName);
+
+                // Quest count tag
+                var countText = $"{questLine.QuestCount} quests";
+                var tagRect = new Rect(iconRect.xMax + 10, rowRect.y + 26, 70, 14);
+                DrawMiniTag(tagRect, countText, new Color(0.4f, 0.4f, 0.4f));
+
+                // Position in line
+                int position = GetQuestPositionInLine(questLine);
+                if (position > 0)
+                {
+                    var posTagRect = new Rect(tagRect.xMax + 6, rowRect.y + 26, 50, 14);
+                    DrawMiniTag(posTagRect, $"#{position}", accentColor);
+                }
+
+                // Object field
+                var fieldRect = new Rect(rowRect.xMax - padding - 150, rowRect.y + (rowHeight - EditorGUIUtility.singleLineHeight) / 2f,
+                                        150, EditorGUIUtility.singleLineHeight);
+                EditorGUI.ObjectField(fieldRect, questLine, typeof(QuestLine_SO), false);
+
+                GUILayout.Space(2);
+            }
+        }
+
+        private List<QuestLine_SO> FindContainingQuestLines()
+        {
+            var result = new List<QuestLine_SO>();
+
+            // Find all QuestLine_SO assets in the project
+            var guids = AssetDatabase.FindAssets("t:QuestLine_SO");
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var questLine = AssetDatabase.LoadAssetAtPath<QuestLine_SO>(path);
+
+                if (questLine != null && questLine.Quests != null)
+                {
+                    foreach (var quest in questLine.Quests)
+                    {
+                        if (quest == this)
+                        {
+                            result.Add(questLine);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private int GetQuestPositionInLine(QuestLine_SO questLine)
+        {
+            if (questLine.Quests == null) return 0;
+
+            for (int i = 0; i < questLine.Quests.Count; i++)
+            {
+                if (questLine.Quests[i] == this)
+                    return i + 1;
+            }
+            return 0;
+        }
+
         private void DrawValidationSection()
         {
             var issues = GetValidationIssues();
@@ -927,6 +1041,21 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                         issues.Add($"Reward at index {i} has no type");
                     else if (rewards[i].Amount <= 0)
                         issues.Add($"Reward '{rewards[i].RewardType.name}' has invalid amount");
+                }
+            }
+
+            // Validate event-driven conditions have target values (uses Task_SO's static helper)
+            issues.AddRange(Task_SO.ValidateEventDrivenConditions(startConditions, "Start Conditions"));
+            issues.AddRange(Task_SO.ValidateEventDrivenConditions(failureConditions, "Failure Conditions"));
+            issues.AddRange(Task_SO.ValidateEventDrivenConditions(globalTaskFailureConditions, "Global Task Failure"));
+
+            // Validate task conditions (calls Task_SO's instance method)
+            if (AllTasks != null)
+            {
+                foreach (var task in AllTasks)
+                {
+                    if (task == null) continue;
+                    issues.AddRange(task.GetEventDrivenConditionIssues());
                 }
             }
 
