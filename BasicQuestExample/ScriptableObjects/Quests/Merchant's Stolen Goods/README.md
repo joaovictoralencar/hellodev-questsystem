@@ -4,6 +4,7 @@ A secondary quest demonstrating all available task types in the HelloDev Quest S
 
 > **Validation Status:** All GUID references verified correct (2025-12-21)
 > **Update:** Fixed BoolTask conditions - TalkToMerchant now has DialogueComplete condition
+> **Updated:** 2025-12-28 - Added stage structure and quest chain documentation
 
 ## Quest Overview
 
@@ -17,6 +18,64 @@ A secondary quest demonstrating all available task types in the HelloDev Quest S
 ### Story Summary
 
 A traveling merchant's goods have been stolen by bandits while passing through the forest. The player must investigate the crime scene, track down the bandits, recover the stolen goods, interrogate the bandit leader, and return the goods to the grateful merchant.
+
+---
+
+## Quest Chain Context
+
+```
+The Merchant's Stolen Goods (Lvl 3)  ←── YOU ARE HERE
+         │
+         ▼
+  The Bandit's Employer (Lvl 4)
+         │
+         └──────────────┬──────────────────────────┐
+                        ▼                          │
+              The Goblin Conspiracy (Lvl 6)        │
+                        ▲                          │
+                        │                          │
+                 Goblin's Bane (Lvl 5) ────────────┘
+```
+
+This quest is the starting point for one of two paths to "The Goblin Conspiracy." Completing this quest unlocks "The Bandit's Employer" which continues the investigation.
+
+---
+
+## Stage Structure (Proposed)
+
+This quest can be organized into 4 stages for better pacing:
+
+### Stage 0: Introduction
+| Task | Type | Description |
+|------|------|-------------|
+| Talk to the Merchant | BoolTask | Speak with the distraught merchant |
+
+**Transition:** Automatic when dialogue complete
+
+### Stage 1: Investigation
+| Task | Type | Description |
+|------|------|-------------|
+| Search the Crime Scene | DiscoveryTask | Find wagon tracks and torn cloth (2/2) |
+| Follow the Trail | LocationTask | Track the bandits to their hideout |
+
+**Transition:** Automatic when all tasks complete
+**Note:** Tasks can be parallel (follow trail while searching)
+
+### Stage 2: Recovery
+| Task | Type | Description |
+|------|------|-------------|
+| Recover the Goods | IntTask | Collect 3 stolen crates |
+| Interrogate the Leader | StringTask | Learn the bandit leader's name |
+
+**Transition:** Automatic when all tasks complete
+**Note:** Tasks can be parallel (interrogate while recovering)
+
+### Stage 3: Resolution
+| Task | Type | Description |
+|------|------|-------------|
+| Return to the Merchant | LocationTask | Bring back the goods |
+
+**Transition:** Quest completes
 
 ---
 

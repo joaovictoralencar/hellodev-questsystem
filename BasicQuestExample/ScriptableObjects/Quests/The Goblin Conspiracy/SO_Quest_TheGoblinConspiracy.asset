@@ -11,9 +11,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_TheGoblinConspiracy
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   _description: 'CHAIN QUEST 2: Unlocks after completing EITHER The Bandit''s Employer
-    OR Goblin''s Bane. Uncover the dark cult manipulating the region''s threats.'
+    OR Goblin''s Bane. Uncover the dark cult manipulating the region''s threats.
+    4 stages: Investigation (Parallel), Infiltration, Action (Timed), Resolution.'
   devName: TheGoblinConspiracy
   questId: 3cbcf0ed-0a4f-4ee8-8cb7-0bbee221de95
   questType: {fileID: 11400000, guid: 947fb211615943e4b8922a83a03c77fa, type: 2}
@@ -23,7 +24,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713986
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -32,7 +33,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713987
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -41,21 +42,128 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713988
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   questSprite: {fileID: 21300000, guid: c5e3a97e218bbe449bb2aa3a2fa4a554, type: 3}
-  taskGroups:
-  - groupName: Uncover the Conspiracy
-    executionMode: 0
-    requiredCount: 5
-    tasks:
-    - {fileID: 11400000, guid: 3015b9da2f37e6344b3c1a0ffe897ad3, type: 2}
-    - {fileID: 11400000, guid: 4dfb80cc7d7e9c34f9b66c0afbde4d52, type: 2}
-    - {fileID: 11400000, guid: 98ae935358d983044ab779a6fd9ce853, type: 2}
-    - {fileID: 11400000, guid: 40ff2fd3fd6c96648b782e053be1e8d4, type: 2}
-    - {fileID: 11400000, guid: 66ae43606d8633a4288604930b45039b, type: 2}
+  stages:
+  - stageIndex: 0
+    stageName: Investigation
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Investigate and Meet
+      executionMode: 1
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: 3015b9da2f37e6344b3c1a0ffe897ad3, type: 2}
+      - {fileID: 11400000, guid: 4dfb80cc7d7e9c34f9b66c0afbde4d52, type: 2}
+    transitions:
+    - targetStageIndex: 2
+      trigger: 0
+      conditions:
+      - {fileID: 11400000, guid: 8af47fa58a607ab488b3d4971d661637, type: 2}
+      transitionLabel: Skip to Action (informant revealed location)
+      priority: 1
+    - targetStageIndex: 1
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 1
+    stageName: Infiltration
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Infiltrate Cult Meeting
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 98ae935358d983044ab779a6fd9ce853, type: 2}
+    transitions:
+    - targetStageIndex: 3
+      trigger: 0
+      conditions:
+      - {fileID: 11400000, guid: 514cbdc56229ef04197ad6cb4147274f, type: 2}
+      transitionLabel: Skip to Resolution (cult leader defeated)
+      priority: 1
+    - targetStageIndex: 2
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 2
+    stageName: Action
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Stop the Ritual
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 40ff2fd3fd6c96648b782e053be1e8d4, type: 2}
+    transitions:
+    - targetStageIndex: 3
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 3
+    stageName: Resolution
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Return with Evidence
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 66ae43606d8633a4288604930b45039b, type: 2}
+    transitions: []
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 1
   startConditions:
   - {fileID: 11400000, guid: c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8, type: 2}
   failureConditions: []

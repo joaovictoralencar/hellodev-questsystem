@@ -244,14 +244,14 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             int globalFailCount = globalTaskFailureConditions?.Count ?? 0;
             int totalConditions = startCondCount + failCondCount + globalFailCount;
             int rewardCount = rewards?.Count ?? 0;
-            int groupCount = taskGroups?.Count ?? 0;
+            int stageCount = stages?.Count ?? 0;
 
             // Draw stat cards
             DrawStatCard(new Rect(startX, startY, cardWidth - 5, cardHeight), cardBg,
                 taskCount.ToString(), "Tasks", new Color(0.4f, 0.7f, 1f));
 
             DrawStatCard(new Rect(startX + cardWidth, startY, cardWidth - 5, cardHeight), cardBg,
-                groupCount.ToString(), "Groups", new Color(0.6f, 0.5f, 0.9f));
+                stageCount.ToString(), "Stages", new Color(0.6f, 0.5f, 0.9f));
 
             DrawStatCard(new Rect(startX + cardWidth * 2, startY, cardWidth - 5, cardHeight), cardBg,
                 totalConditions.ToString(), "Conditions", new Color(0.5f, 0.8f, 0.5f));
@@ -506,7 +506,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             GUILayout.Space(8);
             DrawSectionHeader("Task Groups", new Color(0.7f, 0.5f, 1f));
 
-            if (taskGroups == null || taskGroups.Count == 0)
+            var allTaskGroups = TaskGroups;
+            if (allTaskGroups == null || allTaskGroups.Count == 0)
             {
                 DrawEmptyState("No task groups configured");
                 return;
@@ -537,11 +538,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
             var cardBg = new Color(0.18f, 0.18f, 0.18f);
             var taskBg = new Color(0.22f, 0.22f, 0.22f);
-            float padding = 8f;
 
-            for (int g = 0; g < taskGroups.Count; g++)
+            for (int g = 0; g < allTaskGroups.Count; g++)
             {
-                var group = taskGroups[g];
+                var group = allTaskGroups[g];
                 var groupColor = modeColors.TryGetValue(group.ExecutionMode, out var c) ? c : new Color(0.5f, 0.5f, 0.5f);
                 var modeIcon = modeIcons.TryGetValue(group.ExecutionMode, out var icon) ? icon : "???";
 
@@ -994,21 +994,28 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             if (string.IsNullOrEmpty(questId))
                 issues.Add("Quest ID is missing");
 
-            if (taskGroups == null || taskGroups.Count == 0)
-                issues.Add("No task groups configured");
+            if (stages == null || stages.Count == 0)
+                issues.Add("No stages configured");
             else
             {
-                for (int g = 0; g < taskGroups.Count; g++)
+                foreach (var stage in stages)
                 {
-                    var group = taskGroups[g];
-                    if (group.Tasks == null || group.Tasks.Count == 0)
-                        issues.Add($"Task Group '{group.GroupName}' has no tasks");
+                    if (!stage.HasTaskGroups)
+                        issues.Add($"Stage '{stage.StageName}' has no task groups");
                     else
                     {
-                        for (int t = 0; t < group.Tasks.Count; t++)
+                        foreach (var group in stage.TaskGroups)
                         {
-                            if (group.Tasks[t] == null)
-                                issues.Add($"Task Group '{group.GroupName}' has null task at index {t}");
+                            if (group.Tasks == null || group.Tasks.Count == 0)
+                                issues.Add($"Task Group '{group.GroupName}' in stage '{stage.StageName}' has no tasks");
+                            else
+                            {
+                                for (int t = 0; t < group.Tasks.Count; t++)
+                                {
+                                    if (group.Tasks[t] == null)
+                                        issues.Add($"Task Group '{group.GroupName}' has null task at index {t}");
+                                }
+                            }
                         }
                     }
                 }
@@ -1360,53 +1367,25 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
             GUILayout.Space(16);
 
-            // Stage Migration Section
+            // Stage Info Section
             DrawSectionHeader("Quest Structure", new Color(0.4f, 0.8f, 0.9f));
+            DrawQuickActionInfo("Stages define the quest structure. Add or edit stages in the Configuration tab.");
 
-            if (!usesStages)
+            // Show current stage count
+            var stageCount = stages?.Count ?? 0;
+            var totalTasks = stages?.Sum(s => s.TotalTaskCount) ?? 0;
+            var stageInfo = $"{stageCount} stage(s) with {totalTasks} total task(s)";
+            var infoRect = GUILayoutUtility.GetRect(0, 22, GUILayout.ExpandWidth(true));
+            var infoCardRect = new Rect(infoRect.x + 8, infoRect.y, infoRect.width - 16, infoRect.height - 2);
+            DrawRoundedRect(infoCardRect, new Color(0.2f, 0.25f, 0.28f), 4f);
+
+            var infoStyle = new GUIStyle(EditorStyles.label)
             {
-                DrawQuickActionInfo("Convert this quest to use stages for Skyrim-style multi-phase structure with transitions.");
-
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(8);
-
-                var originalBg = GUI.backgroundColor;
-                GUI.backgroundColor = new Color(0.4f, 0.8f, 0.9f);
-
-                if (GUILayout.Button("Migrate to Stages", GUILayout.Height(32)))
-                {
-                    if (EditorUtility.DisplayDialog("Migrate to Stages",
-                        "This will convert your task groups into a single stage. You can then add more stages with transitions.\n\nThis action can be undone with Ctrl+Z.",
-                        "Migrate", "Cancel"))
-                    {
-                        Undo.RecordObject(this, "Migrate to Stages");
-                        MigrateToStages();
-                    }
-                }
-
-                GUI.backgroundColor = originalBg;
-                GUILayout.Space(8);
-                EditorGUILayout.EndHorizontal();
-            }
-            else
-            {
-                DrawQuickActionInfo("This quest uses the stage-based structure. Add stages in the Configuration tab.");
-
-                // Show current stage count
-                var stageCount = stages?.Count ?? 0;
-                var stageInfo = $"Currently has {stageCount} stage(s)";
-                var infoRect = GUILayoutUtility.GetRect(0, 22, GUILayout.ExpandWidth(true));
-                var infoCardRect = new Rect(infoRect.x + 8, infoRect.y, infoRect.width - 16, infoRect.height - 2);
-                DrawRoundedRect(infoCardRect, new Color(0.2f, 0.25f, 0.28f), 4f);
-
-                var infoStyle = new GUIStyle(EditorStyles.label)
-                {
-                    fontSize = 11,
-                    alignment = TextAnchor.MiddleCenter,
-                    normal = { textColor = new Color(0.4f, 0.8f, 0.9f) }
-                };
-                GUI.Label(infoCardRect, stageInfo, infoStyle);
-            }
+                fontSize = 11,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.4f, 0.8f, 0.9f) }
+            };
+            GUI.Label(infoCardRect, stageInfo, infoStyle);
 
             GUILayout.Space(16);
 
@@ -1787,18 +1766,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             AssetDatabase.CreateAsset(task, taskPath);
             AssetDatabase.SaveAssets();
 
-            // Add to first task group (create one if none exists)
-            if (taskGroups == null)
+            // Add to first stage's first task group (create if none exists)
+            EnsureDefaultStageExists();
+
+            if (stages[0].TaskGroups.Count == 0)
             {
-                taskGroups = new List<TaskGroup>();
+                stages[0].TaskGroups.Add(new TaskGroup { GroupName = "Main Tasks" });
             }
 
-            if (taskGroups.Count == 0)
-            {
-                taskGroups.Add(new TaskGroup { GroupName = "Main Tasks" });
-            }
-
-            taskGroups[0].Tasks.Add(task);
+            stages[0].TaskGroups[0].Tasks.Add(task);
             EditorUtility.SetDirty(this);
             AssetDatabase.SaveAssets();
 
@@ -1832,15 +1808,12 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            // Create task group if needed
-            if (taskGroups == null)
-            {
-                taskGroups = new List<TaskGroup>();
-            }
+            // Create stage and task group if needed
+            EnsureDefaultStageExists();
 
-            if (taskGroups.Count == 0)
+            if (stages[0].TaskGroups.Count == 0)
             {
-                taskGroups.Add(new TaskGroup { GroupName = "Main Tasks" });
+                stages[0].TaskGroups.Add(new TaskGroup { GroupName = "Main Tasks" });
             }
 
             // Add tasks that aren't already in any group
@@ -1851,7 +1824,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             {
                 if (!existingTasks.Contains(task))
                 {
-                    taskGroups[0].Tasks.Add(task);
+                    stages[0].TaskGroups[0].Tasks.Add(task);
                     addedCount++;
                 }
             }
@@ -1870,21 +1843,19 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         private void AddTaskGroup(TaskExecutionMode mode)
         {
-            if (taskGroups == null)
-            {
-                taskGroups = new List<TaskGroup>();
-            }
+            EnsureDefaultStageExists();
 
+            var currentGroupCount = stages[0].TaskGroups.Count;
             var groupName = mode switch
             {
-                TaskExecutionMode.Sequential => $"Sequential Group {taskGroups.Count + 1}",
-                TaskExecutionMode.Parallel => $"Parallel Group {taskGroups.Count + 1}",
-                TaskExecutionMode.AnyOrder => $"Any Order Group {taskGroups.Count + 1}",
-                TaskExecutionMode.OptionalXofY => $"Optional Group {taskGroups.Count + 1}",
-                _ => $"Task Group {taskGroups.Count + 1}"
+                TaskExecutionMode.Sequential => $"Sequential Group {currentGroupCount + 1}",
+                TaskExecutionMode.Parallel => $"Parallel Group {currentGroupCount + 1}",
+                TaskExecutionMode.AnyOrder => $"Any Order Group {currentGroupCount + 1}",
+                TaskExecutionMode.OptionalXofY => $"Optional Group {currentGroupCount + 1}",
+                _ => $"Task Group {currentGroupCount + 1}"
             };
 
-            taskGroups.Add(new TaskGroup
+            stages[0].TaskGroups.Add(new TaskGroup
             {
                 GroupName = groupName,
                 ExecutionMode = mode
@@ -1892,6 +1863,19 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
             EditorUtility.SetDirty(this);
             Debug.Log($"[Quest_SO] Added new task group: {groupName}");
+        }
+
+        private void EnsureDefaultStageExists()
+        {
+            if (stages == null)
+            {
+                stages = new List<QuestStage>();
+            }
+
+            if (stages.Count == 0)
+            {
+                stages.Add(QuestStage.CreateEmpty(0, "Main"));
+            }
         }
 
         #endregion

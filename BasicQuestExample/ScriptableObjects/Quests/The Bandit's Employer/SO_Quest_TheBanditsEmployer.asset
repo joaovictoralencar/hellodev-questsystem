@@ -11,9 +11,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_TheBanditsEmployer
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   _description: 'CHAIN QUEST 1: Sequel to Merchant''s Stolen Goods. Investigate who
-    hired the bandits. Requires completing Merchant''s Stolen Goods first.'
+    hired the bandits. Requires completing Merchant''s Stolen Goods first.
+    3 stages: Evidence Gathering (Parallel), Confrontation, Resolution.'
   devName: TheBanditsEmployer
   questId: ff888888-9999-aaaa-bbbb-ccccddddeeee
   questType: {fileID: 11400000, guid: 955a193800c30ce41b19879861efbd2f, type: 2}
@@ -23,7 +24,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794491936768
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -32,7 +33,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713984
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -41,21 +42,96 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713985
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   questSprite: {fileID: 21300000, guid: 4f087569ea3509b4d89908f892316bac, type: 3}
-  taskGroups:
-  - groupName: Investigation
-    executionMode: 0
-    requiredCount: 5
-    tasks:
-    - {fileID: 11400000, guid: 62980a88ce9a135418d69ce6478734ef, type: 2}
-    - {fileID: 11400000, guid: 270c681c7b2cee149af2317f710cc705, type: 2}
-    - {fileID: 11400000, guid: a921f316218fda842a71266e15418e89, type: 2}
-    - {fileID: 11400000, guid: 585e6ac9748dee94eb81be2d7f5bbcc0, type: 2}
-    - {fileID: 11400000, guid: 8b3d4d9654111ed44a6f0ced85bc049f, type: 2}
+  stages:
+  - stageIndex: 0
+    stageName: Evidence Gathering
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Return and Search
+      executionMode: 1
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: 62980a88ce9a135418d69ce6478734ef, type: 2}
+      - {fileID: 11400000, guid: 270c681c7b2cee149af2317f710cc705, type: 2}
+    transitions:
+    - targetStageIndex: 2
+      trigger: 0
+      conditions:
+      - {fileID: 11400000, guid: 9425d95c127b3bf498b2684514b9a1c7, type: 2}
+      transitionLabel: Skip to Resolution (sealed orders found)
+      priority: 1
+    - targetStageIndex: 1
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 1
+    stageName: Confrontation
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Interrogate and Find
+      executionMode: 0
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: a921f316218fda842a71266e15418e89, type: 2}
+      - {fileID: 11400000, guid: 585e6ac9748dee94eb81be2d7f5bbcc0, type: 2}
+    transitions:
+    - targetStageIndex: 2
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 2
+    stageName: Resolution
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Report to Captain
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 8b3d4d9654111ed44a6f0ced85bc049f, type: 2}
+    transitions: []
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 1
   startConditions:
   - {fileID: 11400000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 2}
   failureConditions: []

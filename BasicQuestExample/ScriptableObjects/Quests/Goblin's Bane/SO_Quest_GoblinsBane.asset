@@ -11,20 +11,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_GoblinsBane
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   _description: 'Main quest: Investigate goblin attacks, track their camp, defeat
     the chief, and return to report. Demonstrates all task types: Discovery, Location,
-    Int, Bool, Timed.'
+    Int, Bool, Timed. 4 stages: Investigation, Tracking & Combat (Parallel), Boss Confrontation, Resolution.'
   devName: GoblinsBane
   questId: 8d2a2220-1f56-4561-a04f-471478376098
   questType: {fileID: 11400000, guid: 947fb211615943e4b8922a83a03c77fa, type: 2}
-  recommendedLevel: 1
+  recommendedLevel: 5
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 736137437036544
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -33,7 +33,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 736338700713984
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -42,22 +42,123 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 735651774382080
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   questSprite: {fileID: 21300000, guid: 6ed3892c32cb85b46929ce06909246ab, type: 3}
-  taskGroups:
-  - groupName: Main Tasks
-    executionMode: 0
-    requiredCount: 6
-    tasks:
-    - {fileID: 11400000, guid: 9c66065bc0d1be247a948987e532ad80, type: 2}
-    - {fileID: 11400000, guid: 1cddf76202d06fb48b81379229e2e6a7, type: 2}
-    - {fileID: 11400000, guid: 801e8047180f83947a07a0dbd5b240ff, type: 2}
-    - {fileID: 11400000, guid: 8a22e26044994db4fb14f3ccb0249a54, type: 2}
-    - {fileID: 11400000, guid: dbe16b038ff22bd4fa3c52cb3ca53322, type: 2}
-    - {fileID: 11400000, guid: 1f68f8e0a49f1954d8f118ea9b5316ee, type: 2}
+  stages:
+  - stageIndex: 0
+    stageName: Investigation
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Investigate Attacks
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 9c66065bc0d1be247a948987e532ad80, type: 2}
+    transitions:
+    - targetStageIndex: 2
+      trigger: 0
+      conditions:
+      - {fileID: 11400000, guid: f456c35eaafcb0d4fb1a6f79be5411ca, type: 2}
+      transitionLabel: Skip to Boss (campsite found)
+      priority: 1
+    - targetStageIndex: 1
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 1
+    stageName: Tracking & Combat
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Track and Clear
+      executionMode: 1
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: 1cddf76202d06fb48b81379229e2e6a7, type: 2}
+      - {fileID: 11400000, guid: 801e8047180f83947a07a0dbd5b240ff, type: 2}
+    transitions:
+    - targetStageIndex: 2
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 2
+    stageName: Boss Confrontation
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Find and Defeat Chief
+      executionMode: 0
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: 8a22e26044994db4fb14f3ccb0249a54, type: 2}
+      - {fileID: 11400000, guid: dbe16b038ff22bd4fa3c52cb3ca53322, type: 2}
+    transitions:
+    - targetStageIndex: 3
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 3
+    stageName: Resolution
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Return to Village
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 1f68f8e0a49f1954d8f118ea9b5316ee, type: 2}
+    transitions: []
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 1
   startConditions:
   - {fileID: 11400000, guid: c49ce0457922ab740985a6eab990c1dd, type: 2}
   - {fileID: 11400000, guid: e1f2a3b4c5d6789012345678abcdef11, type: 2}

@@ -11,9 +11,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_MerchantsStolenGoods
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   _description: 'Secondary quest: Help a merchant recover stolen goods from bandits.
-    Demonstrates BoolTask, DiscoveryTask, LocationTask, IntTask, and StringTask.'
+    Demonstrates BoolTask, DiscoveryTask, LocationTask, IntTask, and StringTask.
+    4 stages: Introduction, Investigation (Parallel), Recovery (Parallel), Resolution.'
   devName: MerchantsStolenGoods
   questId: 77777777-8888-9999-0000-111122223333
   questType: {fileID: 11400000, guid: 955a193800c30ce41b19879861efbd2f, type: 2}
@@ -23,7 +24,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45247112403795970
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -32,7 +33,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45247112403795971
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -41,24 +42,117 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45247112403795972
-      m_Key: 
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   questSprite: {fileID: 21300000, guid: 461a308116a2f5b4cb09c232755acee7, type: 3}
-  taskGroups:
-  - groupName: Main Tasks
-    executionMode: 0
-    requiredCount: 6
-    tasks:
-    - {fileID: 11400000, guid: 6f789012345678abcd0001020304ab01, type: 2}
-    - {fileID: 11400000, guid: 789012345678abcd0001020304ab0102, type: 2}
-    - {fileID: 11400000, guid: 75bd6a01f350bcd47a246b2514b0abea, type: 2}
-    - {fileID: 11400000, guid: 9012345678abcd0001020304ab010234, type: 2}
-    - {fileID: 11400000, guid: c1ad2b8468303ae42966becfc4d2fb8a, type: 2}
-    - {fileID: 11400000, guid: 12345678abcd0001020304ab01023456, type: 2}
-  usesTaskGroups: 1
-  tasks: []
+  stages:
+  - stageIndex: 0
+    stageName: Introduction
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Talk to Merchant
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 6f789012345678abcd0001020304ab01, type: 2}
+    transitions:
+    - targetStageIndex: 1
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 1
+    stageName: Investigation
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Search and Track
+      executionMode: 1
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: 789012345678abcd0001020304ab0102, type: 2}
+      - {fileID: 11400000, guid: 75bd6a01f350bcd47a246b2514b0abea, type: 2}
+    transitions:
+    - targetStageIndex: 2
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 2
+    stageName: Recovery
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Recover and Interrogate
+      executionMode: 1
+      requiredCount: 2
+      tasks:
+      - {fileID: 11400000, guid: 9012345678abcd0001020304ab010234, type: 2}
+      - {fileID: 11400000, guid: c1ad2b8468303ae42966becfc4d2fb8a, type: 2}
+    transitions:
+    - targetStageIndex: 3
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 3
+    stageName: Resolution
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Return to Merchant
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 12345678abcd0001020304ab01023456, type: 2}
+    transitions: []
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 1
   startConditions: []
   failureConditions:
   - {fileID: 11400000, guid: 5435123018f71264a885614826d6798d, type: 2}

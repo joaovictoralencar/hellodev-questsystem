@@ -143,11 +143,6 @@ namespace HelloDev.QuestSystem.Quests
         }
 
         /// <summary>
-        /// Gets whether this quest uses the stage-based structure.
-        /// </summary>
-        public bool UsesStages => QuestData.UsesStages;
-
-        /// <summary>
         /// Dictionary tracking which branch decisions were made (for branching quests).
         /// Key is branch ID, value is choice ID.
         /// </summary>

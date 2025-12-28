@@ -66,6 +66,20 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private TextMeshProUGUI progressionText;
 
 #if ODIN_INSPECTOR
+        [TitleGroup("Stage Info")]
+        [PropertyOrder(6)]
+#else
+        [Header("Stage Info")]
+#endif
+        [SerializeField] private TextMeshProUGUI stageNameText;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Stage Info")]
+        [PropertyOrder(7)]
+#endif
+        [SerializeField] private TextMeshProUGUI stageProgressText;
+
+#if ODIN_INSPECTOR
         [TitleGroup("Rewards")]
         [PropertyOrder(10)]
         [Required("RewardsUI reference is required.")]
@@ -468,6 +482,29 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             if (questImage != null && quest.QuestData.QuestSprite != null)
                 questImage.sprite = quest.QuestData.QuestSprite;
+
+            // Update stage info
+            UpdateStageInfo(quest);
+        }
+
+        private void UpdateStageInfo(QuestRuntime quest)
+        {
+            if (quest?.CurrentStage == null)
+            {
+                if (stageNameText != null) stageNameText.text = "";
+                if (stageProgressText != null) stageProgressText.text = "";
+                return;
+            }
+
+            if (stageNameText != null)
+                stageNameText.text = quest.CurrentStage.StageName;
+
+            if (stageProgressText != null)
+            {
+                int currentIndex = quest.Stages.FindIndex(s => s == quest.CurrentStage) + 1;
+                int totalStages = quest.Stages.Count;
+                stageProgressText.text = $"Stage {currentIndex}/{totalStages}";
+            }
         }
 
         private void CreateTaskItems(QuestRuntime quest)
@@ -568,6 +605,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             quest.OnAnyTaskStarted.SafeSubscribe(HandleTaskUpdated);
             quest.OnAnyTaskUpdated.SafeSubscribe(HandleTaskUpdated);
             quest.OnAnyTaskCompleted.SafeSubscribe(HandleTaskUpdated);
+            quest.OnStageTransition.SafeSubscribe(HandleStageTransition);
         }
 
         private void UnsubscribeFromQuestEvents()
@@ -577,6 +615,22 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _currentQuest.OnAnyTaskStarted.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnAnyTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnAnyTaskCompleted.SafeUnsubscribe(HandleTaskUpdated);
+            _currentQuest.OnStageTransition.SafeUnsubscribe(HandleStageTransition);
+        }
+
+        private void HandleStageTransition(QuestRuntime quest, int fromStage, int toStage)
+        {
+            // Update stage display
+            UpdateStageInfo(quest);
+
+            // Rebuild task list to show new stage's tasks
+            ClearTaskItems();
+            CreateTaskItems(quest);
+            SelectInitialTask(quest);
+
+            // Animate stage transition (optional visual feedback)
+            if (stageNameText != null)
+                Tween.Alpha(stageNameText, 0f, 1f, 0.3f, Ease.OutQuad);
         }
 
         private void HandleTaskUpdated(TaskRuntime task)
@@ -584,6 +638,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             // Update progress display
             if (progressionText != null)
                 progressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
+
+            // Update stage info (stage progress may have changed)
+            UpdateStageInfo(_currentQuest);
 
             // Handle new in-progress tasks (for parallel groups)
             AddNewInProgressTasks();

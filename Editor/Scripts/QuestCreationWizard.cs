@@ -4,6 +4,8 @@ using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 using HelloDev.QuestSystem.ScriptableObjects;
+using HelloDev.QuestSystem.Stages;
+using HelloDev.QuestSystem.TaskGroups;
 using HelloDev.Events;
 using HelloDev.Conditions;
 using System.Collections.Generic;
@@ -442,16 +444,17 @@ namespace HelloDev.QuestSystem.Editor
             SetPrivateField(quest, "questType", questType);
             SetPrivateField(quest, "recommendedLevel", recommendedLevel);
 
-            var taskGroups = new List<TaskGroups.TaskGroup>
-            {
-                new TaskGroups.TaskGroup { GroupName = "Main Tasks" }
-            };
-            SetPrivateField(quest, "taskGroups", taskGroups);
-            SetPrivateField(quest, "usesTaskGroups", true);
+            // Create default stage with task group
+            var mainTaskGroup = new TaskGroup { GroupName = "Main Tasks" };
+            var mainStage = QuestStage.CreateEmpty(0, "Main");
+            mainStage.TaskGroups.Add(mainTaskGroup);
+
+            var stagesList = new List<QuestStage> { mainStage };
+            SetPrivateField(quest, "stages", stagesList);
 
             // Create tasks based on template
             var tasks = CreateTasksForTemplate(questFolder);
-            taskGroups[0].Tasks.AddRange(tasks);
+            mainTaskGroup.Tasks.AddRange(tasks);
 
             // Save quest
             var questPath = Path.Combine(questFolder, $"SO_Quest_{questName}.asset");

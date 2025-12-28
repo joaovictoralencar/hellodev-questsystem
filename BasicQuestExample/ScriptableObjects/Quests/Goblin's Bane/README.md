@@ -3,6 +3,7 @@
 A Witcher-style quest demonstrating all task types and the condition system in the HelloDev Quest System.
 
 > **Validation Status:** All GUID references verified correct (2025-12-21)
+> **Updated:** 2025-12-28 - Added stage structure documentation
 
 ## Quest Overview
 
@@ -16,6 +17,62 @@ A Witcher-style quest demonstrating all task types and the condition system in t
 ### Story Summary
 
 Goblins have been attacking travelers on the road to the village. The village elder asks the player to investigate the attacks, track down the goblin camp, clear it out, defeat their chief, and return to report their success.
+
+---
+
+## Quest Chain Context
+
+```
+          Goblin's Bane (Lvl 5)  ←── YOU ARE HERE
+                │
+                ▼
+      The Goblin Conspiracy (Lvl 6)
+                ▲
+                │
+The Merchant's Stolen Goods (Lvl 3)
+                │
+                ▼
+      The Bandit's Employer (Lvl 4) ─┘
+```
+
+This quest provides an alternative path to "The Goblin Conspiracy." Players can reach the finale through either this quest OR through "The Bandit's Employer" quest chain.
+
+---
+
+## Stage Structure (Proposed)
+
+This quest can be organized into 4 stages for better pacing:
+
+### Stage 0: Investigation
+| Task | Type | Description |
+|------|------|-------------|
+| Investigate the Attacks | DiscoveryTask | Discover 3 clues at the attack site |
+
+**Transition:** Automatic when all discoveries found
+
+### Stage 1: Tracking
+| Task | Type | Description |
+|------|------|-------------|
+| Track the Goblin Camp | LocationTask | Follow the trail, avoid scouts |
+| Clear the Camp | IntTask | Kill 5 goblins |
+
+**Transition:** Automatic when all tasks complete
+**Note:** Tasks in this stage can be parallel (track while fighting)
+
+### Stage 2: Confrontation
+| Task | Type | Description |
+|------|------|-------------|
+| Find the Goblin Chief | BoolTask | Enter the chief's cave chamber |
+| Defeat the Goblin Chief | TimedTask | Defeat chief within 120 seconds |
+
+**Transition:** Automatic when boss defeated
+
+### Stage 3: Resolution
+| Task | Type | Description |
+|------|------|-------------|
+| Return to Village | LocationTask | Report victory to the elder |
+
+**Transition:** Quest completes
 
 ---
 
