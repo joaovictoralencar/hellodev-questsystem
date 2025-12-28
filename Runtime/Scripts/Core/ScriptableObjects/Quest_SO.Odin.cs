@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using HelloDev.QuestSystem.Conditions;
 using HelloDev.QuestSystem.Quests;
+using HelloDev.QuestSystem.Stages;
 using HelloDev.QuestSystem.TaskGroups;
 using HelloDev.Conditions;
 using System.Collections.Generic;
@@ -1356,6 +1357,56 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
             GUILayout.Space(8);
             EditorGUILayout.EndHorizontal();
+
+            GUILayout.Space(16);
+
+            // Stage Migration Section
+            DrawSectionHeader("Quest Structure", new Color(0.4f, 0.8f, 0.9f));
+
+            if (!usesStages)
+            {
+                DrawQuickActionInfo("Convert this quest to use stages for Skyrim-style multi-phase structure with transitions.");
+
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(8);
+
+                var originalBg = GUI.backgroundColor;
+                GUI.backgroundColor = new Color(0.4f, 0.8f, 0.9f);
+
+                if (GUILayout.Button("Migrate to Stages", GUILayout.Height(32)))
+                {
+                    if (EditorUtility.DisplayDialog("Migrate to Stages",
+                        "This will convert your task groups into a single stage. You can then add more stages with transitions.\n\nThis action can be undone with Ctrl+Z.",
+                        "Migrate", "Cancel"))
+                    {
+                        Undo.RecordObject(this, "Migrate to Stages");
+                        MigrateToStages();
+                    }
+                }
+
+                GUI.backgroundColor = originalBg;
+                GUILayout.Space(8);
+                EditorGUILayout.EndHorizontal();
+            }
+            else
+            {
+                DrawQuickActionInfo("This quest uses the stage-based structure. Add stages in the Configuration tab.");
+
+                // Show current stage count
+                var stageCount = stages?.Count ?? 0;
+                var stageInfo = $"Currently has {stageCount} stage(s)";
+                var infoRect = GUILayoutUtility.GetRect(0, 22, GUILayout.ExpandWidth(true));
+                var infoCardRect = new Rect(infoRect.x + 8, infoRect.y, infoRect.width - 16, infoRect.height - 2);
+                DrawRoundedRect(infoCardRect, new Color(0.2f, 0.25f, 0.28f), 4f);
+
+                var infoStyle = new GUIStyle(EditorStyles.label)
+                {
+                    fontSize = 11,
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = { textColor = new Color(0.4f, 0.8f, 0.9f) }
+                };
+                GUI.Label(infoCardRect, stageInfo, infoStyle);
+            }
 
             GUILayout.Space(16);
 

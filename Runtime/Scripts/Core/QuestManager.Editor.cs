@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.ScriptableObjects;
+using HelloDev.QuestSystem.Stages;
 using UnityEngine;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -31,32 +31,38 @@ namespace HelloDev.QuestSystem
         [ShowInInspector, ReadOnly]
         [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
         [ShowIf(nameof(IsPlayingWithActiveQuests))]
-        private List<string> ActiveQuestNames => _activeQuests.Values
-            .Select(q => $"{q.QuestData.DevName} ({q.CurrentState})")
-            .ToList() ?? new List<string>();
+        private List<string> ActiveQuestNames => _questRegistry.ActiveQuestsEnumerable
+            .Select(q =>
+            {
+                var stageInfo = q.CurrentStage != null
+                    ? $" | Stage: {q.CurrentStage.StageName}"
+                    : "";
+                return $"{q.QuestData.DevName} ({q.CurrentState}{stageInfo}) | Progress: {q.CurrentProgress:P0}";
+            })
+            .ToList();
 
         [TitleGroup("Runtime State")]
         [PropertyOrder(52)]
         [ShowInInspector, ReadOnly]
         [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
         [ShowIf(nameof(IsPlayingWithCompletedQuests))]
-        private List<string> CompletedQuestNames => _completedQuests.Values
+        private List<string> CompletedQuestNames => _questRegistry.CompletedQuestsEnumerable
             .Select(q => q.QuestData.DevName)
-            .ToList() ?? new List<string>();
+            .ToList();
 
         [TitleGroup("Runtime State")]
         [PropertyOrder(53)]
         [ShowInInspector, ReadOnly]
         [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
         [ShowIf(nameof(IsPlayingWithFailedQuests))]
-        private List<string> FailedQuestNames => _failedQuests.Values
+        private List<string> FailedQuestNames => _questRegistry.FailedQuestsEnumerable
             .Select(q => q.QuestData.DevName)
-            .ToList() ?? new List<string>();
+            .ToList();
 
         private bool IsNotPlaying => !Application.isPlaying;
-        private bool IsPlayingWithActiveQuests => Application.isPlaying && _activeQuests.Count > 0;
-        private bool IsPlayingWithCompletedQuests => Application.isPlaying && _completedQuests.Count > 0;
-        private bool IsPlayingWithFailedQuests => Application.isPlaying && _failedQuests.Count > 0;
+        private bool IsPlayingWithActiveQuests => Application.isPlaying && _questRegistry.ActiveCount > 0;
+        private bool IsPlayingWithCompletedQuests => Application.isPlaying && _questRegistry.CompletedCount > 0;
+        private bool IsPlayingWithFailedQuests => Application.isPlaying && _questRegistry.FailedCount > 0;
 
         private string GetDatabaseInfoMessage()
         {
@@ -87,21 +93,21 @@ namespace HelloDev.QuestSystem
         [ShowInInspector, ReadOnly]
         [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
         [ShowIf(nameof(IsPlayingWithActiveQuestLines))]
-        private List<string> ActiveQuestLineNames => _activeQuestLines.Values
+        private List<string> ActiveQuestLineNames => _questLineRegistry.ActiveQuestLinesEnumerable
             .Select(l => $"{l.Data.DevName} ({l.Progress:P0})")
-            .ToList() ?? new List<string>();
+            .ToList();
 
         [TitleGroup("QuestLine Runtime State")]
         [PropertyOrder(57)]
         [ShowInInspector, ReadOnly]
         [ListDrawerSettings(IsReadOnly = true, ShowFoldout = true)]
         [ShowIf(nameof(IsPlayingWithCompletedQuestLines))]
-        private List<string> CompletedQuestLineNames => _completedQuestLines.Values
+        private List<string> CompletedQuestLineNames => _questLineRegistry.CompletedQuestLinesEnumerable
             .Select(l => l.Data.DevName)
-            .ToList() ?? new List<string>();
+            .ToList();
 
-        private bool IsPlayingWithActiveQuestLines => Application.isPlaying && _activeQuestLines.Count > 0;
-        private bool IsPlayingWithCompletedQuestLines => Application.isPlaying && _completedQuestLines.Count > 0;
+        private bool IsPlayingWithActiveQuestLines => Application.isPlaying && _questLineRegistry.ActiveCount > 0;
+        private bool IsPlayingWithCompletedQuestLines => Application.isPlaying && _questLineRegistry.CompletedCount > 0;
 #endif
 
         #endregion
@@ -115,10 +121,9 @@ namespace HelloDev.QuestSystem
         [EnableIf(nameof(IsPlayingWithActiveQuests))]
         private void DebugCompleteAllQuests()
         {
-            var questIds = _activeQuests.Keys.ToList();
-            foreach (var questId in questIds)
+            var quests = _questRegistry.ActiveQuestsEnumerable.ToList();
+            foreach (var quest in quests)
             {
-                var quest = _activeQuests[questId];
                 quest.ForceComplete();
             }
             Debug.Log("[QuestManager] All active quests completed.");
@@ -130,10 +135,9 @@ namespace HelloDev.QuestSystem
         [EnableIf(nameof(IsPlayingWithActiveQuests))]
         private void DebugFailAllQuests()
         {
-            var questIds = _activeQuests.Keys.ToList();
-            foreach (var questId in questIds)
+            var quests = _questRegistry.ActiveQuestsEnumerable.ToList();
+            foreach (var quest in quests)
             {
-                var quest = _activeQuests[questId];
                 quest.FailQuest();
             }
             Debug.Log("[QuestManager] All active quests failed.");
@@ -145,7 +149,7 @@ namespace HelloDev.QuestSystem
         [EnableIf(nameof(IsPlayingWithActiveQuests))]
         private void DebugIncrementAllCurrentTasks()
         {
-            foreach (var quest in _activeQuests.Values)
+            foreach (var quest in _questRegistry.ActiveQuestsEnumerable)
             {
                 quest.IncrementCurrentTask();
             }
@@ -158,11 +162,13 @@ namespace HelloDev.QuestSystem
         [EnableIf(nameof(IsPlayingWithFailedQuests))]
         private void DebugRestartFailedQuests()
         {
-            var failedQuestData = _failedQuests.Values.Select(q => q.QuestData).ToList();
-            _failedQuests.Clear();
+            var failedQuestData = _questRegistry.FailedQuestsEnumerable
+                .Select(q => q.QuestData)
+                .ToList();
+
             foreach (var questData in failedQuestData)
             {
-                AddQuest(questData, forceStart: true);
+                RestartQuest(questData, forceStart: true);
             }
             Debug.Log("[QuestManager] All failed quests restarted.");
         }
@@ -175,18 +181,18 @@ namespace HelloDev.QuestSystem
         {
             Debug.Log($"[QuestManager] === Current State ===");
             Debug.Log($"Active Quests ({ActiveQuestCount}):");
-            foreach (var quest in _activeQuests.Values)
+            foreach (var quest in _questRegistry.ActiveQuestsEnumerable)
             {
                 var currentTask = quest.CurrentTask;
                 Debug.Log($"  - {quest.QuestData.DevName}: {quest.CurrentState} | Current Task: {currentTask?.DevName ?? "None"} | Progress: {quest.CurrentProgress:P0}");
             }
             Debug.Log($"Completed Quests ({CompletedQuestCount}):");
-            foreach (var quest in _completedQuests.Values)
+            foreach (var quest in _questRegistry.CompletedQuestsEnumerable)
             {
                 Debug.Log($"  - {quest.QuestData.DevName}");
             }
             Debug.Log($"Failed Quests ({FailedQuestCount}):");
-            foreach (var quest in _failedQuests.Values)
+            foreach (var quest in _questRegistry.FailedQuestsEnumerable)
             {
                 Debug.Log($"  - {quest.QuestData.DevName}");
             }
@@ -194,7 +200,7 @@ namespace HelloDev.QuestSystem
 
         private IEnumerable<Quest_SO> GetAvailableQuests()
         {
-            return questsDatabase.Where(q => q != null) ?? Enumerable.Empty<Quest_SO>();
+            return questsDatabase.Where(q => q != null);
         }
 #endif
 
@@ -224,6 +230,29 @@ namespace HelloDev.QuestSystem
         {
             var quest = GetActiveQuest(questData);
             quest?.IncrementCurrentTask();
+        }
+
+        [TitleGroup("Runtime Actions")]
+        [Button("Set Stage")]
+        [PropertyOrder(72)]
+        [EnableIf("@UnityEngine.Application.isPlaying")]
+        private void DebugSetStage(
+            [ValueDropdown(nameof(GetAvailableQuests))]
+            Quest_SO questData,
+            int stageIndex)
+        {
+            var quest = GetActiveQuest(questData);
+            if (quest != null)
+            {
+                if (quest.TrySetStage(stageIndex))
+                {
+                    Debug.Log($"[QuestManager] Set quest '{questData.DevName}' to stage {stageIndex}.");
+                }
+                else
+                {
+                    Debug.LogWarning($"[QuestManager] Failed to set quest '{questData.DevName}' to stage {stageIndex}.");
+                }
+            }
         }
 #endif
 

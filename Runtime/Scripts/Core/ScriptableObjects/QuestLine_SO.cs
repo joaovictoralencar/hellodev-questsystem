@@ -166,7 +166,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         public LocalizedString DisplayName => displayName;
 
         /// <summary>Gets the localized description of the questline.</summary>
-        public LocalizedString Description => description;
+        public new LocalizedString Description => description;
 
         /// <summary>Gets the icon associated with the questline.</summary>
         public Sprite Icon => icon;

@@ -1,8 +1,8 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "displayName": "Quest System",
-  "description": "A comprehensive quest system for Unity games with support for quests, questlines, objectives, rewards, and progression tracking.",
+  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, objectives, rewards, and progression tracking.",
   "unity": "6000.1",
   "unityRelease": "1f1",
   "documentationUrl": "https://github.com/joaovictoralencar/unity-quest-system#readme",
@@ -11,6 +11,8 @@
   "keywords": [
     "quest",
     "questline",
+    "stages",
+    "phases",
     "rpg",
     "game system",
     "objectives",

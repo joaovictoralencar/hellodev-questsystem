@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
 using HelloDev.QuestSystem.Quests;
+using HelloDev.QuestSystem.Stages;
 using HelloDev.QuestSystem.TaskGroups;
 using HelloDev.Utils;
 using UnityEngine;
@@ -102,14 +103,36 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         #endregion
 
-        #region Serialized Fields - Task Groups
+        #region Serialized Fields - Task Groups (Legacy)
 
 #if ODIN_INSPECTOR
         [TabGroup("Tabs", "Configuration")]
         [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
         [PropertyOrder(20)]
+        [HideIf(nameof(usesStages))]
+        [InfoBox("Task Groups are used for quests without stages. Enable 'Uses Stages' for multi-stage quests.", InfoMessageType.Info)]
 #endif
         [SerializeField] private List<TaskGroup> taskGroups = new();
+
+        #endregion
+
+        #region Serialized Fields - Stages
+
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [PropertyOrder(21)]
+        [Tooltip("Enable to use the stage-based quest structure instead of flat task groups.")]
+#endif
+        [SerializeField] private bool usesStages = false;
+
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
+        [PropertyOrder(22)]
+        [ShowIf(nameof(usesStages))]
+        [InfoBox("Stages enable Skyrim-style quest structure with multiple phases and branching.", InfoMessageType.Info)]
+#endif
+        [SerializeField] private List<QuestStage> stages = new();
 
         #endregion
 
@@ -181,15 +204,48 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         public Sprite QuestSprite => questSprite;
 
         /// <summary>
-        /// Gets the list of task groups for this quest.
+        /// Gets whether this quest uses stage-based structure.
         /// </summary>
-        public List<TaskGroup> TaskGroups => taskGroups ?? new List<TaskGroup>();
+        public bool UsesStages => usesStages;
+
+        /// <summary>
+        /// Gets all stages for this quest.
+        /// For legacy quests (usesStages=false), returns a single auto-generated stage wrapping task groups.
+        /// </summary>
+        public List<QuestStage> Stages
+        {
+            get
+            {
+                if (usesStages)
+                    return stages ?? new List<QuestStage>();
+
+                // Legacy mode: wrap task groups in a single stage
+                return new List<QuestStage> { CreateLegacyStage() };
+            }
+        }
+
+        /// <summary>
+        /// Gets the list of task groups for this quest.
+        /// For stage-based quests, returns task groups from all stages.
+        /// </summary>
+        public List<TaskGroup> TaskGroups
+        {
+            get
+            {
+                if (usesStages)
+                {
+                    // Return all task groups from all stages
+                    return stages?.SelectMany(s => s.TaskGroups).ToList() ?? new List<TaskGroup>();
+                }
+                return taskGroups ?? new List<TaskGroup>();
+            }
+        }
 
         /// <summary>
         /// Gets all tasks across all groups (flattened list).
         /// Use this when you need all tasks regardless of grouping.
         /// </summary>
-        public List<Task_SO> AllTasks => taskGroups?.SelectMany(g => g.Tasks).Where(t => t != null).ToList() ?? new List<Task_SO>();
+        public List<Task_SO> AllTasks => TaskGroups?.SelectMany(g => g.Tasks).Where(t => t != null).ToList() ?? new List<Task_SO>();
 
         /// <summary>
         /// Gets the list of conditions required to start the quest.
@@ -238,6 +294,46 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             return new QuestRuntime(this);
         }
 
+        /// <summary>
+        /// Migrates this quest from flat task groups to stage-based structure.
+        /// Creates a single stage containing all existing task groups.
+        /// </summary>
+        public void MigrateToStages()
+        {
+            if (usesStages)
+            {
+                Debug.LogWarning($"[Quest_SO] '{devName}': Already using stages.", this);
+                return;
+            }
+
+            // Create a single stage from existing task groups
+            var mainStage = QuestStage.CreateFromTaskGroups(taskGroups, "Main");
+            stages = new List<QuestStage> { mainStage };
+            usesStages = true;
+
+            // Clear legacy task groups (data is now in stage)
+            taskGroups = new List<TaskGroup>();
+
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
+
+            Debug.Log($"[Quest_SO] '{devName}': Migrated to stages. Created 1 stage with {mainStage.TotalTaskCount} tasks.", this);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Creates a temporary legacy stage for backward compatibility.
+        /// Used when usesStages=false to provide a unified stage interface.
+        /// </summary>
+        private QuestStage CreateLegacyStage()
+        {
+            return QuestStage.CreateFromTaskGroups(taskGroups, "Main");
+        }
+
         #endregion
 
         #region Validation
@@ -255,7 +351,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             ValidateConfiguration();
-            ValidateTaskGroups();
+
+            if (usesStages)
+            {
+                ValidateStages();
+            }
+            else
+            {
+                ValidateTaskGroups();
+            }
         }
 
         private void GenerateNewGuid()
@@ -277,12 +381,52 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
         }
 
+        private void ValidateStages()
+        {
+            if (stages == null || stages.Count == 0)
+            {
+                Debug.LogWarning($"[Quest_SO] '{devName}': No stages configured. Quest will complete immediately.", this);
+                return;
+            }
+
+            int maxStageIndex = stages.Max(s => s.StageIndex);
+
+            foreach (var stage in stages)
+            {
+                var warnings = stage.Validate(maxStageIndex);
+                foreach (var warning in warnings)
+                {
+                    Debug.LogWarning($"[Quest_SO] '{devName}': {warning}", this);
+                }
+            }
+
+            // Check for duplicate stage indices
+            var duplicateIndices = stages.GroupBy(s => s.StageIndex)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key);
+
+            foreach (var index in duplicateIndices)
+            {
+                Debug.LogWarning($"[Quest_SO] '{devName}': Duplicate stage index: {index}", this);
+            }
+        }
+
         private void ValidateConfiguration()
         {
-            // Validate task groups
-            if (taskGroups == null || taskGroups.Count == 0)
+            // Validate task groups or stages have content
+            if (usesStages)
             {
-                Debug.LogWarning($"[Quest_SO] '{devName}': No task groups configured. Quest will complete immediately.", this);
+                if (stages == null || stages.Count == 0)
+                {
+                    Debug.LogWarning($"[Quest_SO] '{devName}': No stages configured. Quest will complete immediately.", this);
+                }
+            }
+            else
+            {
+                if (taskGroups == null || taskGroups.Count == 0)
+                {
+                    Debug.LogWarning($"[Quest_SO] '{devName}': No task groups configured. Quest will complete immediately.", this);
+                }
             }
 
             // Validate start conditions
