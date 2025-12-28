@@ -1,5 +1,9 @@
 Key,Id,English(en),Portuguese (Brazil)(pt-BR)
 "Monster_Goblin",12254756864,"Goblin","Goblin"
 "Monster_GoblinChief",0,"Goblin Chief","Chefe Goblin"
+"Monster_GoblinScout",0,"Goblin Scout","Batedor Goblin"
 "Monster_Bandit",0,"Bandit","Bandido"
 "Monster_BanditLeader",0,"Bandit Leader","Líder Bandido"
+"Monster_BanditScout",0,"Bandit Scout","Batedor Bandido"
+"Monster_Cultist",0,"Cultist","Cultista"
+"Monster_CultLeader",0,"Cult Leader","Líder do Culto"
