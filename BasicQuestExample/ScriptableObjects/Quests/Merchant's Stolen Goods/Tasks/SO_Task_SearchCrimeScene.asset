@@ -33,11 +33,10 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  conditions: []
+  conditions:
+  - {fileID: 11400000, guid: 0aa21200afa674f4e8f93e9a81caec55, type: 2}
+  - {fileID: 11400000, guid: 935743f686a665d47999579cb38c6316, type: 2}
   failureConditions: []
-  discoverableItems:
-  - {fileID: 11400000, guid: 3c4d5e6f789012345678abcd00010203, type: 2}
-  - {fileID: 11400000, guid: 4d5e6f789012345678abcd0001020304, type: 2}
   requiredDiscoveries: 2
   references:
     version: 2

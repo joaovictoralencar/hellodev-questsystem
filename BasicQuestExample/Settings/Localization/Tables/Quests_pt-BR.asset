@@ -22,7 +22,8 @@ MonoBehaviour:
   - m_Id: 734280610267136
     m_Localized: "Miss\xF5es Completas"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 735193919963136
     m_Localized: "Miss\xF5es Falhadas"
     m_Metadata:
@@ -78,7 +79,8 @@ MonoBehaviour:
       dos ataques dos goblins. Parece que eles est\xE3o operando a partir de um antigo
       acampamento abandonado."
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 3835554264301568
     m_Localized: Acampamento dos Goblins
     m_Metadata:
@@ -281,7 +283,8 @@ MonoBehaviour:
   - m_Id: 45854794508713994
     m_Localized: "Procurar Evid\xEAncias ({current}/{required})"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   - m_Id: 45854794508713995
     m_Localized: Encontre o livro de pagamentos e as ordens seladas ({current}/{required})
     m_Metadata:
@@ -438,3 +441,6 @@ MonoBehaviour:
         - id: 45854794508713984
         - id: 45854794491936768
         - id: 45247112403795992
+        - id: 45854794508713994
+        - id: 3834205569073152
+        - id: 734280610267136

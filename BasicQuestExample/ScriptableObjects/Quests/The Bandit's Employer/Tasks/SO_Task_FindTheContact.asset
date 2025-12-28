@@ -33,9 +33,9 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  conditions: []
+  conditions:
+  - {fileID: 11400000, guid: 55644e9358ee3f148a2a4fc7fe572306, type: 2}
   failureConditions: []
-  targetLocation: {fileID: 11400000, guid: decc694b2cc4d7b4b88b0b63f098cd13, type: 2}
   references:
     version: 2
     RefIds: []

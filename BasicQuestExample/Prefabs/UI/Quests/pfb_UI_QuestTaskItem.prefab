@@ -214,14 +214,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b16ba7f718d40f54e921d6f60a448164, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
-  TaskNameText: {fileID: 8411093748382662706}
-  TaskCheck: {fileID: 6452576462985576414}
+  toggle: {fileID: 5227483656188404367}
+  taskNameText: {fileID: 8411093748382662706}
+  taskCheckmark: {fileID: 6452576462985576414}
   selectedBackground: {fileID: 4327543795487347906}
-  NotCompletedColour: {fileID: 11400000, guid: 5c3d926e9b740a0418b49c0d5119aa9b, type: 2}
-  CompletedColour: {fileID: 11400000, guid: b1ae34b224f66f848a47d9b62cd132fe, type: 2}
-  FailedColour: {fileID: 11400000, guid: bfac3025a11960546b196bd91923cffd, type: 2}
-  TextStyleUpdater: {fileID: 4053707860164712795}
+  inProgressColour: {fileID: 11400000, guid: 2bb8ff7ded4c8c84996d3527bf13f81f, type: 2}
+  completedColour: {fileID: 11400000, guid: be2df747104f4db408694c1a616e2ea9, type: 2}
+  failedColour: {fileID: 11400000, guid: bfac3025a11960546b196bd91923cffd, type: 2}
+  textStyleUpdater: {fileID: 4053707860164712795}
 --- !u!222 &7496683923836588589
 CanvasRenderer:
   m_ObjectHideFlags: 0

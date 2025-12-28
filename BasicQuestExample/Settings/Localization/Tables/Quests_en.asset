@@ -22,7 +22,8 @@ MonoBehaviour:
   - m_Id: 734280610267136
     m_Localized: Completed Quests
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 735193919963136
     m_Localized: Failed Quests
     m_Metadata:
@@ -77,7 +78,8 @@ MonoBehaviour:
     m_Localized: Follow the trail of discarded goods to find the source of the goblin
       attacks. It seems they're operating from an old, abandoned campsite.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424905934962797
   - m_Id: 3835554264301568
     m_Localized: Goblin's Campsite
     m_Metadata:
@@ -439,3 +441,5 @@ MonoBehaviour:
         - id: 45854794508713984
         - id: 45854794491936768
         - id: 45247112403795992
+        - id: 3834205569073152
+        - id: 734280610267136

@@ -163,12 +163,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6532ca9ecaf2b7408667b580d07bc35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  questSectionName: {fileID: 8171780062306011741}
-  questSectionBackground: {fileID: 3874837041220305390}
+  sectionNameText: {fileID: 8171780062306011741}
+  sectionBackground: {fileID: 3874837041220305390}
   questItemPrefab: {fileID: 6803743927342112136, guid: 87f814ee2bfce234eb6d6da30f7b6981, type: 3}
   questItemHolder: {fileID: 948006117096311559}
-  toggle: {fileID: 8017381850103288273}
-  toggleGroup: {fileID: 3488574435757466485}
+  expandToggle: {fileID: 0}
+  contentContainer: {fileID: 0}
 --- !u!114 &7590642388714747708
 MonoBehaviour:
   m_ObjectHideFlags: 0

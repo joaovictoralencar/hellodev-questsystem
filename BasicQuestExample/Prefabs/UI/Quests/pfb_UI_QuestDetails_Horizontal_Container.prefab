@@ -1004,18 +1004,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1eb8da98aa2bee42ad1399dc177668e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QuestNameText: {fileID: 3722481088743689468}
-  QuestImage: {fileID: 5983883175375689409}
-  QuestDescriptionText: {fileID: 7786197372110466664}
-  QuestLocationText: {fileID: 3364007533689434016}
-  LevelText: {fileID: 790998769684700447}
-  ProgressionText: {fileID: 2967199473316060505}
-  RewardsUI: {fileID: 3681041779912511671}
-  TaskItemPrefab: {fileID: 3171107527094496841, guid: 7122691c4ff453e42a2df7465a234ef5, type: 3}
-  TasksHolder: {fileID: 7762556871803788366}
-  ToggleGroup: {fileID: 468714381711669206}
-  TaskDescriptionText: {fileID: 778314818795038770}
-  TaskDescriptionTextMesh: {fileID: 4954617906382298031}
+  questNameText: {fileID: 3722481088743689468}
+  questImage: {fileID: 5983883175375689409}
+  questDescriptionText: {fileID: 7786197372110466664}
+  questLocationText: {fileID: 3364007533689434016}
+  levelText: {fileID: 790998769684700447}
+  progressionText: {fileID: 2967199473316060505}
+  rewardsUI: {fileID: 3681041779912511671}
+  taskItemPrefab: {fileID: 3171107527094496841, guid: 7122691c4ff453e42a2df7465a234ef5, type: 3}
+  tasksHolder: {fileID: 7762556871803788366}
+  taskToggleGroup: {fileID: 468714381711669206}
+  taskDescriptionText: {fileID: 778314818795038770}
+  taskDescriptionTextMesh: {fileID: 4954617906382298031}
   CompleteCurrentTaskButton: {fileID: 3627102450371907236}
   FailCurrentTaskButton: {fileID: 116705041820430103}
   InvokeEventTaskButton: {fileID: 512690474959023721}

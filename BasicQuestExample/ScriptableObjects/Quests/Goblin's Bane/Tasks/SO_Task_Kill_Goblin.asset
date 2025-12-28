@@ -42,10 +42,10 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  conditions: []
+  conditions:
+  - {fileID: 11400000, guid: 79379899502bddc41a50c426340ce8dc, type: 2}
   failureConditions:
   - {fileID: 11400000, guid: a3b4c5d6789012345678abcdef112233, type: 2}
-  targetId: {fileID: 11400000, guid: 789012345678abcdef0102030405060a, type: 2}
   requiredCount: 5
   currentCount: 0
   references:
