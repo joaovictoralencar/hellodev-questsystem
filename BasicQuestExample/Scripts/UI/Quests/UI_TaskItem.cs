@@ -31,10 +31,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private Colour_SO failedColour;
         [SerializeField] private TextStyleUpdater textStyleUpdater;
 
-        [Header("Highlight Settings")]
-        [SerializeField] private float highlightScale = 1.02f;
-        [SerializeField] private float highlightAlpha = 0.3f;
-
         #endregion
 
         #region Private Fields
@@ -43,7 +39,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private Action<TaskRuntime> _onTaskSelectedCallback;
         private UnityAction<TaskRuntime> _onTaskStartedHandler;
         private bool _isInitialized;
-        private bool _isHighlighted;
 
         #endregion
 
@@ -61,18 +56,15 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (toggle == null) TryGetComponent(out toggle);
 
-            // Subscribe to toggle events - OnToggleOn fires when toggle becomes active
+            // Subscribe to toggle events
             toggle.OnToggleOn.AddListener(HandleToggleOn);
-            toggle.OnToggleOff.AddListener(HandleToggleOff);
-            // Highlighted fires when controller/mouse hovers
-            toggle.HighlightedStateEvent.AddListener(HandleHighlighted);
-            toggle.NormalStateEvent.AddListener(HandleNormal);
+            toggle.OnShowVisualFeedback.AddListener(ShowSelectionVisual);
+            toggle.OnHideVisualFeedback.AddListener(HideSelectionVisual);
         }
 
         private void OnDestroy()
         {
-            UnsubscribeFromEvents();
-            Tween.StopAll(transform);
+            UnsubscribeFromTaskEvents();
             if (selectedBackground != null)
                 Tween.StopAll(selectedBackground);
         }
@@ -88,9 +80,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (task == null) return;
 
-            // Clean up previous task if re-using this item
             if (_isInitialized)
-                UnsubscribeFromEvents();
+                UnsubscribeFromTaskEvents();
 
             _task = task;
             _onTaskSelectedCallback = onTaskSelected;
@@ -98,21 +89,20 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             SetupLocalizedText();
             ApplyStateVisuals(task.CurrentState);
-            SubscribeToEvents();
+            SubscribeToTaskEvents();
 
             _isInitialized = true;
         }
 
         /// <summary>
         /// Programmatically selects this task item.
-        /// Use this for initial selection or navigation.
         /// </summary>
         public void SelectTask()
         {
             if (_task == null || toggle == null) return;
 
             toggle.SetIsOn(true);
-            toggle.Toggle.Select(); // Set EventSystem focus for controller
+            toggle.Toggle.Select();
         }
 
         /// <summary>
@@ -126,68 +116,36 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         #endregion
 
-        #region Private Methods - Event Handlers
+        #region Private Methods - Selection
 
         private void HandleToggleOn()
         {
-            // Invoke callback to notify parent that this task was selected
             _onTaskSelectedCallback?.Invoke(_task);
+        }
 
-            // Animate selection background
-            if (selectedBackground != null)
-            {
-                selectedBackground.enabled = true;
+        private void ShowSelectionVisual()
+        {
+            if (selectedBackground == null) return;
+
+            selectedBackground.enabled = true;
+            if (selectedBackground.fillAmount < 1f)
                 Tween.UIFillAmount(selectedBackground, 1f, 0.25f, Ease.OutCubic);
-            }
         }
 
-        private void HandleToggleOff()
+        private void HideSelectionVisual()
         {
-            // Animate deselection
-            if (selectedBackground != null)
-            {
-                Tween.UIFillAmount(selectedBackground, 0f, 0.15f, Ease.InCubic)
-                    .OnComplete(() => selectedBackground.enabled = false);
-            }
+            if (selectedBackground == null || selectedBackground.fillAmount <= 0f) return;
+
+            Tween.UIFillAmount(selectedBackground, 0f, 0.15f, Ease.InCubic)
+                .OnComplete(() => selectedBackground.enabled = false);
         }
 
-        private void HandleHighlighted()
-        {
-            if (_isHighlighted) return;
-            _isHighlighted = true;
+        #endregion
 
-            // Always scale up when highlighted (focused)
-            Tween.Scale(transform, highlightScale, 0.15f, Ease.OutBack);
-
-            // Show background at partial fill only if NOT already selected
-            if (selectedBackground != null && !IsSelected)
-            {
-                selectedBackground.enabled = true;
-                // Only tween if current value is different
-                if (selectedBackground.fillAmount < highlightAlpha)
-                    Tween.UIFillAmount(selectedBackground, highlightAlpha, 0.15f, Ease.OutQuad);
-            }
-        }
-
-        private void HandleNormal()
-        {
-            if (!_isHighlighted) return;
-            _isHighlighted = false;
-
-            // Always scale back to normal when leaving focus
-            Tween.Scale(transform, 1f, 0.1f, Ease.InQuad);
-
-            // Hide background only if NOT selected
-            if (selectedBackground != null && !IsSelected)
-            {
-                Tween.UIFillAmount(selectedBackground, 0f, 0.1f, Ease.InQuad)
-                    .OnComplete(() => { if (!IsSelected) selectedBackground.enabled = false; });
-            }
-        }
+        #region Private Methods - Task State
 
         private void HandleTaskUpdated(TaskRuntime task)
         {
-            // Refresh localized text with updated values (e.g., progress counters)
             if (task?.Data != null && taskNameText != null)
                 task.Data.SetupTaskLocalizedVariables(taskNameText, task);
         }
@@ -197,7 +155,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(true);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = completedColour;
-            // Ensure task remains navigable when completed
             toggle?.SetInteractable(true);
         }
 
@@ -206,7 +163,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(false);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = failedColour;
-            // Ensure task remains navigable when failed
             toggle?.SetInteractable(true);
         }
 
@@ -217,7 +173,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = inProgressColour;
             toggle?.SetInteractable(true);
 
-            // Clear the started handler since we're now in progress
             if (_onTaskStartedHandler != null && _task != null)
             {
                 _task.OnTaskStarted.SafeUnsubscribe(_onTaskStartedHandler);
@@ -227,10 +182,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void HandleTaskNotStarted()
         {
-            // Hide until task starts
             gameObject.SetActive(false);
 
-            // Subscribe to start event to show when task begins
             _onTaskStartedHandler = _ => HandleTaskInProgress();
             _task.OnTaskStarted.SafeSubscribe(_onTaskStartedHandler);
         }
@@ -243,7 +196,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (taskNameText == null || _task?.Data == null) return;
 
-            // Disable to prevent format errors before variables are set
             taskNameText.enabled = false;
             taskNameText.StringReference = _task.Data.DisplayName;
             _task.Data.SetupTaskLocalizedVariables(taskNameText, _task);
@@ -270,7 +222,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             }
         }
 
-        private void SubscribeToEvents()
+        private void SubscribeToTaskEvents()
         {
             if (_task == null) return;
 
@@ -279,7 +231,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _task.OnTaskFailed.SafeSubscribe(HandleTaskFailed);
         }
 
-        private void UnsubscribeFromEvents()
+        private void UnsubscribeFromTaskEvents()
         {
             if (_task == null) return;
 

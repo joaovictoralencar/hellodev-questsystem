@@ -354,6 +354,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void Awake()
         {
             if (taskToggleGroup == null) TryGetComponent(out taskToggleGroup);
+
+            // Prevent deselection when clicking on already-selected task
+            if (taskToggleGroup != null)
+                taskToggleGroup.allowSwitchOff = false;
         }
 
         private void OnDestroy()

@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 4043602258630141556}
   - component: {fileID: 7190486415289383556}
   - component: {fileID: 1676776131510591963}
+  - component: {fileID: 6217909923440678743}
   m_Layer: 5
   m_Name: pfb_UI_Scroll_Vertical
   m_TagString: Untagged
@@ -165,6 +166,23 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &6217909923440678743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3973185061472001089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 556eafe603f935a44b307dcc4592907d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HelloDev.UI.Default::HelloDev.UI.Default.UIScroll
+  autoScrollToSelection: 1
+  scrollDuration: 0.15
+  scrollEase: 9
+  viewPadding: 10
+  centerOnSelection: 0
 --- !u!1 &4220575526520166603
 GameObject:
   m_ObjectHideFlags: 0

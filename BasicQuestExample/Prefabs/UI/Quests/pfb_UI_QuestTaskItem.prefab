@@ -222,8 +222,6 @@ MonoBehaviour:
   completedColour: {fileID: 11400000, guid: be2df747104f4db408694c1a616e2ea9, type: 2}
   failedColour: {fileID: 11400000, guid: bfac3025a11960546b196bd91923cffd, type: 2}
   textStyleUpdater: {fileID: 4053707860164712795}
-  highlightScale: 1.02
-  highlightAlpha: 0.3
 --- !u!222 &7496683923836588589
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -313,10 +311,18 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _toggle: {fileID: 5872736873199290283}
+  autoSelectOnKeyboardFocus: 1
+  hideVisualOnFocusLostToNonSibling: 1
   OnToggleOn:
     m_PersistentCalls:
       m_Calls: []
   OnToggleOff:
+    m_PersistentCalls:
+      m_Calls: []
+  OnShowVisualFeedback:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHideVisualFeedback:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &6452576462985576414

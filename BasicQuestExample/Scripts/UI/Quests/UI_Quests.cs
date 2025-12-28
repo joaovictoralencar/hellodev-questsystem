@@ -44,6 +44,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private readonly List<UI_QuestItem> _allQuestItems = new();
         private QuestRuntime _selectedQuest;
         private int _selectedIndex = -1;
+        private GameObject _lastValidSelection;
 
         #endregion
 
@@ -60,9 +61,56 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             base.Awake();
             onStartShow.AddListener(SetupQuestUI);
+            onStartHide.AddListener(ClearSelectionTracking);
 
             if (questBackButton != null)
                 questBackButton.OnClick.AddListener(HandleBackButton);
+
+            // Prevent deselection when clicking on already-selected quest
+            if (questItemToggleGroup != null)
+                questItemToggleGroup.allowSwitchOff = false;
+        }
+
+        private void ClearSelectionTracking()
+        {
+            _lastValidSelection = null;
+        }
+
+        private void LateUpdate()
+        {
+            // Maintain selection for controller navigation
+            MaintainSelection();
+        }
+
+        private void MaintainSelection()
+        {
+            if (EventSystem.current == null) return;
+
+            var currentSelection = EventSystem.current.currentSelectedGameObject;
+
+            // Track valid selections within our UI
+            if (currentSelection != null && IsOurSelection(currentSelection))
+            {
+                _lastValidSelection = currentSelection;
+            }
+            // Restore selection if lost (null or outside our UI)
+            else if (_lastValidSelection != null && _lastValidSelection.activeInHierarchy)
+            {
+                // Only restore if nothing is selected or selection is outside quest UI
+                if (currentSelection == null || !IsOurSelection(currentSelection))
+                {
+                    EventSystem.current.SetSelectedGameObject(_lastValidSelection);
+                }
+            }
+        }
+
+        private bool IsOurSelection(GameObject obj)
+        {
+            if (obj == null) return false;
+
+            // Check if selection is a quest item, task item, or debug button within our UI
+            return obj.GetComponentInParent<UI_Quests>() == this ||
+                   obj.GetComponentInParent<UI_QuestDetails>() == questDetails;
         }
 
         protected override void Start()

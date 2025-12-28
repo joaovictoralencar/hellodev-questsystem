@@ -74,9 +74,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             if (selectableImage != null)
                 _originalColor = selectableImage.color;
 
-            // Toggle events for selection
+            // Subscribe to toggle events
             toggle.OnToggleOn.AddListener(HandleToggleOn);
-            toggle.OnToggleOff.AddListener(HandleToggleOff);
+            toggle.OnShowVisualFeedback.AddListener(ShowSelectionVisual);
+            toggle.OnHideVisualFeedback.AddListener(HideSelectionVisual);
         }
 
         private void OnDestroy()
@@ -96,7 +97,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (newQuest?.QuestData == null) return;
 
-            // Clean up previous quest if re-using
             if (_isInitialized)
                 UnsubscribeFromQuestEvents();
 
@@ -142,7 +142,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         /// <summary>
         /// Sets the toggle state without triggering selection callback.
-        /// Used for synchronizing toggle states from parent container.
         /// </summary>
         public void SetToggleIsOn(bool isOn)
         {
@@ -152,28 +151,27 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         #endregion
 
-        #region Private Methods - Toggle Handlers
+        #region Private Methods - Selection
 
         private void HandleToggleOn()
         {
-            // Notify parent of selection
             _onQuestSelectedCallback?.Invoke(_quest);
+        }
 
-            // Apply selected visuals
+        private void ShowSelectionVisual()
+        {
             if (selectableImage != null)
                 selectableImage.color = selectedStateColour;
 
-            // Scale animation for emphasis
-            Tween.Scale(transform, 1.035f, 0.2f, Ease.OutBack);
+            if (transform.localScale.x < 1.03f)
+                Tween.Scale(transform, 1.035f, 0.2f, Ease.OutBack);
         }
 
-        private void HandleToggleOff()
+        private void HideSelectionVisual()
         {
-            // Revert to original visuals
             if (selectableImage != null)
                 selectableImage.color = _originalColor;
 
-            // Scale back to normal
             if (transform.localScale.x > 1f)
                 Tween.Scale(transform, 1f, 0.15f, Ease.InBack);
         }
@@ -194,7 +192,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             CreateStatusIndicator(completedIndicatorPrefab);
             CreateStatusText(completedTextPrefab);
 
-            // Unsubscribe since we're done tracking this state
             questData.OnQuestCompleted.SafeUnsubscribe(HandleQuestCompleted);
         }
 
@@ -208,11 +205,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         private void HandleQuestInProgress(QuestRuntime questData)
         {
             ClearStatusText();
-
-            // Subscribe to completion
             questData.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
 
-            // Show next active task
             TaskRuntime nextTask = questData.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
             if (nextTask != null)
                 DisplayNextTask(nextTask);
@@ -311,7 +305,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void ClearStatusText()
         {
-            // Keep first child (base element), remove additional status text
             if (questStatusHolder != null && questStatusHolder.childCount > 1)
                 Destroy(questStatusHolder.GetChild(1).gameObject);
         }
