@@ -31,6 +31,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [SerializeField] private Colour_SO failedColour;
         [SerializeField] private TextStyleUpdater textStyleUpdater;
 
+        [Header("Highlight Settings")]
+        [SerializeField] private float highlightScale = 1.02f;
+        [SerializeField] private float highlightAlpha = 0.3f;
+
         #endregion
 
         #region Private Fields
@@ -39,6 +43,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private Action<TaskRuntime> _onTaskSelectedCallback;
         private UnityAction<TaskRuntime> _onTaskStartedHandler;
         private bool _isInitialized;
+        private bool _isHighlighted;
 
         #endregion
 
@@ -61,11 +66,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             toggle.OnToggleOff.AddListener(HandleToggleOff);
             // Highlighted fires when controller/mouse hovers
             toggle.HighlightedStateEvent.AddListener(HandleHighlighted);
+            toggle.NormalStateEvent.AddListener(HandleNormal);
         }
 
         private void OnDestroy()
         {
             UnsubscribeFromEvents();
+            Tween.StopAll(transform);
             if (selectedBackground != null)
                 Tween.StopAll(selectedBackground);
         }
@@ -146,9 +153,37 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void HandleHighlighted()
         {
-            // When highlighted via controller navigation but not yet selected,
-            // we can optionally auto-select for smoother navigation
-            // For now, just ensure visual feedback without changing selection
+            if (_isHighlighted) return;
+            _isHighlighted = true;
+
+            // Scale up slightly for emphasis
+            Tween.Scale(transform, highlightScale, 0.15f, Ease.OutBack);
+
+            // Show background at highlight alpha (if not already selected)
+            if (selectedBackground != null && !IsSelected)
+            {
+                selectedBackground.enabled = true;
+                Tween.Alpha(selectedBackground, highlightAlpha, 0.15f, Ease.OutQuad);
+            }
+        }
+
+        private void HandleNormal()
+        {
+            if (!_isHighlighted) return;
+            _isHighlighted = false;
+
+            // Scale back to normal (only if not selected)
+            if (!IsSelected && transform.localScale.x > 1f)
+            {
+                Tween.Scale(transform, 1f, 0.1f, Ease.InQuad);
+            }
+
+            // Hide background (only if not selected)
+            if (selectedBackground != null && !IsSelected)
+            {
+                Tween.Alpha(selectedBackground, 0f, 0.1f, Ease.InQuad)
+                    .OnComplete(() => { if (!IsSelected) selectedBackground.enabled = false; });
+            }
         }
 
         private void HandleTaskUpdated(TaskRuntime task)
@@ -163,6 +198,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(true);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = completedColour;
+            // Ensure task remains navigable when completed
+            toggle?.SetInteractable(true);
         }
 
         private void HandleTaskFailed(TaskRuntime task)
@@ -170,6 +207,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(false);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = failedColour;
+            // Ensure task remains navigable when failed
+            toggle?.SetInteractable(true);
         }
 
         private void HandleTaskInProgress()
@@ -177,6 +216,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(false);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = inProgressColour;
+            toggle?.SetInteractable(true);
 
             // Clear the started handler since we're now in progress
             if (_onTaskStartedHandler != null && _task != null)
