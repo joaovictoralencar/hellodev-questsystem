@@ -10,7 +10,9 @@
         "PrimeTween.Runtime",
         "Unity.Localization",
         "QuestSystem.Utils",
-        "HelloDev.IDs"
+        "HelloDev.IDs",
+        "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
+        "HelloDev.Events"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

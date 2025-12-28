@@ -15,100 +15,55 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 {
     /// <summary>
     /// UI component representing a single quest item within a quest section.
-    /// Handles the display of quest information, status indicators, and user interactions.
+    /// Handles display of quest information, status indicators, and selection.
     /// </summary>
     [RequireComponent(typeof(UIToggle))]
     public class UI_QuestItem : MonoBehaviour
     {
         #region Serialized Fields
-        
-        [Header("Quest Information Display")]
-        [SerializeField] 
-        [Tooltip("Localized text component for displaying the quest name")]
-        private LocalizeStringEvent questNameText;
-        
-        [SerializeField] 
-        [Tooltip("Localized text component for displaying the quest location")]
-        private LocalizeStringEvent questLocationText;
-        
-        [SerializeField] 
-        [Tooltip("Text component for displaying the recommended level")]
-        private TextMeshProUGUI levelText;
-        
-        [SerializeField] 
-        [Tooltip("Text component for displaying quest completion percentage")]
-        private TextMeshProUGUI progressionText;
-        
-        [Header("Toggle"), SerializeField, Tooltip("The toggle component for quest selection")]
-        private UIToggle toggle;
 
-        [Header("Quest Status Indicators")] [SerializeField] [Tooltip("The vertical marker for the quest colour on the left")]
-        private Image questColourMarker;
-        
-        [SerializeField] 
-        [Tooltip("Container for quest status indicator icons")]
-        private RectTransform questStatusIndicatorHolder;
-        
-        [Space(10)]
-        [SerializeField] 
-        [Tooltip("Prefab for updated quest indicator")]
-        private RectTransform updatedIndicatorPrefab;
-        
-        [SerializeField] 
-        [Tooltip("Prefab for completed quest indicator")]
-        private RectTransform completedIndicatorPrefab;
-        
-        [SerializeField] 
-        [Tooltip("Prefab for failed quest indicator")]
-        private RectTransform failedIndicatorPrefab;
+        [Header("Quest Information")]
+        [SerializeField] private LocalizeStringEvent questNameText;
+        [SerializeField] private LocalizeStringEvent questLocationText;
+        [SerializeField] private TextMeshProUGUI levelText;
+        [SerializeField] private TextMeshProUGUI progressionText;
 
-        [Header("Quest Status Text")]
-        [SerializeField] 
-        [Tooltip("Container for quest status text elements")]
-        private RectTransform questStatusHolder;
-        
-        [Space(10)]
-        [SerializeField] 
-        [Tooltip("Prefab for displaying next task text")]
-        private LocalizeStringEvent nextTaskTextPrefab;
-        
-        [SerializeField] 
-        [Tooltip("Prefab for completed quest text")]
-        private RectTransform completedTextPrefab;
-        
-        [SerializeField] 
-        [Tooltip("Prefab for failed quest text")]
-        private RectTransform failedTextPrefab;
+        [Header("Toggle")]
+        [SerializeField] private UIToggle toggle;
 
-        [Header("UI selectable")]
+        [Header("Status Indicators")]
+        [SerializeField] private Image questColourMarker;
+        [SerializeField] private RectTransform questStatusIndicatorHolder;
+        [SerializeField] private RectTransform completedIndicatorPrefab;
+        [SerializeField] private RectTransform failedIndicatorPrefab;
+
+        [Header("Status Text")]
+        [SerializeField] private RectTransform questStatusHolder;
+        [SerializeField] private LocalizeStringEvent nextTaskTextPrefab;
+        [SerializeField] private RectTransform completedTextPrefab;
+        [SerializeField] private RectTransform failedTextPrefab;
+
+        [Header("Selection Visuals")]
         [SerializeField] private Image selectableImage;
         [SerializeField] private Color selectedStateColour;
-        
+
         #endregion
 
         #region Private Fields
-        
-        /// <summary>
-        /// Callback invoked when this quest item is selected
-        /// </summary>
-        private Action<QuestRuntime> onQuestSelected;
-        
-        /// <summary>
-        /// The quest data associated with this UI item
-        /// </summary>
-        private QuestRuntime quest;
 
-        private Color originalColor;
-        
+        private Action<QuestRuntime> _onQuestSelectedCallback;
+        private QuestRuntime _quest;
+        private Color _originalColor;
+        private bool _isInitialized;
+
         #endregion
 
         #region Public Properties
-        
-        /// <summary>
-        /// Gets the quest associated with this UI item
-        /// </summary>
-        public QuestRuntime Quest => quest;
-        
+
+        public QuestRuntime Quest => _quest;
+        public UIToggle Toggle => toggle;
+        public bool IsSelected => toggle != null && toggle.IsOn;
+
         #endregion
 
         #region Unity Lifecycle
@@ -116,234 +71,211 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         private void Awake()
         {
             if (toggle == null) TryGetComponent(out toggle);
-            toggle.OnToggleOn.AddListener(SelectQuest);
-            toggle.HighlightedStateEvent.AddListener(Select);
-            toggle.NormalStateEvent.AddListener(OnDeselect);
-            originalColor = selectableImage.color;
+            if (selectableImage != null)
+                _originalColor = selectableImage.color;
+
+            // Toggle events for selection
+            toggle.OnToggleOn.AddListener(HandleToggleOn);
+            toggle.OnToggleOff.AddListener(HandleToggleOff);
         }
 
         private void OnDestroy()
         {
-            // Kill any running tweens to prevent null reference errors
             Tween.StopAll(transform);
             UnsubscribeFromQuestEvents();
         }
-        
+
         #endregion
 
-        #region Public Setup Methods
-        
+        #region Public Methods
+
         /// <summary>
-        /// Sets up the quest item with quest data and selection callback.
-        /// Configures the display based on the current quest state.
+        /// Initializes the quest item with quest data and selection callback.
         /// </summary>
-        /// <param name="newQuest">The quest to display</param>
-        /// <param name="onQuestSelectedCallback">Callback invoked when quest is selected</param>
         public void Setup(QuestRuntime newQuest, Action<QuestRuntime> onQuestSelectedCallback)
         {
             if (newQuest?.QuestData == null) return;
 
-            this.quest = newQuest;
-            onQuestSelected = onQuestSelectedCallback;
-            
-            SetupQuestInformation();
-            SetupQuestStateDisplay();
+            // Clean up previous quest if re-using
+            if (_isInitialized)
+                UnsubscribeFromQuestEvents();
+
+            _quest = newQuest;
+            _onQuestSelectedCallback = onQuestSelectedCallback;
+            gameObject.name = $"QuestItem_{newQuest.QuestData.DevName}";
+
+            SetupQuestDisplay();
+            SetupQuestStateVisuals();
             SubscribeToQuestEvents();
-        }
-        
-        #endregion
 
-        #region Quest State Management
-
-        /// <summary>
-        /// Sets up the color of the quest marker based on the quest type.
-        /// </summary>
-        /// <param name="questTypeColor"></param>
-        public void SetupMarkerColour(Color questTypeColor)
-        {
-            questColourMarker.color = questTypeColor;
+            _isInitialized = true;
         }
 
         /// <summary>
-        /// Handles the display when quest is in progress.
-        /// Shows the next active task and subscribes to completion events.
+        /// Programmatically selects this quest item and sets EventSystem focus.
         /// </summary>
-        /// <param name="questData">The quest in progress</param>
-        private void OnQuestInProgress(QuestRuntime questData)
+        public void SelectQuest()
         {
-            ClearStatusText();
-            questData.OnQuestCompleted.SafeSubscribe(OnQuestCompleted);
-            
-            TaskRuntime nextActiveTask = GetNextActiveTask(questData);
-            if (nextActiveTask != null)
-            {
-                DisplayNextTask(nextActiveTask);
-            }
-        }
+            if (_quest == null || toggle == null) return;
 
-        /// <summary>
-        /// Handles the display when quest is completed.
-        /// Shows completion indicators and unsubscribes from events.
-        /// </summary>
-        /// <param name="questData">The completed quest</param>
-        private void OnQuestCompleted(QuestRuntime questData)
-        {
-            ClearStatusText();
-            ClearStatusIndicators();
-            
-            questData.OnQuestCompleted.SafeUnsubscribe(OnQuestCompleted);
-            
-            CreateStatusIndicator(completedIndicatorPrefab);
-            CreateStatusText(completedTextPrefab);
-        }
-
-        /// <summary>
-        /// Handles the display when quest has failed.
-        /// Shows failure indicators and clears previous status.
-        /// </summary>
-        /// <param name="questData">The failed quest</param>
-        private void OnQuestFailed(QuestRuntime questData)
-        {
-            ClearStatusText();
-            ClearStatusIndicators();
-            
-            CreateStatusIndicator(failedIndicatorPrefab);
-            CreateStatusText(failedTextPrefab);
-        }
-        
-        #endregion
-
-        #region Event Handlers
-        
-        /// <summary>
-        /// Handles quest update events to refresh the progress display.
-        /// </summary>
-        /// <param name="updatedQuest">The quest that was updated</param>
-        private void OnQuestUpdated(QuestRuntime updatedQuest)
-        {
-            if (progressionText != null)
-            {
-                progressionText.text = $"{QuestUtils.GetPercentage(updatedQuest.CurrentProgress)}%";
-            }
-        }
-        
-        #endregion
-
-        #region Selection Handlers
-        
-        /// <summary>
-        /// Selects this quest item.
-        /// </summary>
-        public void Select()
-        {
-            if (toggle.IsOn) return;
-            toggle?.SetIsOn(true);
-            SelectQuest();
-        }
-
-        private void OnSelect()
-        {
-            if (transform.localScale.x < 1.035f)
-                Tween.Scale(transform, 1f, 1.035f, 0.25f, Ease.OutBack);
-            selectableImage.color = selectedStateColour;
+            toggle.SetIsOn(true);
             toggle.Toggle.Select();
         }
 
-        public void OnDeselect()
+        /// <summary>
+        /// Sets the toggle group for mutual exclusion across all quest items.
+        /// </summary>
+        public void SetToggleGroup(ToggleGroup toggleGroup)
         {
-            if (toggle.IsOn) return;
-            selectableImage.color = originalColor;
+            if (toggle?.Toggle != null)
+                toggle.Toggle.group = toggleGroup;
+        }
+
+        /// <summary>
+        /// Sets the color of the quest type marker.
+        /// </summary>
+        public void SetupMarkerColour(Color questTypeColor)
+        {
+            if (questColourMarker != null)
+                questColourMarker.color = questTypeColor;
+        }
+
+        /// <summary>
+        /// Sets the toggle state without triggering selection callback.
+        /// Used for synchronizing toggle states from parent container.
+        /// </summary>
+        public void SetToggleIsOn(bool isOn)
+        {
+            if (toggle != null)
+                toggle.SetIsOn(isOn);
+        }
+
+        #endregion
+
+        #region Private Methods - Toggle Handlers
+
+        private void HandleToggleOn()
+        {
+            // Notify parent of selection
+            _onQuestSelectedCallback?.Invoke(_quest);
+
+            // Apply selected visuals
+            if (selectableImage != null)
+                selectableImage.color = selectedStateColour;
+
+            // Scale animation for emphasis
+            Tween.Scale(transform, 1.035f, 0.2f, Ease.OutBack);
+        }
+
+        private void HandleToggleOff()
+        {
+            // Revert to original visuals
+            if (selectableImage != null)
+                selectableImage.color = _originalColor;
+
+            // Scale back to normal
             if (transform.localScale.x > 1f)
                 Tween.Scale(transform, 1f, 0.15f, Ease.InBack);
         }
-        
+
         #endregion
 
-        #region Private Helper Methods
-        
-        /// <summary>
-        /// Sets up the basic quest information display elements.
-        /// </summary>
-        private void SetupQuestInformation()
+        #region Private Methods - Quest State
+
+        private void HandleQuestUpdated(QuestRuntime updatedQuest)
+        {
+            if (progressionText != null)
+                progressionText.text = $"{QuestUtils.GetPercentage(updatedQuest.CurrentProgress)}%";
+        }
+
+        private void HandleQuestCompleted(QuestRuntime questData)
+        {
+            ClearStatusElements();
+            CreateStatusIndicator(completedIndicatorPrefab);
+            CreateStatusText(completedTextPrefab);
+
+            // Unsubscribe since we're done tracking this state
+            questData.OnQuestCompleted.SafeUnsubscribe(HandleQuestCompleted);
+        }
+
+        private void HandleQuestFailed(QuestRuntime questData)
+        {
+            ClearStatusElements();
+            CreateStatusIndicator(failedIndicatorPrefab);
+            CreateStatusText(failedTextPrefab);
+        }
+
+        private void HandleQuestInProgress(QuestRuntime questData)
+        {
+            ClearStatusText();
+
+            // Subscribe to completion
+            questData.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
+
+            // Show next active task
+            TaskRuntime nextTask = questData.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+            if (nextTask != null)
+                DisplayNextTask(nextTask);
+        }
+
+        #endregion
+
+        #region Private Methods - Setup
+
+        private void SetupQuestDisplay()
         {
             if (questNameText != null)
             {
-                questNameText.StringReference = quest.QuestData.DisplayName;
+                questNameText.StringReference = _quest.QuestData.DisplayName;
+                questNameText.RefreshString();
             }
-            
+
             if (questLocationText != null)
             {
-                questLocationText.StringReference = quest.QuestData.QuestLocation;
+                questLocationText.StringReference = _quest.QuestData.QuestLocation;
+                questLocationText.RefreshString();
             }
-            
+
             if (levelText != null)
-            {
-                levelText.text = quest.QuestData.RecommendedLevel.ToString();
-            }
-            
+                levelText.text = _quest.QuestData.RecommendedLevel.ToString();
+
             if (progressionText != null)
-            {
-                progressionText.text = $"{QuestUtils.GetPercentage(quest.CurrentProgress)}%";
-            }
+                progressionText.text = $"{QuestUtils.GetPercentage(_quest.CurrentProgress)}%";
         }
 
-        /// <summary>
-        /// Configures the display based on the current quest state.
-        /// </summary>
-        private void SetupQuestStateDisplay()
+        private void SetupQuestStateVisuals()
         {
-            switch (quest.CurrentState)
+            switch (_quest.CurrentState)
             {
-                case QuestState.NotStarted:
-                    break;
                 case QuestState.InProgress:
-                    OnQuestInProgress(quest);
+                    HandleQuestInProgress(_quest);
                     break;
                 case QuestState.Completed:
-                    OnQuestCompleted(quest);
+                    HandleQuestCompleted(_quest);
                     break;
                 case QuestState.Failed:
-                    OnQuestFailed(quest);
+                    HandleQuestFailed(_quest);
                     break;
             }
         }
 
-        /// <summary>
-        /// Subscribes to relevant quest events for updates.
-        /// </summary>
         private void SubscribeToQuestEvents()
         {
-            if (quest?.OnQuestUpdated != null)
-            {
-                quest.OnQuestUpdated.SafeSubscribe(OnQuestUpdated);
-            }
+            if (_quest == null) return;
+            _quest.OnQuestUpdated.SafeSubscribe(HandleQuestUpdated);
         }
 
-        /// <summary>
-        /// Unsubscribes from quest events to prevent memory leaks.
-        /// </summary>
         private void UnsubscribeFromQuestEvents()
         {
-            if (quest == null) return;
-
-            quest.OnQuestUpdated.SafeUnsubscribe(OnQuestUpdated);
-            quest.OnQuestCompleted.SafeUnsubscribe(OnQuestCompleted);
+            if (_quest == null) return;
+            _quest.OnQuestUpdated.SafeUnsubscribe(HandleQuestUpdated);
+            _quest.OnQuestCompleted.SafeUnsubscribe(HandleQuestCompleted);
         }
 
-        /// <summary>
-        /// Finds the next active task in the quest.
-        /// </summary>
-        /// <param name="questData">The quest to search</param>
-        /// <returns>The next active task, or null if none found</returns>
-        private TaskRuntime GetNextActiveTask(QuestRuntime questData)
-        {
-            return questData.Tasks.FirstOrDefault(task => task.CurrentState == TaskState.InProgress);
-        }
+        #endregion
 
-        /// <summary>
-        /// Displays information about the next active task.
-        /// </summary>
-        /// <param name="task">The task to display</param>
+        #region Private Methods - UI Helpers
+
         private void DisplayNextTask(TaskRuntime task)
         {
             if (nextTaskTextPrefab == null || questStatusHolder == null) return;
@@ -353,71 +285,37 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             task.Data.SetupTaskLocalizedVariables(nextTaskText, task);
         }
 
-        /// <summary>
-        /// Creates a status indicator using the specified prefab.
-        /// </summary>
-        /// <param name="indicatorPrefab">The prefab to instantiate</param>
-        private void CreateStatusIndicator(RectTransform indicatorPrefab)
+        private void CreateStatusIndicator(RectTransform prefab)
         {
-            if (indicatorPrefab != null && questStatusIndicatorHolder != null)
-            {
-                Instantiate(indicatorPrefab, questStatusIndicatorHolder);
-            }
+            if (prefab != null && questStatusIndicatorHolder != null)
+                Instantiate(prefab, questStatusIndicatorHolder);
         }
 
-        /// <summary>
-        /// Creates status text using the specified prefab.
-        /// </summary>
-        /// <param name="textPrefab">The text prefab to instantiate</param>
-        private void CreateStatusText(RectTransform textPrefab)
+        private void CreateStatusText(RectTransform prefab)
         {
-            if (textPrefab != null && questStatusHolder != null)
-            {
-                Instantiate(textPrefab, questStatusHolder);
-            }
+            if (prefab != null && questStatusHolder != null)
+                Instantiate(prefab, questStatusHolder);
         }
 
-        /// <summary>
-        /// Removes all status indicator elements.
-        /// </summary>
+        private void ClearStatusElements()
+        {
+            ClearStatusIndicators();
+            ClearStatusText();
+        }
+
         private void ClearStatusIndicators()
         {
             if (questStatusIndicatorHolder != null)
-            {
                 questStatusIndicatorHolder.DestroyAllChildren();
-            }
         }
 
-        /// <summary>
-        /// Removes status text elements (keeping the first child as base element).
-        /// </summary>
         private void ClearStatusText()
         {
+            // Keep first child (base element), remove additional status text
             if (questStatusHolder != null && questStatusHolder.childCount > 1)
-            {
                 Destroy(questStatusHolder.GetChild(1).gameObject);
-            }
         }
 
-        /// <summary>
-        /// Invokes the quest selection callback.
-        /// </summary>
-        private void SelectQuest()
-        {
-            onQuestSelected?.Invoke(quest);
-            OnSelect();
-            toggle.Toggle.Select();
-        }
-        
-        public void SetToggleGroup(ToggleGroup toggleGroup)
-        {
-            toggle.Toggle.group = toggleGroup;
-        }
         #endregion
-
-        public void SetToggleIsOn(bool isOn)
-        {
-            toggle.SetIsOn(isOn);
-        }
     }
 }

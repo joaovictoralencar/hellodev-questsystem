@@ -11,285 +11,147 @@ using UnityEngine.UI;
 namespace HelloDev.QuestSystem.BasicQuestExample
 {
     /// <summary>
-    /// UI component that represents a quest section containing multiple quest items.
-    /// Handles the display and management of quests grouped by quest type.
+    /// UI component representing a quest section that groups quests by type.
+    /// Acts as a visual container with optional expand/collapse functionality.
+    /// Quest items within this section participate in the main navigation flow.
     /// </summary>
-    [RequireComponent(typeof(ToggleGroup))]
     public class UI_QuestSection : MonoBehaviour
     {
         #region Serialized Fields
-        
-        [Header("Quest Section Display")]
-        [SerializeField] 
-        [Tooltip("Localized string component for the section name")]
-        private LocalizeStringEvent questSectionName;
-        
-        [SerializeField] 
-        [Tooltip("Background image component for the section")]
-        private Image questSectionBackground;
-        
-        [Header("Quest Items Management")]
-        [SerializeField] 
-        [Tooltip("Prefab used to create individual quest items")]
-        private UI_QuestItem questItemPrefab;
-        
-        [SerializeField] 
-        [Tooltip("Parent container for quest item instances")]
-        private RectTransform questItemHolder;
-        
-        [Header("Selection Toggle")]
-        [SerializeField] 
-        [Tooltip("Toggle component for section selection")]
-        private UIToggle toggle;
-        
-        [SerializeField] 
-        [Tooltip("Toggle group component for section selection")]
-        private ToggleGroup toggleGroup;
-        
+
+        [Header("Section Display")]
+        [SerializeField] private LocalizeStringEvent sectionNameText;
+        [SerializeField] private Image sectionBackground;
+
+        [Header("Quest Items")]
+        [SerializeField] private UI_QuestItem questItemPrefab;
+        [SerializeField] private RectTransform questItemHolder;
+
+        [Header("Expand/Collapse (Optional)")]
+        [SerializeField] private UIToggle expandToggle;
+        [SerializeField] private GameObject contentContainer;
+
         #endregion
 
         #region Private Fields
-        
-        /// <summary>
-        /// Dictionary mapping quests to their corresponding UI items for efficient lookup
-        /// </summary>
-        private readonly Dictionary<QuestRuntime, UI_QuestItem> questItems = new Dictionary<QuestRuntime, UI_QuestItem>();
-        
-        #endregion
 
-        #region Unity LifeCycle
-
-        protected void Start()
-        {
-            toggle.OnValueChanged.AddListener(OnToggleValueChanged);
-        }
-        private void OnDestroy()
-        {
-            toggle.OnValueChanged.RemoveListener(OnToggleValueChanged);
-        }
+        private readonly Dictionary<QuestRuntime, UI_QuestItem> _questItems = new();
+        private ToggleGroup _questToggleGroup;
+        private bool _isExpanded = true;
 
         #endregion
 
         #region Public Properties
-        
-        /// <summary>
-        /// The quest type associated with this section
-        /// </summary>
-        public QuestType_SO QuestType { get; private set; }
 
-        /// <summary>
-        /// Dictionary mapping quests to their corresponding UI items for efficient lookup
-        /// </summary>
-        public Dictionary<QuestRuntime, UI_QuestItem> QuestItems => questItems;
+        public QuestType_SO QuestType { get; private set; }
+        public IReadOnlyDictionary<QuestRuntime, UI_QuestItem> QuestItems => _questItems;
+        public int QuestCount => _questItems.Count;
+        public bool IsExpanded => _isExpanded;
 
         #endregion
 
-        #region Public Setup Methods
-        
+        #region Unity Lifecycle
+
+        private void Awake()
+        {
+            // Subscribe to expand/collapse if toggle exists
+            if (expandToggle != null)
+            {
+                expandToggle.OnToggleOn.AddListener(HandleExpand);
+                expandToggle.OnToggleOff.AddListener(HandleCollapse);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (expandToggle != null)
+            {
+                expandToggle.OnToggleOn.RemoveListener(HandleExpand);
+                expandToggle.OnToggleOff.RemoveListener(HandleCollapse);
+            }
+        }
+
+        #endregion
+
+        #region Public Methods - Setup
+
         /// <summary>
-        /// Sets up the quest section with the given quest type.
-        /// Configures the section appearance based on the quest type properties.
+        /// Configures the section with a quest type and applies visual styling.
         /// </summary>
-        /// <param name="questType">The quest type for this section</param>
         public void Setup(QuestType_SO questType)
         {
             if (questType == null) return;
 
-            Debug.Log("[UI/QuestSection] Setup. {gameObject.name}", gameObject);
             QuestType = questType;
-            UpdateSectionAppearance();
+            gameObject.name = $"Section_{questType.name}";
+
+            if (sectionNameText != null)
+            {
+                sectionNameText.StringReference = questType.DisplayName;
+                sectionNameText.RefreshString();
+            }
+
+            if (sectionBackground != null)
+                sectionBackground.color = questType.Color;
         }
 
         /// <summary>
-        /// Creates and displays UI items for multiple quests at once.
-        /// Typically used during initial setup of the quest section.
+        /// Sets the toggle group that all quest items in this section will use.
+        /// This should be a shared group across all sections for proper selection behavior.
         /// </summary>
-        /// <param name="quests">List of quests to display</param>
-        /// <param name="onQuestSelected">Callback invoked when a quest is selected</param>
-        public void SpawnQuestsItems(List<QuestRuntime> quests, Action<QuestRuntime> onQuestSelected)
+        public void SetQuestToggleGroup(ToggleGroup toggleGroup)
         {
-            if (quests == null || quests.Count == 0) return;
-            
+            _questToggleGroup = toggleGroup;
+
+            // Update existing items
+            foreach (var questItem in _questItems.Values)
+            {
+                questItem.SetToggleGroup(toggleGroup);
+            }
+        }
+
+        /// <summary>
+        /// Creates UI items for a list of quests.
+        /// </summary>
+        public void SpawnQuestItems(List<QuestRuntime> quests, Action<QuestRuntime> onQuestSelected)
+        {
+            if (quests == null) return;
+
             foreach (QuestRuntime quest in quests)
             {
                 CreateQuestItem(quest, onQuestSelected);
             }
         }
 
+        #endregion
+
+        #region Public Methods - Quest Management
+
         /// <summary>
         /// Adds a single quest to this section.
-        /// Creates a new quest item and updates the section if this is the first quest.
         /// </summary>
-        /// <param name="newQuest">The quest to add</param>
-        /// <param name="onQuestSelected">Callback invoked when the quest is selected</param>
-        public void AddQuest(QuestRuntime newQuest, Action<QuestRuntime> onQuestSelected)
+        public void AddQuest(QuestRuntime quest, Action<QuestRuntime> onQuestSelected)
         {
-            if (newQuest?.QuestData?.QuestType == null) return;
+            if (quest?.QuestData == null) return;
 
-            if (QuestType == null)
-            {
-                Setup(newQuest.QuestData.QuestType);
-            }
-            CreateQuestItem(newQuest, onQuestSelected);
-            
-            // Update existing quest item to handle quest section change
-            UI_QuestItem questItem = questItems.Values.FirstOrDefault(x => x.Quest.QuestId == newQuest.QuestId);
-            if (questItem != null)
-            {
-                questItem.SetupMarkerColour(QuestType.Color);
-            }
+            // Auto-setup if this is the first quest
+            if (QuestType == null && quest.QuestData.QuestType != null)
+                Setup(quest.QuestData.QuestType);
+
+            CreateQuestItem(quest, onQuestSelected);
         }
 
         /// <summary>
         /// Removes a quest from this section.
-        /// Destroys the associated UI item and cleans up references.
         /// </summary>
-        /// <param name="quest">The quest to remove</param>
         public void RemoveQuest(QuestRuntime quest)
         {
-            if (quest == null || !questItems.ContainsKey(quest)) return;
+            if (quest == null || !_questItems.TryGetValue(quest, out UI_QuestItem questItem))
+                return;
 
-            UI_QuestItem questItem = questItems[quest];
-            questItems.Remove(quest);
-
+            _questItems.Remove(quest);
             if (questItem != null)
-            {
                 Destroy(questItem.gameObject);
-            }
-        }
-
-        /// <summary>
-        /// Gets the first quest in this section.
-        /// </summary>
-        /// <returns>The first quest, or null if section is empty</returns>
-        public QuestRuntime GetFirstQuest()
-        {
-            UI_QuestItem firstQuestItem = GetFirstQuestItem();
-            return firstQuestItem?.Quest;
-        }
-        
-        #endregion
-
-        #region Toggle Management
-        
-        /// <summary>
-        /// Assigns this section to a toggle group for mutually exclusive selection.
-        /// </summary>
-        /// <param name="toggleGroup">The toggle group to assign to</param>
-        public void SetToggleGroup(ToggleGroup toggleGroup)
-        {
-            if (toggle?.Toggle != null)
-            {
-                toggle.Toggle.group = toggleGroup;
-            }
-        }
-
-        /// <summary>
-        /// Programmatically selects this quest section.
-        /// </summary>
-        public void Select()
-        {
-            if (toggle?.Toggle != null)
-            {
-                toggle.Toggle.isOn = true;
-            }
-        }
-        
-        private void OnToggleValueChanged(bool isOn)
-        {
-            //Select the first quest in this section
-            if (isOn)
-            {
-                if (questItems.Count == 0) return;
-                questItems.First().Value.Select();
-            }
-            Debug.Log($"[UI/QuestSection] OnToggleValueChanged to {isOn}. {gameObject.name}", gameObject);
-        }
-        
-        #endregion
-
-        #region Private Helper Methods
-        
-        /// <summary>
-        /// Updates the visual appearance of the section based on the quest type.
-        /// </summary>
-        private void UpdateSectionAppearance()
-        {
-            if (QuestType == null) return;
-
-            if (questSectionName != null)
-            {
-                questSectionName.StringReference = QuestType.DisplayName;
-            }
-
-            if (questSectionBackground != null)
-            {
-                questSectionBackground.color = QuestType.Color;
-            }
-            Debug.Log("[UI/QuestSection] UpdateSectionAppearance. {gameObject.name}", gameObject);
-        }
-
-        /// <summary>
-        /// Creates a new quest item UI component for the given quest.
-        /// </summary>
-        /// <param name="quest">The quest to create an item for</param>
-        /// <param name="onQuestSelected">Callback for quest selection</param>
-        /// <returns>The created quest item component</returns>
-        private UI_QuestItem CreateQuestItem(QuestRuntime quest, Action<QuestRuntime> onQuestSelected)
-        {
-            if (questItems.ContainsKey(quest))
-            {
-                return questItems[quest];
-            }
-
-            UI_QuestItem questItem = Instantiate(questItemPrefab, questItemHolder);
-            questItem.Setup(quest, onQuestSelected);
-            questItem.SetToggleGroup(toggleGroup);
-            questItem.SetupMarkerColour(QuestType.Color);
-            questItems.Add(quest, questItem);
-            
-            return questItem;
-        }
-
-        /// <summary>
-        /// Gets the first quest item in the section.
-        /// </summary>
-        /// <returns>The first quest item component, or null if none exist</returns>
-        private UI_QuestItem GetFirstQuestItem()
-        {
-            return questItems.Values.FirstOrDefault();
-        }
-        
-        #endregion
-
-        #region Public Utility Methods
-        
-        /// <summary>
-        /// Gets the total number of quests in this section.
-        /// </summary>
-        /// <returns>Number of quests in the section</returns>
-        public int GetQuestCount()
-        {
-            return questItems.Count;
-        }
-
-        /// <summary>
-        /// Checks if this section contains the specified quest.
-        /// </summary>
-        /// <param name="quest">The quest to check for</param>
-        /// <returns>True if the quest exists in this section</returns>
-        public bool ContainsQuest(QuestRuntime quest)
-        {
-            return questItems.ContainsKey(quest);
-        }
-
-        /// <summary>
-        /// Gets all quests currently in this section.
-        /// </summary>
-        /// <returns>Collection of all quests in the section</returns>
-        public IEnumerable<QuestRuntime> GetAllQuests()
-        {
-            return questItems.Keys;
         }
 
         /// <summary>
@@ -297,17 +159,164 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         /// </summary>
         public void ClearAllQuests()
         {
-            foreach (UI_QuestItem questItem in questItems.Values)
+            foreach (UI_QuestItem questItem in _questItems.Values)
             {
                 if (questItem != null)
-                {
                     Destroy(questItem.gameObject);
-                }
             }
-
-            questItems.Clear();
+            _questItems.Clear();
         }
-        
+
+        /// <summary>
+        /// Gets the first quest in this section.
+        /// </summary>
+        public QuestRuntime GetFirstQuest()
+        {
+            return _questItems.Values.FirstOrDefault()?.Quest;
+        }
+
+        /// <summary>
+        /// Gets the first quest item UI component in this section.
+        /// </summary>
+        public UI_QuestItem GetFirstQuestItem()
+        {
+            return _questItems.Values.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Checks if this section contains the specified quest.
+        /// </summary>
+        public bool ContainsQuest(QuestRuntime quest)
+        {
+            return _questItems.ContainsKey(quest);
+        }
+
+        /// <summary>
+        /// Gets all quests in this section.
+        /// </summary>
+        public IEnumerable<QuestRuntime> GetAllQuests()
+        {
+            return _questItems.Keys;
+        }
+
+        /// <summary>
+        /// Tries to get the UI item for a specific quest.
+        /// </summary>
+        public bool TryGetQuestItem(QuestRuntime quest, out UI_QuestItem questItem)
+        {
+            return _questItems.TryGetValue(quest, out questItem);
+        }
+
+        #endregion
+
+        #region Public Methods - Navigation
+
+        /// <summary>
+        /// Selects the first quest in this section.
+        /// </summary>
+        public void SelectFirstQuest()
+        {
+            var firstItem = _questItems.Values.FirstOrDefault();
+            firstItem?.SelectQuest();
+        }
+
+        /// <summary>
+        /// Expands the section to show quest items.
+        /// </summary>
+        public void Expand()
+        {
+            if (contentContainer != null)
+                contentContainer.SetActive(true);
+
+            if (expandToggle != null)
+                expandToggle.SetIsOn(true);
+
+            _isExpanded = true;
+        }
+
+        /// <summary>
+        /// Collapses the section to hide quest items.
+        /// </summary>
+        public void Collapse()
+        {
+            if (contentContainer != null)
+                contentContainer.SetActive(false);
+
+            if (expandToggle != null)
+                expandToggle.SetIsOn(false);
+
+            _isExpanded = false;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private UI_QuestItem CreateQuestItem(QuestRuntime quest, Action<QuestRuntime> onQuestSelected)
+        {
+            // Return existing item if already created
+            if (_questItems.TryGetValue(quest, out UI_QuestItem existing))
+                return existing;
+
+            UI_QuestItem questItem = Instantiate(questItemPrefab, questItemHolder);
+            questItem.Setup(quest, onQuestSelected);
+
+            // Use shared toggle group for proper selection across all sections
+            if (_questToggleGroup != null)
+                questItem.SetToggleGroup(_questToggleGroup);
+
+            if (QuestType != null)
+                questItem.SetupMarkerColour(QuestType.Color);
+
+            _questItems.Add(quest, questItem);
+            return questItem;
+        }
+
+        private void HandleExpand()
+        {
+            if (contentContainer != null)
+                contentContainer.SetActive(true);
+            _isExpanded = true;
+        }
+
+        private void HandleCollapse()
+        {
+            if (contentContainer != null)
+                contentContainer.SetActive(false);
+            _isExpanded = false;
+        }
+
+        #endregion
+
+        #region Legacy Compatibility
+
+        /// <summary>
+        /// Legacy method - use SetQuestToggleGroup instead.
+        /// </summary>
+        [Obsolete("Use SetQuestToggleGroup instead")]
+        public void SetToggleGroup(ToggleGroup toggleGroup)
+        {
+            SetQuestToggleGroup(toggleGroup);
+        }
+
+        /// <summary>
+        /// Legacy method - use SpawnQuestItems instead.
+        /// </summary>
+        [Obsolete("Use SpawnQuestItems instead")]
+        public void SpawnQuestsItems(List<QuestRuntime> quests, Action<QuestRuntime> onQuestSelected)
+        {
+            SpawnQuestItems(quests, onQuestSelected);
+        }
+
+        /// <summary>
+        /// Legacy method - use SelectFirstQuest instead.
+        /// </summary>
+        [Obsolete("Use SelectFirstQuest instead")]
+        public void Select()
+        {
+            SelectFirstQuest();
+        }
+
         #endregion
     }
 }

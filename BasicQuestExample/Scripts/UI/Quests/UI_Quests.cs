@@ -5,50 +5,52 @@ using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
     /// <summary>
-    /// Main UI controller for displaying quest sections and managing quest selection.
-    /// Handles the creation and management of quest sections grouped by quest type,
-    /// and provides quest details display functionality.
+    /// Main UI controller for the quest journal.
+    /// Manages quest sections, selection state, and coordinates between
+    /// the quest list and quest details panels.
     /// </summary>
     public class UI_Quests : UIContainer
     {
         #region Serialized Fields
 
-        [Header("Display Settings")] [SerializeField] [Tooltip("Show quest sections even if they have no active quests")]
-        private bool showEmptySections = true;
+        [Header("Display Settings")]
+        [SerializeField] private bool showEmptySections = true;
 
-        [Header("Quest Section Management")] [SerializeField] [Tooltip("Parent container for all quest sections")]
-        private RectTransform questSectionHolder;
+        [Header("Quest Sections")]
+        [SerializeField] private RectTransform questSectionHolder;
+        [SerializeField] private UI_QuestSection questSectionPrefab;
+        [SerializeField] private QuestType_SO completedQuestType;
 
-        [SerializeField] [Tooltip("Prefab used to create individual quest sections")]
-        private UI_QuestSection questSectionPrefab;
+        [Header("Quest Selection")]
+        [SerializeField] private ToggleGroup questItemToggleGroup;
 
-        [SerializeField] [Tooltip("Toggle group to ensure only one quest section is selected at a time")]
-        private ToggleGroup questSectionToggleGroup;
+        [Header("Quest Details")]
+        [SerializeField] private UI_QuestDetails questDetails;
 
-        [SerializeField] [Tooltip("Quest type to be used for completed quests")]
-        private QuestType_SO completedQuestType;
-
-        [Header("Quest Details Display")] [SerializeField] [Tooltip("UI component that displays detailed information about the selected quest")]
-        private UI_QuestDetails questDetails;
+        [Header("Navigation")]
+        [SerializeField] private UIButton questBackButton;
 
         #endregion
 
         #region Private Fields
 
-        /// <summary>
-        /// Dictionary mapping quest types to their corresponding UI sections
-        /// </summary>
-        private readonly Dictionary<QuestType_SO, UI_QuestSection> questSections = new();
+        private readonly Dictionary<QuestType_SO, UI_QuestSection> _sections = new();
+        private readonly List<UI_QuestItem> _allQuestItems = new();
+        private QuestRuntime _selectedQuest;
+        private int _selectedIndex = -1;
 
-        /// <summary>
-        /// Currently selected quest for detailed display
-        /// </summary>
-        private QuestRuntime selectedQuest;
+        #endregion
+
+        #region Public Properties
+
+        public QuestRuntime SelectedQuest => _selectedQuest;
+        public UI_QuestDetails QuestDetails => questDetails;
 
         #endregion
 
@@ -56,10 +58,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         protected override void Awake()
         {
-            onStartShow.AddListener(SetupQuestUI);
             base.Awake();
+            onStartShow.AddListener(SetupQuestUI);
 
-            ClearQuestSections();
+            if (questBackButton != null)
+                questBackButton.OnClick.AddListener(HandleBackButton);
         }
 
         protected override void Start()
@@ -68,429 +71,346 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             SubscribeToQuestEvents();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             UnsubscribeFromQuestEvents();
         }
 
         #endregion
 
-        #region UI Setup and Management
+        #region Public Methods
 
         /// <summary>
-        /// Sets up the quest UI by creating sections and populating them with quests.
-        /// This method is called when the UI is shown and handles both empty and populated sections
-        /// based on the showEmptySections setting.
+        /// Selects a specific quest and updates the UI.
         /// </summary>
+        public void SelectQuest(QuestRuntime quest)
+        {
+            if (quest == null || _selectedQuest == quest) return;
+
+            _selectedQuest = quest;
+            _selectedIndex = _allQuestItems.FindIndex(item => item.Quest == quest);
+
+            // Update details panel
+            questDetails?.Setup(quest);
+
+            // Update quest item selection
+            foreach (var item in _allQuestItems)
+            {
+                item.SetToggleIsOn(item.Quest == quest);
+            }
+        }
+
+        /// <summary>
+        /// Navigates to the next quest in the list.
+        /// </summary>
+        public void SelectNextQuest()
+        {
+            if (_allQuestItems.Count == 0) return;
+
+            _selectedIndex = (_selectedIndex + 1) % _allQuestItems.Count;
+            SelectQuestAtIndex(_selectedIndex);
+        }
+
+        /// <summary>
+        /// Navigates to the previous quest in the list.
+        /// </summary>
+        public void SelectPreviousQuest()
+        {
+            if (_allQuestItems.Count == 0) return;
+
+            _selectedIndex = _selectedIndex <= 0 ? _allQuestItems.Count - 1 : _selectedIndex - 1;
+            SelectQuestAtIndex(_selectedIndex);
+        }
+
+        /// <summary>
+        /// Gets all quest items across all sections.
+        /// </summary>
+        public IReadOnlyList<UI_QuestItem> GetAllQuestItems() => _allQuestItems;
+
+        #endregion
+
+        #region Private Methods - Setup
+
         private void SetupQuestUI()
         {
-            ClearQuestSections();
-            questSections.Clear();
-
-            if (showEmptySections)
+            if (QuestManager.Instance == null)
             {
-                CreateEmptyQuestSections();
+                Debug.LogWarning("[UI_Quests] QuestManager.Instance is null, cannot setup quest UI.");
+                return;
             }
 
-            CreateActiveQuestSections();
-            CreateCompletedQuestSection();
+            ClearQuestSections();
+            _sections.Clear();
+            _allQuestItems.Clear();
 
+            if (showEmptySections)
+                CreateEmptySections();
+
+            CreateActiveSections();
+            CreateCompletedSection();
+
+            // Build flat list for navigation
+            RebuildQuestItemList();
+
+            // Select first quest
             SelectFirstAvailableQuest();
         }
 
-        /// <summary>
-        /// Creates quest sections for all available quest types, even if they have no active quests.
-        /// Useful for showing the complete quest structure to players.
-        /// </summary>
-        private void CreateEmptyQuestSections()
+        private void CreateEmptySections()
         {
-            var allQuestTypes = GetAllQuestTypes();
+            var allQuestTypes = QuestManager.Instance.QuestsDatabase
+                .Where(q => q != null && q.QuestType != null)
+                .Select(q => q.QuestType)
+                .Distinct()
+                .Where(qt => qt != completedQuestType);
 
             foreach (var questType in allQuestTypes)
             {
-                if (questType == completedQuestType) continue;
+                if (questType == null) continue;
 
-                var activeQuests = GetActiveQuestsOfType(questType);
-                var questSection = CreateQuestSection();
-
-                questSection.Setup(questType);
-                questSection.SpawnQuestsItems(activeQuests, OnQuestSelected);
-                questSections.TryAdd(questType, questSection);
+                var quests = GetActiveQuestsOfType(questType);
+                var section = CreateSection(questType);
+                section.SpawnQuestItems(quests, HandleQuestSelected);
             }
         }
 
-        /// <summary>
-        /// Creates quest sections only for quest types that have active quests.
-        /// More compact display that only shows relevant content.
-        /// </summary>
-        private void CreateActiveQuestSections()
+        private void CreateActiveSections()
         {
-            var groupedQuests = GroupActiveQuestsByType();
+            var groupedQuests = QuestManager.Instance.GetActiveQuests()
+                .Where(q => q.QuestData?.QuestType != null && q.QuestData.QuestType != completedQuestType)
+                .GroupBy(q => q.QuestData.QuestType);
 
-            foreach (var questGroup in groupedQuests)
+            foreach (var group in groupedQuests)
             {
-                QuestType_SO questType = questGroup.Key;
-                if (questType == completedQuestType) continue;
-
-                List<QuestRuntime> questGroupValue = questGroup.Value;
-                AddQuestToSection(questType, questGroupValue);
+                var section = GetOrCreateSection(group.Key);
+                section.SpawnQuestItems(group.ToList(), HandleQuestSelected);
             }
         }
 
-        private void AddQuestToSection(QuestType_SO questType, List<QuestRuntime> questList)
-        {
-            UI_QuestSection questSection = GetOrCreateQuestSection(questType);
-            questSection.Setup(questType);
-            questSection.SpawnQuestsItems(questList, OnQuestSelected);
-            questSections.TryAdd(questType, questSection);
-        }
-
-        /// <summary>
-        /// Creates the completed quest section and populates it with completed quests.
-        /// </summary>
-        private void CreateCompletedQuestSection()
+        private void CreateCompletedSection()
         {
             if (completedQuestType == null) return;
 
-            var completedQuests = GetCompletedQuests();
-
+            var completedQuests = QuestManager.Instance.GetCompletedQuests().ToList();
             if (!showEmptySections && completedQuests.Count == 0) return;
 
-            var completedSection = GetOrCreateQuestSection(completedQuestType);
-            completedSection.Setup(completedQuestType);
-            completedSection.SpawnQuestsItems(completedQuests, OnQuestSelected);
-            questSections.TryAdd(completedQuestType, completedSection);
+            var section = GetOrCreateSection(completedQuestType);
+            section.SpawnQuestItems(completedQuests, HandleQuestSelected);
         }
 
-        /// <summary>
-        /// Creates and configures a new quest section UI element.
-        /// </summary>
-        /// <returns>Configured UI_QuestSection instance</returns>
-        private UI_QuestSection CreateQuestSection()
+        private UI_QuestSection CreateSection(QuestType_SO questType)
         {
-            var questSection = Instantiate(questSectionPrefab, questSectionHolder);
-            questSection.SetToggleGroup(questSectionToggleGroup);
-            return questSection;
+            var section = Instantiate(questSectionPrefab, questSectionHolder);
+            section.Setup(questType);
+            section.SetQuestToggleGroup(questItemToggleGroup);
+            _sections.TryAdd(questType, section);
+            return section;
         }
 
-        /// <summary>
-        /// Removes all child objects from the quest section holder.
-        /// </summary>
+        private UI_QuestSection GetOrCreateSection(QuestType_SO questType)
+        {
+            if (_sections.TryGetValue(questType, out var existing))
+                return existing;
+
+            return CreateSection(questType);
+        }
+
         private void ClearQuestSections()
         {
-            if (questSectionHolder != null)
+            questSectionHolder?.DestroyAllChildren();
+        }
+
+        private void RebuildQuestItemList()
+        {
+            _allQuestItems.Clear();
+
+            foreach (var section in _sections.Values)
             {
-                questSectionHolder.DestroyAllChildren();
+                _allQuestItems.AddRange(section.QuestItems.Values);
             }
         }
 
         #endregion
 
-        #region Quest Management
+        #region Private Methods - Selection
 
-        /// <summary>
-        /// Handles the event when a new quest is started.
-        /// Creates or updates the appropriate quest section and adds the new quest.
-        /// </summary>
-        /// <param name="quest">The newly started quest</param>
-        private void OnQuestStarted(QuestRuntime quest)
+        private void HandleQuestSelected(QuestRuntime quest)
         {
-            if (quest?.QuestData?.QuestType == null) return;
-
-            var questType = quest.QuestData.QuestType;
-            var questSection = GetOrCreateQuestSection(questType);
-
-            questSection.AddQuest(quest, OnQuestSelected);
-
-            if (selectedQuest == null)
-            {
-                OnQuestSelected(quest);
-            }
+            SelectQuest(quest);
         }
 
-        /// <summary>
-        /// Handles the event when a quest is completed.
-        /// Removes the quest from its current section and moves it to the completed quests section.
-        /// </summary>
-        /// <param name="quest">The completed quest</param>
-        private void OnQuestCompleted(QuestRuntime quest)
+        private void SelectQuestAtIndex(int index)
         {
-            if (quest?.QuestData?.QuestType == null || completedQuestType == null) return;
+            if (index < 0 || index >= _allQuestItems.Count) return;
 
-            QuestType_SO originalQuestType = quest.QuestData.QuestType;
-
-            RemoveQuestFromSection(quest, originalQuestType);
-            AddQuestToCompletedSection(quest);
-
-            HandleCompletedQuestSelection(quest);
+            var item = _allQuestItems[index];
+            item.SelectQuest();
+            SelectQuest(item.Quest);
         }
 
-
-        private void OnQuestRestarted(QuestRuntime quest)
+        private void SelectFirstAvailableQuest()
         {
-            if (quest?.QuestData?.QuestType == null) return;
+            // Prefer non-completed quests
+            var firstActiveSection = _sections.Values
+                .FirstOrDefault(s => s.QuestType != completedQuestType && s.QuestCount > 0);
 
-            QuestType_SO originalQuestType = quest.QuestData.QuestType;
+            if (firstActiveSection != null)
+            {
+                firstActiveSection.SelectFirstQuest();
+                return;
+            }
 
-            //try to remove the quest from the completed section
-            RemoveQuestFromSection(quest, completedQuestType);
-            AddQuestToSection(originalQuestType, new List<QuestRuntime>() { quest });
-            OnQuestSelected(quest);
+            // Fall back to completed section
+            var completedSection = _sections.GetValueOrDefault(completedQuestType);
+            completedSection?.SelectFirstQuest();
         }
 
-        /// <summary>
-        /// Handles quest selection and updates the details display.
-        /// </summary>
-        /// <param name="quest">The selected quest</param>
-        private void OnQuestSelected(QuestRuntime quest)
-        {
-            if (selectedQuest == quest) return;
-
-            selectedQuest = quest;
-
-            if (questDetails != null)
-            {
-                questDetails.Setup(quest);
-            }
-
-            foreach (UI_QuestSection section in questSections.Values)
-            {
-                foreach (UI_QuestItem questItem in section.QuestItems.Values)
-                {
-                    questItem.SetToggleIsOn(Equals(questItem.Quest, quest));
-                }
-            }
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        /// <summary>
-        /// Gets or creates a quest section for the specified quest type.
-        /// </summary>
-        /// <param name="questType">The quest type to get or create a section for</param>
-        /// <returns>The quest section for the specified type</returns>
-        private UI_QuestSection GetOrCreateQuestSection(QuestType_SO questType)
-        {
-            if (questSections.TryGetValue(questType, out var existingSection))
-            {
-                return existingSection;
-            }
-
-            UI_QuestSection newSection = CreateQuestSection();
-            questSections.Add(questType, newSection);
-            return newSection;
-        }
-
-        /// <summary>
-        /// Removes a quest from its current section.
-        /// </summary>
-        /// <param name="quest">The quest to remove</param>
-        /// <param name="questType">The quest type section to remove from</param>
-        private void RemoveQuestFromSection(QuestRuntime quest, QuestType_SO questType)
-        {
-            if (questSections.TryGetValue(questType, out UI_QuestSection questSection))
-            {
-                questSection.RemoveQuest(quest);
-            }
-        }
-
-        /// <summary>
-        /// Adds a quest to the completed quests section.
-        /// Creates the section if it doesn't exist.
-        /// </summary>
-        /// <param name="quest">The completed quest to add</param>
-        private void AddQuestToCompletedSection(QuestRuntime quest)
-        {
-            var completedSection = GetOrCreateQuestSection(completedQuestType);
-
-            if (!questSections.ContainsKey(completedQuestType))
-            {
-                completedSection.Setup(completedQuestType);
-                questSections.Add(completedQuestType, completedSection);
-            }
-
-            completedSection.AddQuest(quest, OnQuestSelected);
-        }
-
-        /// <summary>
-        /// Handles quest selection logic when a quest is completed.
-        /// If the completed quest was selected, attempts to select another quest.
-        /// </summary>
-        /// <param name="completedQuest">The quest that was just completed</param>
-        private void HandleCompletedQuestSelection(QuestRuntime completedQuest)
-        {
-            if (selectedQuest != completedQuest) return;
-
-            var nextQuest = FindNextSelectableQuest();
-            if (nextQuest != null)
-            {
-                OnQuestSelected(nextQuest);
-            }
-            else
-            {
-                OnQuestSelected(completedQuest);
-            }
-        }
-
-        /// <summary>
-        /// Finds the next available quest to select when the current selection is completed.
-        /// Prioritizes active quests over completed ones.
-        /// </summary>
-        /// <returns>The next quest to select, or null if none available</returns>
         private QuestRuntime FindNextSelectableQuest()
         {
-            foreach (var section in questSections.Values)
+            // Prioritize active quests
+            foreach (var section in _sections.Values)
             {
-                var firstQuest = section.GetFirstQuest();
-                if (firstQuest != null && section != questSections.GetValueOrDefault(completedQuestType))
-                {
-                    return firstQuest;
-                }
+                if (section.QuestType == completedQuestType) continue;
+                var quest = section.GetFirstQuest();
+                if (quest != null) return quest;
             }
 
-            return questSections.GetValueOrDefault(completedQuestType)?.GetFirstQuest();
+            // Fall back to completed
+            return _sections.GetValueOrDefault(completedQuestType)?.GetFirstQuest();
         }
 
-        /// <summary>
-        /// Gets all available quest types from the quest database.
-        /// </summary>
-        /// <returns>Collection of all quest types</returns>
-        private IEnumerable<QuestType_SO> GetAllQuestTypes()
-        {
-            return QuestManager.Instance.QuestsDatabase
-                .Select(quest => quest.QuestType)
-                .Distinct();
-        }
+        #endregion
 
-        /// <summary>
-        /// Gets active quests of a specific type.
-        /// </summary>
-        /// <param name="questType">The quest type to filter by</param>
-        /// <returns>List of active quests of the specified type</returns>
-        private List<QuestRuntime> GetActiveQuestsOfType(QuestType_SO questType)
-        {
-            return QuestManager.Instance.GetActiveQuests()
-                .Where(quest => quest.QuestData.QuestType == questType)
-                .ToList();
-        }
+        #region Private Methods - Navigation
 
-        /// <summary>
-        /// Gets all completed quests from the quest manager.
-        /// </summary>
-        /// <returns>List of completed quests</returns>
-        private List<QuestRuntime> GetCompletedQuests()
+        private void HandleBackButton()
         {
-            return QuestManager.Instance.GetCompletedQuests().ToList();
-        }
-
-        /// <summary>
-        /// Groups all active quests by their quest type.
-        /// </summary>
-        /// <returns>Dictionary mapping quest types to their active quests</returns>
-        private Dictionary<QuestType_SO, List<QuestRuntime>> GroupActiveQuestsByType()
-        {
-            var groupedQuests = new Dictionary<QuestType_SO, List<QuestRuntime>>();
-
-            foreach (var quest in QuestManager.Instance.GetActiveQuests())
+            // If quest details has focus, return focus to quest list
+            if (_selectedIndex >= 0 && _selectedIndex < _allQuestItems.Count)
             {
-                var questType = quest.QuestData.QuestType;
-
-                if (!groupedQuests.ContainsKey(questType))
-                {
-                    groupedQuests[questType] = new List<QuestRuntime>();
-                }
-
-                groupedQuests[questType].Add(quest);
+                var item = _allQuestItems[_selectedIndex];
+                EventSystem.current?.SetSelectedGameObject(item.Toggle.Toggle.gameObject);
             }
-
-            return groupedQuests;
         }
 
-        /// <summary>
-        /// Subscribes to relevant quest manager events.
-        /// </summary>
+        #endregion
+
+        #region Private Methods - Quest Events
+
         private void SubscribeToQuestEvents()
         {
             if (QuestManager.Instance == null) return;
-            QuestManager.Instance.QuestStarted.SafeSubscribe(OnQuestStarted);
-            QuestManager.Instance.QuestCompleted.SafeSubscribe(OnQuestCompleted);
-            QuestManager.Instance.QuestRestarted.SafeSubscribe(OnQuestRestarted);
-            QuestManager.Instance.QuestFailed.SafeSubscribe(OnQuestFailed);
-            QuestManager.Instance.QuestRemoved.SafeSubscribe(OnQuestRemoved);
+
+            QuestManager.Instance.QuestStarted.SafeSubscribe(HandleQuestStarted);
+            QuestManager.Instance.QuestCompleted.SafeSubscribe(HandleQuestCompleted);
+            QuestManager.Instance.QuestRestarted.SafeSubscribe(HandleQuestRestarted);
+            QuestManager.Instance.QuestFailed.SafeSubscribe(HandleQuestFailed);
+            QuestManager.Instance.QuestRemoved.SafeSubscribe(HandleQuestRemoved);
         }
 
-        /// <summary>
-        /// Unsubscribes from all quest manager events.
-        /// </summary>
         private void UnsubscribeFromQuestEvents()
         {
             if (QuestManager.Instance == null) return;
-            QuestManager.Instance.QuestStarted.SafeUnsubscribe(OnQuestStarted);
-            QuestManager.Instance.QuestCompleted.SafeUnsubscribe(OnQuestCompleted);
-            QuestManager.Instance.QuestRestarted.SafeUnsubscribe(OnQuestRestarted);
-            QuestManager.Instance.QuestFailed.SafeUnsubscribe(OnQuestFailed);
-            QuestManager.Instance.QuestRemoved.SafeUnsubscribe(OnQuestRemoved);
+
+            QuestManager.Instance.QuestStarted.SafeUnsubscribe(HandleQuestStarted);
+            QuestManager.Instance.QuestCompleted.SafeUnsubscribe(HandleQuestCompleted);
+            QuestManager.Instance.QuestRestarted.SafeUnsubscribe(HandleQuestRestarted);
+            QuestManager.Instance.QuestFailed.SafeUnsubscribe(HandleQuestFailed);
+            QuestManager.Instance.QuestRemoved.SafeUnsubscribe(HandleQuestRemoved);
         }
 
-        /// <summary>
-        /// Handles the event when a quest fails.
-        /// Moves the quest to failed state in the UI.
-        /// </summary>
-        /// <param name="quest">The failed quest</param>
-        private void OnQuestFailed(QuestRuntime quest)
+        private void HandleQuestStarted(QuestRuntime quest)
         {
             if (quest?.QuestData?.QuestType == null) return;
 
-            // Update the UI to reflect the failed state
-            if (questSections.TryGetValue(quest.QuestData.QuestType, out UI_QuestSection section))
-            {
-                if (section.QuestItems.TryGetValue(quest, out UI_QuestItem questItem))
-                {
-                    // The quest item will update its own display based on quest state
-                    // Just ensure the details are refreshed if this was the selected quest
-                    if (selectedQuest == quest && questDetails != null)
-                    {
-                        questDetails.Setup(quest);
-                    }
-                }
-            }
+            var section = GetOrCreateSection(quest.QuestData.QuestType);
+            section.AddQuest(quest, HandleQuestSelected);
+
+            RebuildQuestItemList();
+
+            // Auto-select if nothing selected
+            if (_selectedQuest == null)
+                SelectQuest(quest);
         }
 
-        /// <summary>
-        /// Handles the event when a quest is removed.
-        /// Removes the quest from its section in the UI.
-        /// </summary>
-        /// <param name="quest">The removed quest</param>
-        private void OnQuestRemoved(QuestRuntime quest)
+        private void HandleQuestCompleted(QuestRuntime quest)
         {
-            if (quest?.QuestData?.QuestType == null) return;
+            if (quest?.QuestData?.QuestType == null || completedQuestType == null) return;
 
-            RemoveQuestFromSection(quest, quest.QuestData.QuestType);
+            // Remove from original section
+            var originalType = quest.QuestData.QuestType;
+            if (_sections.TryGetValue(originalType, out var originalSection))
+                originalSection.RemoveQuest(quest);
 
-            // If this was the selected quest, select another one
-            if (selectedQuest == quest)
+            // Add to completed section
+            var completedSection = GetOrCreateSection(completedQuestType);
+            completedSection.AddQuest(quest, HandleQuestSelected);
+
+            RebuildQuestItemList();
+
+            // Update selection if this was selected
+            if (_selectedQuest == quest)
             {
                 var nextQuest = FindNextSelectableQuest();
-                if (nextQuest != null)
-                {
-                    OnQuestSelected(nextQuest);
-                }
-                else
-                {
-                    selectedQuest = null;
-                }
+                SelectQuest(nextQuest ?? quest);
             }
         }
 
-        /// <summary>
-        /// Automatically selects the first available quest if any exist.
-        /// </summary>
-        private void SelectFirstAvailableQuest()
+        private void HandleQuestRestarted(QuestRuntime quest)
         {
-            UI_QuestSection firstSection = questSections.Values.FirstOrDefault();
-            firstSection?.Select();
+            if (quest?.QuestData?.QuestType == null) return;
+
+            // Remove from completed section
+            if (_sections.TryGetValue(completedQuestType, out var completedSection))
+                completedSection.RemoveQuest(quest);
+
+            // Add back to original section
+            var section = GetOrCreateSection(quest.QuestData.QuestType);
+            section.AddQuest(quest, HandleQuestSelected);
+
+            RebuildQuestItemList();
+            SelectQuest(quest);
+        }
+
+        private void HandleQuestFailed(QuestRuntime quest)
+        {
+            if (quest?.QuestData?.QuestType == null) return;
+
+            // Refresh details if this is the selected quest
+            if (_selectedQuest == quest)
+                questDetails?.Setup(quest);
+        }
+
+        private void HandleQuestRemoved(QuestRuntime quest)
+        {
+            if (quest?.QuestData?.QuestType == null) return;
+
+            // Remove from section
+            if (_sections.TryGetValue(quest.QuestData.QuestType, out var section))
+                section.RemoveQuest(quest);
+
+            RebuildQuestItemList();
+
+            // Update selection if this was selected
+            if (_selectedQuest == quest)
+            {
+                _selectedQuest = null;
+                var nextQuest = FindNextSelectableQuest();
+                if (nextQuest != null)
+                    SelectQuest(nextQuest);
+            }
+        }
+
+        #endregion
+
+        #region Private Methods - Helpers
+
+        private List<QuestRuntime> GetActiveQuestsOfType(QuestType_SO questType)
+        {
+            return QuestManager.Instance.GetActiveQuests()
+                .Where(q => q.QuestData?.QuestType == questType)
+                .ToList();
         }
 
         #endregion
