@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08d6d4831a5909f4383843f903968a9c, type: 3}
-  m_Name: SO_Condition_Event_Bool_PlayerDeath
+  m_Script: {fileID: 11500000, guid: 5ea76b3666cb5dd44b268d8e309b11f2, type: 3}
+  m_Name: SO_Condition_Event_String_Scarface
   m_EditorClassIdentifier:
-  _description: Any active task fails when the player dies. Global failure condition.
+  _description: Triggers when player gets the name 'Scarface' from interrogation.
   _isInverted: 0
-  targetValue: 1
+  targetValue: Scarface
   _comparisonType: 0
-  GameEventBool: {fileID: 11400000, guid: c3d4e5f6789012345678abcdef010203, type: 2}
+  GameEventString: {fileID: 11400000, guid: 4e45eda6925587c4d8ed38179c6e6c7d, type: 2}

@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _description: Task fails if 2 or more crates are destroyed by bandits.
   _isInverted: 0
-  _targetValue: 2
+  targetValue: 2
   _comparisonType: 3
   GameEventInt: {fileID: 11400000, guid: fd80549dd0dab704eb4005c7e2337729, type: 2}

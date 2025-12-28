@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 878be340cf65eef499f5ecd04d866c53, type: 3}
-  m_Name: SO_Condition_Event_ID_PlayerInVillage
-  m_EditorClassIdentifier: 
-  _description: Player must be in the Village to start this quest. Ensures quests
-    begin in appropriate locations.
+  m_Name: SO_Condition_Event_ID_Witness
+  m_EditorClassIdentifier:
+  _description: Condition fulfilled when player discovers the witness testimony clue
   _isInverted: 0
-  targetValue: {fileID: 11400000, guid: bccf3073465d85e4e954c146dfdec5be, type: 2}
+  targetValue: {fileID: 11400000, guid: 502b574dca2579e4f9816e07c94f7a71, type: 2}
   _comparisonType: 0
-  GameEventID: {fileID: 11400000, guid: ebb9e337bac9325479ef4a6dc0062218, type: 2}
+  GameEventID: {fileID: 11400000, guid: be5280b5c5ebf8947b3e7e8f80d6532e, type: 2}

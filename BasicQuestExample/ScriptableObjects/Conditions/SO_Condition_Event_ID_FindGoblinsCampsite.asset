@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _description: Condition to find Goblin's campsite
   _isInverted: 0
-  _targetValue: {fileID: 11400000, guid: 96516e5c49dd04c4da8deca2b66d5448, type: 2}
+  targetValue: {fileID: 11400000, guid: 96516e5c49dd04c4da8deca2b66d5448, type: 2}
   _comparisonType: 0
   GameEventID: {fileID: 11400000, guid: ebb9e337bac9325479ef4a6dc0062218, type: 2}

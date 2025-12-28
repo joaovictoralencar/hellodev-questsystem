@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _description: Triggers when the Goblin Chief boss is defeated
   _isInverted: 0
-  _targetValue: {fileID: 11400000, guid: 004b6ff11499ff74aa046b5ca32a164f, type: 2}
+  targetValue: {fileID: 11400000, guid: 004b6ff11499ff74aa046b5ca32a164f, type: 2}
   _comparisonType: 0
   GameEventID: {fileID: 11400000, guid: 7b5b1bf06ae25f240ab8412ce778ddab, type: 2}
