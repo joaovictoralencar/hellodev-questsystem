@@ -3,6 +3,9 @@ using HelloDev.QuestSystem.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -13,7 +16,14 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     [CreateAssetMenu(fileName = "TaskString_SO", menuName = "HelloDev/Quest System/Scriptable Objects/Tasks/String Task")]
     public class TaskString_SO : Task_SO
     {
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Task Settings")]
+        [PropertyOrder(5)]
+        [Required("Target value is required.")]
+#else
         [Header("String Task")]
+#endif
         [Tooltip("The target string value that must be matched to complete the task.")]
         [SerializeField]
         private string targetValue;

@@ -1,6 +1,6 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "displayName": "Quest System",
   "description": "A comprehensive quest system for Unity games with support for quests, questlines, objectives, rewards, and progression tracking.",
   "unity": "6000.1",

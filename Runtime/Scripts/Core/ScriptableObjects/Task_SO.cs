@@ -16,12 +16,13 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     /// The abstract base class for all task data ScriptableObjects.
     /// Defines the common data fields for tasks and a contract for creating a runtime Task instance.
     /// </summary>
-    public abstract class Task_SO : RuntimeScriptableObject
+    public abstract partial class Task_SO : RuntimeScriptableObject
     {
         #region Identity
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Identity")]
+        [TabGroup("Tabs", "Configuration", SdfIconType.Gear, Order = 1)]
+        [TitleGroup("Tabs/Configuration/Identity")]
         [PropertyOrder(0)]
         [Required("Dev Name is required for identification.")]
 #else
@@ -32,7 +33,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private string devName;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Identity")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Identity")]
         [PropertyOrder(1)]
         [ReadOnly]
         [DisplayAsString]
@@ -46,7 +48,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Display
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup("Display", expanded: true)]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Display")]
         [PropertyOrder(10)]
 #else
         [Header("Display")]
@@ -56,7 +59,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private LocalizedString displayName;
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup("Display")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Display")]
         [PropertyOrder(11)]
 #endif
         [Tooltip("The localized description of the task.")]
@@ -68,7 +72,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Conditions
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup("Conditions")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Conditions")]
         [PropertyOrder(20)]
         [ListDrawerSettings(ShowFoldout = true)]
         [InfoBox("Conditions that complete this task when met. Should be event-driven.", InfoMessageType.Info)]
@@ -80,7 +85,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private List<Condition_SO> conditions;
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup("Conditions")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Conditions")]
         [PropertyOrder(21)]
         [ListDrawerSettings(ShowFoldout = true)]
         [InfoBox("Conditions that fail this task when met.", InfoMessageType.Warning, nameof(HasFailureConditions))]
@@ -170,9 +176,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Editor Buttons
 
 #if ODIN_INSPECTOR
-        [ButtonGroup("Actions")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Identity")]
         [Button("Generate New ID", ButtonSizes.Medium)]
-        [PropertyOrder(100)]
+        [PropertyOrder(2)]
 #endif
         private void GenerateNewGuid()
         {

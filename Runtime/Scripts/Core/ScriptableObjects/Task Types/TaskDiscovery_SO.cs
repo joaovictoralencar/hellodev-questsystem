@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using HelloDev.IDs;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using UnityEngine;
@@ -14,42 +12,29 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 {
     /// <summary>
     /// A ScriptableObject for a task that requires discovering/examining specific items or clues.
-    /// Used for objectives like "Examine 3 clues" or "Find all the witnesses".
+    /// Uses event-driven conditions from the Conditions list. Each condition represents one discoverable item.
+    /// Each condition can only be fulfilled once (duplicate-protected).
     /// </summary>
     [CreateAssetMenu(fileName = "TaskDiscovery_SO", menuName = "HelloDev/Quest System/Scriptable Objects/Tasks/Discovery Task")]
     public class TaskDiscovery_SO : Task_SO
     {
-        [Header("Discovery Task")]
-        [Tooltip("The list of discoverable items/clues for this task.")]
-        [SerializeField]
 #if ODIN_INSPECTOR
-        [ListDrawerSettings(ShowFoldout = true)]
-#endif
-        private List<ID_SO> discoverableItems = new();
-
-        [Tooltip("The number of items that must be discovered to complete the task. If 0, all items must be discovered.")]
-        [SerializeField]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Task Settings")]
+        [PropertyOrder(5)]
         [Min(0)]
+        [InfoBox("Each event-driven condition in the Conditions list represents one discoverable item. Each can only be fulfilled once. If 0, all conditions must be fulfilled.", InfoMessageType.Info)]
+#else
+        [Header("Discovery Task")]
+#endif
+        [Tooltip("The number of conditions that must be fulfilled to complete the task. If 0, all conditions must be fulfilled.")]
+        [SerializeField]
         private int requiredDiscoveries = 0;
 
         /// <summary>
-        /// Gets the list of discoverable items.
+        /// Gets the number of discoveries required. Returns the conditions count if set to 0.
         /// </summary>
-        public List<ID_SO> DiscoverableItems => discoverableItems;
-
-        /// <summary>
-        /// Gets the number of discoveries required. Returns the total count if set to 0.
-        /// </summary>
-        public int RequiredDiscoveries => requiredDiscoveries > 0 ? requiredDiscoveries : discoverableItems.Count;
-
-        private void OnValidate()
-        {
-            // Ensure required discoveries doesn't exceed discoverable items
-            if (requiredDiscoveries > discoverableItems.Count)
-            {
-                requiredDiscoveries = discoverableItems.Count;
-            }
-        }
+        public int RequiredDiscoveries => requiredDiscoveries > 0 ? requiredDiscoveries : (Conditions?.Count ?? 0);
 
         public override TaskRuntime GetRuntimeTask()
         {

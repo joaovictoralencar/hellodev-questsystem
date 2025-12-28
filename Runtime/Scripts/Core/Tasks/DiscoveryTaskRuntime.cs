@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using HelloDev.IDs;
+using HelloDev.Conditions;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -9,18 +9,14 @@ namespace HelloDev.QuestSystem.Tasks
 {
     /// <summary>
     /// A runtime task that requires discovering/examining specific items or clues.
-    /// Used for objectives like "Examine 3 clues" or "Find all the witnesses".
+    /// Uses event-driven conditions: each condition can only be fulfilled once (duplicate-protected).
+    /// Task completes when requiredDiscoveries conditions are fulfilled.
     /// </summary>
     public class DiscoveryTaskRuntime : TaskRuntime
     {
         public override float Progress => RequiredDiscoveries == 0 ? 1f : (float)DiscoveredCount / RequiredDiscoveries;
 
-        private readonly HashSet<ID_SO> _discoveredItems = new();
-
-        /// <summary>
-        /// Gets the list of discoverable item IDs for this task.
-        /// </summary>
-        public List<ID_SO> DiscoverableItems => (Data as TaskDiscovery_SO)?.DiscoverableItems;
+        private readonly HashSet<Condition_SO> _fulfilledConditions = new();
 
         /// <summary>
         /// Gets the number of discoveries required to complete the task.
@@ -28,14 +24,9 @@ namespace HelloDev.QuestSystem.Tasks
         public int RequiredDiscoveries => (Data as TaskDiscovery_SO)?.RequiredDiscoveries ?? 0;
 
         /// <summary>
-        /// Gets the set of already discovered items.
+        /// Gets the current number of fulfilled conditions (discoveries).
         /// </summary>
-        public IReadOnlyCollection<ID_SO> DiscoveredItems => _discoveredItems;
-
-        /// <summary>
-        /// Gets the current number of discovered items.
-        /// </summary>
-        public int DiscoveredCount => _discoveredItems.Count;
+        public int DiscoveredCount => _fulfilledConditions.Count;
 
         /// <summary>
         /// Initializes a new instance of the DiscoveryTask class.
@@ -46,61 +37,75 @@ namespace HelloDev.QuestSystem.Tasks
         }
 
         /// <summary>
-        /// Called when the player discovers/examines an item.
-        /// If the item is in the discoverable list and hasn't been discovered yet, it's added.
+        /// Override to make conditions increment with duplicate protection.
         /// </summary>
-        /// <param name="itemId">The ID of the discovered item.</param>
-        /// <returns>True if this was a valid new discovery, false otherwise.</returns>
-        public bool OnItemDiscovered(ID_SO itemId)
+        protected override void SubscribeToEvents()
         {
-            if (CurrentState != TaskState.InProgress) return false;
-            if (itemId == null) return false;
+            // Subscribe conditions with duplicate protection
+            if (Data.Conditions != null)
+            {
+                foreach (var condition in Data.Conditions)
+                {
+                    if (condition is IConditionEventDriven eventCondition)
+                    {
+                        // Create a closure to track which condition was fulfilled
+                        var capturedCondition = condition;
+                        eventCondition.SubscribeToEvent(() => OnConditionFulfilled(capturedCondition));
+                    }
+                }
+            }
 
-            // Check if this item is in the discoverable list
-            if (DiscoverableItems == null || !DiscoverableItems.Contains(itemId)) return false;
+            // Subscribe failure conditions normally
+            if (Data.FailureConditions != null)
+            {
+                foreach (var condition in Data.FailureConditions)
+                {
+                    if (condition is IConditionEventDriven eventCondition)
+                    {
+                        eventCondition.SubscribeToEvent(FailTask);
+                    }
+                }
+            }
 
-            // Check if already discovered
-            if (_discoveredItems.Contains(itemId)) return false;
-
-            _discoveredItems.Add(itemId);
-            QuestLogger.Log($"Task '{DevName}' - Discovered '{itemId.DevName}'. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
-            OnTaskUpdated?.SafeInvoke(this);
-            return true;
+            OnTaskUpdated.AddListener(CheckCompletion);
         }
 
         /// <summary>
-        /// Checks if a specific item has been discovered.
+        /// Called when a condition is fulfilled - adds to fulfilled set (duplicate-protected).
         /// </summary>
-        /// <param name="itemId">The item ID to check.</param>
-        /// <returns>True if the item has been discovered.</returns>
-        public bool HasDiscovered(ID_SO itemId)
+        private void OnConditionFulfilled(Condition_SO condition)
         {
-            return _discoveredItems.Contains(itemId);
+            if (CurrentState != TaskState.InProgress) return;
+            if (_fulfilledConditions.Contains(condition)) return; // Duplicate protection
+
+            _fulfilledConditions.Add(condition);
+            QuestLogger.Log($"Task '{DevName}' - Condition fulfilled. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
+            OnTaskUpdated?.SafeInvoke(this);
         }
 
         public override void ForceCompleteState()
         {
-            // Add all required items as discovered
-            if (DiscoverableItems != null)
+            // Mark all required conditions as fulfilled
+            if (Data.Conditions != null)
             {
-                foreach (var item in DiscoverableItems.Take(RequiredDiscoveries))
+                foreach (var condition in Data.Conditions.Take(RequiredDiscoveries))
                 {
-                    _discoveredItems.Add(item);
+                    _fulfilledConditions.Add(condition);
                 }
             }
         }
 
         public override bool OnIncrementStep()
         {
-            // For discovery tasks, incrementing discovers the next undiscovered item
+            // For discovery tasks, incrementing marks the next unfulfilled condition
             if (CurrentState != TaskState.InProgress) return false;
-            if (DiscoverableItems == null || _discoveredItems.Count >= RequiredDiscoveries) return false;
+            if (Data.Conditions == null || _fulfilledConditions.Count >= RequiredDiscoveries) return false;
 
-            var nextUndiscovered = DiscoverableItems.FirstOrDefault(item => !_discoveredItems.Contains(item));
-            if (nextUndiscovered != null)
+            var nextUnfulfilled = Data.Conditions.FirstOrDefault(c => !_fulfilledConditions.Contains(c));
+            if (nextUnfulfilled != null)
             {
-                _discoveredItems.Add(nextUndiscovered);
-                QuestLogger.Log($"Task '{DevName}' - Manually discovered '{nextUndiscovered.DevName}'. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
+                _fulfilledConditions.Add(nextUnfulfilled);
+                QuestLogger.Log($"Task '{DevName}' - Manually fulfilled condition. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
                 return true;
             }
 
@@ -109,15 +114,15 @@ namespace HelloDev.QuestSystem.Tasks
 
         public override bool OnDecrementStep()
         {
-            // For discovery tasks, decrementing removes the last discovered item
+            // For discovery tasks, decrementing removes the last fulfilled condition
             if (CurrentState != TaskState.InProgress) return false;
-            if (_discoveredItems.Count == 0) return false;
+            if (_fulfilledConditions.Count == 0) return false;
 
-            var lastDiscovered = _discoveredItems.LastOrDefault();
-            if (lastDiscovered != null)
+            var lastFulfilled = _fulfilledConditions.LastOrDefault();
+            if (lastFulfilled != null)
             {
-                _discoveredItems.Remove(lastDiscovered);
-                QuestLogger.Log($"Task '{DevName}' - Removed discovery '{lastDiscovered.DevName}'. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
+                _fulfilledConditions.Remove(lastFulfilled);
+                QuestLogger.Log($"Task '{DevName}' - Removed fulfillment. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
                 return true;
             }
 
@@ -125,18 +130,18 @@ namespace HelloDev.QuestSystem.Tasks
         }
 
         /// <summary>
-        /// Resets the task's state and clears all discoveries.
+        /// Resets the task's state and clears all fulfilled conditions.
         /// </summary>
         public override void ResetTask()
         {
             base.ResetTask();
-            _discoveredItems.Clear();
+            _fulfilledConditions.Clear();
             OnTaskUpdated?.SafeInvoke(this);
         }
 
         protected override void CheckCompletion(TaskRuntime task)
         {
-            if (_discoveredItems.Count >= RequiredDiscoveries)
+            if (_fulfilledConditions.Count >= RequiredDiscoveries)
             {
                 CompleteTask();
             }

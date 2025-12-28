@@ -61,6 +61,62 @@ All major state changes fire events for UI and game integration:
 - QuestLine: `OnQuestLineStarted`, `OnQuestLineCompleted`, `OnQuestLineUpdated`, `OnQuestInLineCompleted`
 - Task: `OnTaskUpdated`, `OnTaskCompleted`, `OnTaskFailed`
 
+### Event-Driven Conditions (Generic Event Pattern)
+
+**CRITICAL: Events should be GENERIC, conditions should be SPECIFIC.**
+
+The quest system uses a pattern where:
+- **Events** are generic and reusable (e.g., `OnMonsterKilled`, `OnNPCDialogue`, `OnLocationAttacked`)
+- **Conditions** hold the specific expected values (e.g., which monster ID, which NPC ID, which location ID)
+
+**Why this pattern?**
+- Reduces event proliferation - One `OnMonsterKilled` event instead of `OnGoblinKilled`, `OnOrcKilled`, `OnSkeletonKilled`
+- Enables designer flexibility - Create new monster/NPC/location types without code changes
+- Simplifies game code integration - Raise the same event with different IDs
+
+**Correct approach:**
+```
+Event: OnMonsterKilled (GameEventID_SO) - generic, reusable
+Condition: SO_Condition_Event_ID_GoblinKilled - references OnMonsterKilled + GoblinId
+Condition: SO_Condition_Event_ID_OrcKilled - references OnMonsterKilled + OrcId
+```
+
+**Wrong approach:**
+```
+Event: OnGoblinKilled (GameEventBool_SO) - specific, not reusable
+Event: OnOrcKilled (GameEventBool_SO) - specific, not reusable
+```
+
+**Standard generic events:**
+| Event | Type | Purpose |
+|-------|------|---------|
+| `OnMonsterKilled` | `GameEventID_SO` | Any monster killed |
+| `OnNPCDialogue` | `GameEventID_SO` | Dialogue with specific NPC |
+| `OnNPCKilled` | `GameEventID_SO` | Any NPC killed |
+| `OnEnemyAlert` | `GameEventID_SO` | Enemy spots player (stealth) |
+| `OnLocationAttacked` | `GameEventID_SO` | Location under attack |
+| `OnItemCollected` | `GameEventID_SO` | Item collected/recovered |
+| `OnItemDestroyed` | `GameEventID_SO` | Item destroyed |
+| `OnFindLocation` | `GameEventID_SO` | Player reaches location |
+| `OnItemDiscovered` | `GameEventID_SO` | Item/clue discovered |
+
+**Game Code Integration:**
+```csharp
+// Monster kill handler - uses generic event
+public class MonsterKillHandler : MonoBehaviour
+{
+    [SerializeField] private ID_SO monsterId;  // Goblin, Orc, etc.
+    [SerializeField] private GameEventID_SO onMonsterKilled;
+
+    public void OnDeath()
+    {
+        onMonsterKilled.Raise(monsterId);  // Same event, different ID
+    }
+}
+```
+
+See `BasicQuestExample/Docs/EventIntegrationGuide.md` for complete integration documentation.
+
 ## Installation
 
 ### Via Package Manager (Local)

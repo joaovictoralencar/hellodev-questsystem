@@ -7,7 +7,9 @@
         "HelloDev.Events",
         "HelloDev.IDs",
         "Unity.Localization",
-        "QuestSystem.Utils"
+        "QuestSystem.Utils",
+        "HelloDev.Conditions.Types",
+        "HelloDev.QuestSystem.BasicQuestExample.GameEvents"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

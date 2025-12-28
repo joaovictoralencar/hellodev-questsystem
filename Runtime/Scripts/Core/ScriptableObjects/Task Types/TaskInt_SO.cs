@@ -1,7 +1,5 @@
-using HelloDev.IDs;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
-using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
@@ -19,23 +17,30 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     [CreateAssetMenu(fileName = "TaskInt_SO", menuName = "HelloDev/Quest System/Scriptable Objects/Tasks/Int Task")]
     public class TaskInt_SO : Task_SO
     {
-        [Header("Int Task")] [Tooltip("The ID_SO reference for the target of this task (e.g., Goblin ID, Gold Coin ID).")] [SerializeField]
-        private ID_SO targetId;
-
-        [Tooltip("The number of times the target event must occur to complete the task.")] [SerializeField]
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Task Settings")]
+        [PropertyOrder(5)]
+        [Min(1)]
+        [InfoBox("Each time an event-driven condition in the Conditions list is fulfilled, the counter increments. Task completes when counter reaches required count.", InfoMessageType.Info)]
+#else
+        [Header("Int Task")]
+#endif
+        [Tooltip("The number of times a condition must be fulfilled to complete the task.")]
+        [SerializeField]
         private int requiredCount;
 
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Task Settings")]
+        [PropertyOrder(7)]
+        [ReadOnly]
+        [DisplayAsString]
+#endif
         [Tooltip("The current progress of the task. Read-only in the editor, but serialized for saving.")]
         [SerializeField]
-#if ODIN_INSPECTOR
-        [ReadOnly]
-#endif
         private int currentCount;
 
-        /// <summary>
-        /// Gets the ID_SO reference for the target of this task.
-        /// </summary>
-        public ID_SO TargetId => targetId;
         /// <summary>
         /// Gets the required count to complete this task.
         /// </summary>

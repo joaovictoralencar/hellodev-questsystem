@@ -27,7 +27,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Identity
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Identity")]
+        [TabGroup("Tabs", "Configuration", SdfIconType.Gear, Order = 1)]
+        [TitleGroup("Tabs/Configuration/Identity")]
         [LabelText("Dev Name"), PropertyOrder(0)]
 #else
         [Header("Identity")]
@@ -35,13 +36,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [SerializeField] private string devName;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Identity")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Identity")]
         [LabelText("Quest Line ID"), DisplayAsString, PropertyOrder(1)]
 #endif
         [SerializeField] private string questLineId;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Identity")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Identity")]
         [Button("Generate New ID", ButtonSizes.Small), PropertyOrder(2)]
         private void GenerateNewIdButton()
         {
@@ -57,7 +60,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Display
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Display")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Display")]
         [PropertyOrder(10)]
 #else
         [Header("Display")]
@@ -65,14 +69,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [SerializeField] private LocalizedString displayName;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Display")]
-        [TextArea(3, 5)]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Display")]
         [PropertyOrder(11)]
 #endif
         [SerializeField] private LocalizedString description;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Display")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Display")]
         [PreviewField(60, Alignment = ObjectFieldAlignment.Left)]
         [PropertyOrder(12)]
 #endif
@@ -83,7 +88,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Quests
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Quests")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Quests")]
         [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
         [InfoBox("$" + nameof(GetQuestListInfo), InfoMessageType.Info)]
         [PropertyOrder(20)]
@@ -94,7 +100,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         [SerializeField] private List<Quest_SO> quests = new();
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Quests")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Quests")]
         [ToggleLeft]
         [PropertyOrder(21)]
 #endif
@@ -106,7 +113,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Prerequisites
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Prerequisites")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Prerequisites")]
         [PropertyOrder(30)]
 #else
         [Header("Prerequisites")]
@@ -119,7 +127,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Failure Behavior
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Failure Behavior")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Failure Behavior")]
         [ToggleLeft]
         [PropertyOrder(35)]
 #else
@@ -133,7 +142,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Rewards
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Completion Rewards")]
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Completion Rewards")]
         [ListDrawerSettings(ShowFoldout = true)]
         [InfoBox("Bonus rewards given when ALL quests in the line are completed")]
         [PropertyOrder(40)]

@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -15,12 +18,25 @@ namespace HelloDev.QuestSystem.ScriptableObjects
     [CreateAssetMenu(fileName = "TaskTimed_SO", menuName = "HelloDev/Quest System/Scriptable Objects/Tasks/Timed Task")]
     public class TaskTimed_SO : Task_SO
     {
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Task Settings")]
+        [PropertyOrder(5)]
+        [SuffixLabel("seconds")]
+        [Min(1f)]
+#else
         [Header("Timed Task")]
+#endif
         [Tooltip("The time limit in seconds.")]
         [SerializeField]
-        [Min(1f)]
         private float timeLimit = 120f;
 
+#if ODIN_INSPECTOR
+        [TabGroup("Tabs", "Configuration")]
+        [TitleGroup("Tabs/Configuration/Task Settings")]
+        [PropertyOrder(6)]
+        [InfoBox("If enabled, the timer failing will fail the entire quest, not just this task.", InfoMessageType.Warning, nameof(failQuestOnExpire))]
+#endif
         [Tooltip("If true, the timer fails the entire quest. If false, only the task fails.")]
         [SerializeField]
         private bool failQuestOnExpire = false;
