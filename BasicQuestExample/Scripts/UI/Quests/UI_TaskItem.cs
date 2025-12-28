@@ -156,14 +156,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (_isHighlighted) return;
             _isHighlighted = true;
 
-            // Scale up slightly for emphasis
+            // Always scale up when highlighted (focused)
             Tween.Scale(transform, highlightScale, 0.15f, Ease.OutBack);
 
-            // Show background at highlight alpha (if not already selected)
+            // Show background at partial fill only if NOT already selected
             if (selectedBackground != null && !IsSelected)
             {
                 selectedBackground.enabled = true;
-                Tween.Alpha(selectedBackground, highlightAlpha, 0.15f, Ease.OutQuad);
+                // Only tween if current value is different
+                if (selectedBackground.fillAmount < highlightAlpha)
+                    Tween.UIFillAmount(selectedBackground, highlightAlpha, 0.15f, Ease.OutQuad);
             }
         }
 
@@ -172,16 +174,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (!_isHighlighted) return;
             _isHighlighted = false;
 
-            // Scale back to normal (only if not selected)
-            if (!IsSelected && transform.localScale.x > 1f)
-            {
-                Tween.Scale(transform, 1f, 0.1f, Ease.InQuad);
-            }
+            // Always scale back to normal when leaving focus
+            Tween.Scale(transform, 1f, 0.1f, Ease.InQuad);
 
-            // Hide background (only if not selected)
+            // Hide background only if NOT selected
             if (selectedBackground != null && !IsSelected)
             {
-                Tween.Alpha(selectedBackground, 0f, 0.1f, Ease.InQuad)
+                Tween.UIFillAmount(selectedBackground, 0f, 0.1f, Ease.InQuad)
                     .OnComplete(() => { if (!IsSelected) selectedBackground.enabled = false; });
             }
         }
