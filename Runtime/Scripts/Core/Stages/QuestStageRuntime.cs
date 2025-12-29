@@ -422,6 +422,16 @@ namespace HelloDev.QuestSystem.Stages
                 return;
             }
 
+            // Check if this stage requires player choice
+            // If so, do NOT auto-transition - wait for player selection via QuestRuntime.SelectChoice()
+            if (Data.RequiresPlayerChoice)
+            {
+                QuestLogger.Log($"Stage '{StageName}' requires player choice. Waiting for selection.");
+                // The stage remains InProgress until player makes a choice
+                // QuestRuntime will fire OnChoicesAvailable when it handles this stage
+                return;
+            }
+
             // Check for OnGroupsComplete transition
             int nextStage = GetNextStageOnGroupsComplete();
             if (nextStage >= 0)

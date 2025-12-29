@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea2e43e9bad5b1a49bc6912991910843, type: 3}
+  m_Name: WF_MerchantDilemma_ChoseDiplomacy
+  m_EditorClassIdentifier:
+  flagName: Chose Diplomacy Path
+  description: Player chose to negotiate with the bandits in the Merchant's Dilemma quest.
+  category: MerchantDilemma
+  defaultValue: 0

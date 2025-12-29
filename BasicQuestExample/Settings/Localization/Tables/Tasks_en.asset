@@ -16,187 +16,281 @@ MonoBehaviour:
     m_Code: en
   m_SharedData: {fileID: 11400000, guid: 59db1f323ac856541907d820639446db, type: 2}
   m_Metadata:
-    m_Items: []
+    m_Items:
+    - rid: 8674111653083349234
   m_TableData:
   - m_Id: 269210402816
     m_Localized: Investigate the Attacks ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374336
     m_Localized: Examine the clues left behind by the goblin attacks ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374337
     m_Localized: Track the Goblin Camp
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374338
     m_Localized: Follow the trail to find the goblin hideout
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 3834205569073152
     m_Localized: Follow the trail of discarded goods to find the source of the goblin
       attacks. It seems they're operating from an old, abandoned campsite.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 3443382889267200
     m_Localized: The merchant's satchel is nowhere to be found, but the camp is crawling
       with goblins. You'll need to clear them out before their numbers become a real
       threat.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 3825140356923392
     m_Localized: Find the {object} in {location}
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 1815936309968896
     m_Localized: Kill {current}/{required} {target}
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374339
     m_Localized: Defeat the Goblin Chief ({remaining})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374340
     m_Localized: Defeat the chief before time runs out! ({time}s remaining)
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374341
     m_Localized: Return to Village
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374342
     m_Localized: Report your victory to the village elder
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374343
     m_Localized: Talk to the Merchant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374344
     m_Localized: Speak with the distraught merchant about the robbery
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374345
     m_Localized: Search the Crime Scene ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374346
     m_Localized: Look for clues at the robbery site ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374347
     m_Localized: Follow the Trail
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374348
     m_Localized: Track the bandits to their hideout
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374349
     m_Localized: Recover the Stolen Goods ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374350
     m_Localized: Collect the stolen crates ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374351
     m_Localized: Interrogate the Bandit Leader
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374352
     m_Localized: Learn the bandit leader's name
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374353
     m_Localized: Return to the Merchant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374354
     m_Localized: Deliver the recovered goods to the grateful merchant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374355
     m_Localized: Return to the Bandit Camp
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374356
     m_Localized: Search the camp for evidence about who hired the bandits
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374357
     m_Localized: Search for Evidence ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374358
     m_Localized: Find the payment ledger and sealed orders ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374359
     m_Localized: Interrogate the Bandit Leader Again
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374360
     m_Localized: Confront the captured bandit with the evidence
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374361
     m_Localized: Find the Contact
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374362
     m_Localized: Track down the mysterious contact at the Shadow Hideout
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374363
     m_Localized: Report to the Guard Captain
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374364
     m_Localized: Share your findings with the guard captain
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374365
     m_Localized: Investigate the Connection ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374366
     m_Localized: Find evidence linking the bandits and goblins ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374367
     m_Localized: Meet the Informant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374368
     m_Localized: Speak with the mysterious informant about the cult
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374369
     m_Localized: Infiltrate the Cult Meeting
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374370
     m_Localized: Sneak into the ancient ruins where the cult gathers
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374371
     m_Localized: Stop the Ritual ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374372
     m_Localized: Defeat the cultists before they complete the ritual ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374373
     m_Localized: Return with Evidence
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 269231374374
     m_Localized: Bring proof of the conspiracy to the village elder
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 8674111653083349234
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 269210402816
+        - id: 269231374336
+        - id: 269231374337
+        - id: 269231374338
+        - id: 3834205569073152
+        - id: 3443382889267200
+        - id: 3825140356923392
+        - id: 1815936309968896
+        - id: 269231374339
+        - id: 269231374340
+        - id: 269231374341
+        - id: 269231374342
+        - id: 269231374343
+        - id: 269231374344
+        - id: 269231374345
+        - id: 269231374346
+        - id: 269231374347
+        - id: 269231374348
+        - id: 269231374349
+        - id: 269231374350
+        - id: 269231374351
+        - id: 269231374352
+        - id: 269231374353
+        - id: 269231374354
+        - id: 269231374355
+        - id: 269231374356
+        - id: 269231374357
+        - id: 269231374358
+        - id: 269231374359
+        - id: 269231374360
+        - id: 269231374361
+        - id: 269231374362
+        - id: 269231374363
+        - id: 269231374364
+        - id: 269231374365
+        - id: 269231374366
+        - id: 269231374367
+        - id: 269231374368
+        - id: 269231374369
+        - id: 269231374370
+        - id: 269231374372
+        - id: 269231374371
+        - id: 269231374373
+        - id: 269231374374

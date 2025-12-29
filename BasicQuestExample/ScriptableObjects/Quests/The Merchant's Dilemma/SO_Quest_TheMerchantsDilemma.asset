@@ -1,0 +1,311 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
+  m_Name: SO_Quest_TheMerchantsDilemma
+  m_EditorClassIdentifier:
+  _description: 'BRANCHING QUEST EXAMPLE: Demonstrates player choices with world
+    state consequences. Stage 0: Introduction - Talk to the merchant. Stage 1: The
+    Choice - Player picks a path (3 choices). Stage 10/20/30: Path-specific objectives.
+    Stage 100: Resolution - Return to merchant.'
+  devName: TheMerchantsDilemma
+  questId: aabbccdd-1122-3344-5566-778899aabbcc
+  questType: {fileID: 11400000, guid: 955a193800c30ce41b19879861efbd2f, type: 2}
+  recommendedLevel: 5
+  displayName:
+    m_TableReference:
+      m_TableCollectionName:
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  questDescription:
+    m_TableReference:
+      m_TableCollectionName:
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  questLocation:
+    m_TableReference:
+      m_TableCollectionName:
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  questSprite: {fileID: 0}
+  stages:
+  - stageIndex: 0
+    stageName: Introduction
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Meet the Merchant
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 11d0b01da0f40ef45858a6847b5b72ee, type: 2}
+    transitions:
+    - targetStageIndex: 1
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 1
+    stageName: The Choice
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups: []
+    transitions:
+    - targetStageIndex: 10
+      trigger: 3
+      conditions: []
+      transitionLabel: Confront the Bandits
+      priority: 0
+      isPlayerChoice: 1
+      choiceId: combat_path
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName:
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key:
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName:
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key:
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect:
+      - isBoolFlag: 1
+        boolFlag: {fileID: 11400000, guid: 403b20f15c7514244babced236623411, type: 2}
+        boolValue: 1
+        intFlag: {fileID: 0}
+        intOperation: 0
+        intValue: 0
+    - targetStageIndex: 20
+      trigger: 3
+      conditions: []
+      transitionLabel: Negotiate with Bandits
+      priority: 0
+      isPlayerChoice: 1
+      choiceId: diplomacy_path
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName:
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key:
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName:
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key:
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect:
+      - isBoolFlag: 1
+        boolFlag: {fileID: 11400000, guid: 6943833d92ae6a647b3245de78020ae0, type: 2}
+        boolValue: 1
+        intFlag: {fileID: 0}
+        intOperation: 0
+        intValue: 0
+    - targetStageIndex: 30
+      trigger: 3
+      conditions:
+      - {fileID: 11400000, guid: 766a6c7dfd81c22449f3fed8e3260d5f, type: 2}
+      transitionLabel: Report to Guards
+      priority: 0
+      isPlayerChoice: 1
+      choiceId: lawful_path
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName:
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key:
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName:
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key:
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect:
+      - isBoolFlag: 1
+        boolFlag: {fileID: 11400000, guid: 7d93028b9d609d246af7cd4d69e71b5d, type: 2}
+        boolValue: 1
+        intFlag: {fileID: 0}
+        intOperation: 0
+        intValue: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 10
+    stageName: Combat Path
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Defeat Bandits
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: f6b269eb05c52b24e8eeaa6d10ad6502, type: 2}
+    transitions:
+    - targetStageIndex: 100
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 20
+    stageName: Diplomacy Path
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Negotiate
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: db4aaf135547ca843abdf319659f87bd, type: 2}
+    transitions:
+    - targetStageIndex: 100
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 30
+    stageName: Lawful Path
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Report to Guards
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: fa4c7cb20854a3a4a9a0c4e011c917db, type: 2}
+    transitions:
+    - targetStageIndex: 100
+      trigger: 0
+      conditions: []
+      transitionLabel:
+      priority: 0
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 0
+  - stageIndex: 100
+    stageName: Resolution
+    journalEntry:
+      m_TableReference:
+        m_TableCollectionName:
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key:
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    stageIcon: {fileID: 0}
+    taskGroups:
+    - groupName: Return to Merchant
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 1b304ff6652e8e3478965ecfb0c21fd4, type: 2}
+    transitions: []
+    isOptional: 0
+    isHidden: 0
+    isTerminal: 1
+  startConditions:
+  - {fileID: 11400000, guid: ac44a453d472a2f4b844256cb6d87a82, type: 2}
+  failureConditions: []
+  globalTaskFailureConditions:
+  - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
+  rewards:
+  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
+    Amount: 500
+  - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
+    Amount: 750
+  references:
+    version: 2
+    RefIds: []

@@ -1,8 +1,8 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "displayName": "Quest System",
-  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, objectives, rewards, and progression tracking.",
+  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, and progression tracking.",
   "unity": "6000.1",
   "unityRelease": "1f1",
   "documentationUrl": "https://github.com/joaovictoralencar/unity-quest-system#readme",
@@ -16,7 +16,10 @@
     "rpg",
     "game system",
     "objectives",
-    "progression"
+    "progression",
+    "branching",
+    "choices",
+    "narrative"
   ],
   "author": {
     "name": "João Victor de Alencar Pascoal",

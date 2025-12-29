@@ -57,6 +57,24 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>Fired when a stage transition occurs.</summary>
         public UnityEvent<QuestRuntime, int, int> OnStageTransition = new();
 
+        /// <summary>
+        /// Fired when a stage with player choices becomes active.
+        /// Game systems (UI, dialogue, etc.) can subscribe to present choices.
+        /// The list contains all PlayerChoice transitions for the current stage.
+        /// </summary>
+        public UnityEvent<QuestRuntime, List<StageTransition>> OnChoicesAvailable = new();
+
+        /// <summary>
+        /// Fired when a player choice is made (either explicitly via SelectChoice or implicitly via conditions).
+        /// </summary>
+        public UnityEvent<QuestRuntime, StageTransition> OnChoiceMade = new();
+
+        /// <summary>
+        /// Fired when a player choice's availability changes (conditions met/unmet).
+        /// Useful for updating UI to enable/disable choice buttons.
+        /// </summary>
+        public UnityEvent<QuestRuntime, StageTransition, bool> OnChoiceAvailabilityChanged = new();
+
         #endregion
 
         #region Properties
@@ -324,6 +342,9 @@ namespace HelloDev.QuestSystem.Quests
         /// </summary>
         private void TransitionToStage(QuestStageRuntime targetStage)
         {
+            // Unsubscribe from previous stage's choice conditions
+            UnsubscribeFromPlayerChoiceConditions();
+
             // Complete current stage if it's still in progress
             if (CurrentStage?.CurrentState == StageState.InProgress)
             {
@@ -335,6 +356,242 @@ namespace HelloDev.QuestSystem.Quests
             targetStage.Enter();
             OnStageEntered.SafeInvoke(this, targetStage);
             NotifyQuestUpdated();
+
+            // If the new stage has player choices, set up choice handling
+            if (targetStage.Data.HasPlayerChoices)
+            {
+                SubscribeToPlayerChoiceConditions();
+                NotifyChoicesAvailable();
+            }
+        }
+
+        #endregion
+
+        #region Player Choice Methods
+
+        /// <summary>
+        /// Gets all player choices available in the current stage.
+        /// Returns only choices whose conditions are met.
+        /// </summary>
+        /// <returns>List of available player choice transitions.</returns>
+        public List<StageTransition> GetAvailableChoices()
+        {
+            if (CurrentStage == null || CurrentState != QuestState.InProgress)
+                return new List<StageTransition>();
+
+            return CurrentStage.Data.GetAvailablePlayerChoices();
+        }
+
+        /// <summary>
+        /// Gets all player choices in the current stage, regardless of condition state.
+        /// Useful for displaying all options with some potentially greyed out.
+        /// </summary>
+        /// <returns>List of all player choice transitions.</returns>
+        public List<StageTransition> GetAllChoices()
+        {
+            if (CurrentStage == null || CurrentState != QuestState.InProgress)
+                return new List<StageTransition>();
+
+            return CurrentStage.Data.GetAllPlayerChoices();
+        }
+
+        /// <summary>
+        /// Checks if the current stage requires the player to make a choice before progressing.
+        /// </summary>
+        public bool CurrentStageRequiresChoice =>
+            CurrentStage?.Data.RequiresPlayerChoice ?? false;
+
+        /// <summary>
+        /// Selects a player choice, triggering the associated transition.
+        /// </summary>
+        /// <param name="choice">The choice transition to select.</param>
+        /// <returns>True if the choice was valid and executed.</returns>
+        public bool SelectChoice(StageTransition choice)
+        {
+            if (choice == null)
+            {
+                QuestLogger.LogWarning("Cannot select null choice.");
+                return false;
+            }
+
+            if (CurrentState != QuestState.InProgress)
+            {
+                QuestLogger.LogWarning($"Cannot select choice - quest '{QuestData.DevName}' is not in progress.");
+                return false;
+            }
+
+            if (CurrentStage == null)
+            {
+                QuestLogger.LogWarning($"Cannot select choice - no current stage in quest '{QuestData.DevName}'.");
+                return false;
+            }
+
+            if (!choice.IsPlayerChoice)
+            {
+                QuestLogger.LogWarning($"Transition to stage {choice.TargetStageIndex} is not a player choice.");
+                return false;
+            }
+
+            if (!choice.EvaluateConditions())
+            {
+                QuestLogger.LogWarning($"Choice '{choice.ChoiceId}' conditions not met.");
+                return false;
+            }
+
+            // Record the decision
+            string stageKey = $"stage_{CurrentStageIndex}";
+            BranchDecisions[stageKey] = choice.ChoiceId;
+            QuestLogger.Log($"Player chose '{choice.ChoiceId}' in quest '{QuestData.DevName}' stage {CurrentStageIndex}.");
+
+            // Apply world flag modifications (consequences of the choice)
+            choice.ApplyWorldFlagModifications();
+
+            // Fire event before transition
+            OnChoiceMade.SafeInvoke(this, choice);
+
+            // Execute the transition
+            int previousIndex = CurrentStageIndex;
+            var targetStage = GetStageByIndex(choice.TargetStageIndex);
+
+            if (targetStage != null)
+            {
+                TransitionToStage(targetStage);
+                OnStageTransition.SafeInvoke(this, previousIndex, choice.TargetStageIndex);
+                return true;
+            }
+            else
+            {
+                QuestLogger.LogWarning($"Target stage {choice.TargetStageIndex} not found. Completing quest.");
+                CompleteQuest();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Selects a player choice by its ID.
+        /// </summary>
+        /// <param name="choiceId">The choice ID to select.</param>
+        /// <returns>True if the choice was found and executed.</returns>
+        public bool SelectChoiceById(string choiceId)
+        {
+            if (string.IsNullOrEmpty(choiceId))
+            {
+                QuestLogger.LogWarning("Cannot select choice with null/empty ID.");
+                return false;
+            }
+
+            if (CurrentStage == null)
+            {
+                QuestLogger.LogWarning($"Cannot select choice - no current stage in quest '{QuestData.DevName}'.");
+                return false;
+            }
+
+            var choice = CurrentStage.Data.GetPlayerChoiceById(choiceId);
+            if (choice == null)
+            {
+                QuestLogger.LogWarning($"Choice '{choiceId}' not found in current stage.");
+                return false;
+            }
+
+            return SelectChoice(choice);
+        }
+
+        /// <summary>
+        /// Checks if a specific choice is currently available.
+        /// </summary>
+        /// <param name="choiceId">The choice ID to check.</param>
+        /// <returns>True if the choice exists and its conditions are met.</returns>
+        public bool IsChoiceAvailable(string choiceId)
+        {
+            if (CurrentStage == null) return false;
+            return CurrentStage.Data.IsChoiceAvailable(choiceId);
+        }
+
+        /// <summary>
+        /// Fires the OnChoicesAvailable event for the current stage if it has player choices.
+        /// Called when a stage with choices is entered.
+        /// </summary>
+        private void NotifyChoicesAvailable()
+        {
+            if (CurrentStage == null) return;
+
+            var choices = CurrentStage.Data.GetAllPlayerChoices();
+            if (choices.Count > 0)
+            {
+                QuestLogger.Log($"Player choices available in quest '{QuestData.DevName}' stage '{CurrentStage.StageName}': {choices.Count} options.");
+                OnChoicesAvailable.SafeInvoke(this, choices);
+            }
+        }
+
+        /// <summary>
+        /// Subscribes to player choice conditions for implicit choice detection.
+        /// When a choice's conditions become met through game events, the choice is auto-selected.
+        /// </summary>
+        private void SubscribeToPlayerChoiceConditions()
+        {
+            if (CurrentStage == null) return;
+
+            var choices = CurrentStage.Data.GetAllPlayerChoices();
+            foreach (var choice in choices)
+            {
+                if (choice.Conditions == null) continue;
+
+                foreach (var condition in choice.Conditions)
+                {
+                    if (condition is IConditionEventDriven eventDriven)
+                    {
+                        eventDriven.SubscribeToEvent(() => HandleImplicitChoiceConditionMet(choice));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribes from player choice conditions.
+        /// </summary>
+        private void UnsubscribeFromPlayerChoiceConditions()
+        {
+            if (CurrentStage == null) return;
+
+            var choices = CurrentStage.Data.GetAllPlayerChoices();
+            foreach (var choice in choices)
+            {
+                if (choice.Conditions == null) continue;
+
+                foreach (var condition in choice.Conditions)
+                {
+                    if (condition is IConditionEventDriven eventDriven)
+                    {
+                        eventDriven.UnsubscribeFromEvent();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when a player choice's condition is met via event.
+        /// If the choice is now available, it's implicitly selected.
+        /// </summary>
+        private void HandleImplicitChoiceConditionMet(StageTransition choice)
+        {
+            if (CurrentState != QuestState.InProgress) return;
+            if (CurrentStage == null) return;
+
+            // Check if this choice is now fully available
+            if (choice.EvaluateConditions())
+            {
+                // Fire availability changed event
+                OnChoiceAvailabilityChanged.SafeInvoke(this, choice, true);
+
+                // Auto-select if this is an implicit choice (conditions met = choice made)
+                // Only auto-select if there's no UI presentation expected (i.e., the choice was made through actions)
+                var implicitChoice = CurrentStage.Data.GetImplicitlySelectedChoice();
+                if (implicitChoice == choice)
+                {
+                    QuestLogger.Log($"Implicit choice detected: '{choice.ChoiceId}' - conditions met through player action.");
+                    SelectChoice(choice);
+                }
+            }
         }
 
         #endregion
@@ -396,6 +653,9 @@ namespace HelloDev.QuestSystem.Quests
                     }
                 }
             }
+
+            // Unsubscribe from player choice conditions
+            UnsubscribeFromPlayerChoiceConditions();
         }
 
         private void UnsubscribeFromStartConditions()

@@ -18,6 +18,19 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 - **TimedTask / TaskTimed_SO** - Timer-based tasks with countdown
 - **DiscoveryTask / TaskDiscovery_SO** - Discovery tasks (find hidden items)
 
+### Branching & Player Choices
+- **Stage-based branching** - Quests can branch based on player choices or conditions
+- **PlayerChoice transitions** - Present choices to players (UI, dialogue, physical actions, etc.)
+- **Implicit choices** - Choices can be made through actions (buying items, entering areas, etc.)
+- **Choice tracking** - All branch decisions are recorded for save/load and analytics
+- **Event-driven** - OnChoicesAvailable, OnChoiceMade, OnChoiceAvailabilityChanged
+
+### World State Flags
+- **WorldFlagBool_SO** - Boolean flags for binary state (met_king, chose_evil_path)
+- **WorldFlagInt_SO** - Integer flags for numeric state (reputation, kill_count)
+- **ConditionWorldFlagBool_SO** - Check boolean flags in conditions
+- **ConditionWorldFlagInt_SO** - Check integer flags with comparisons (>=, <, ==, etc.)
+
 ### Conditions
 - Start conditions - Control when quests become available
 - Failure conditions - Quest-level failure triggers
@@ -25,6 +38,8 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 - Task conditions - Task completion triggers via event-driven conditions
 - **ConditionQuestState_SO** - Quest chains (Quest B requires Quest A completed)
 - **ConditionQuestLineState_SO** - QuestLine prerequisites (unlock content after completing a questline)
+- **ConditionWorldFlagBool_SO** - Check boolean world state flags
+- **ConditionWorldFlagInt_SO** - Check integer world state flags
 
 ### Quest Chains
 - **Sequential chains** - Quest B starts only after Quest A completes
@@ -275,6 +290,142 @@ if (QuestManager.Instance.IsQuestCompleted(prerequisiteQuest))
     QuestManager.Instance.AddQuest(nextQuest, forceStart: true);
 }
 ```
+
+### Creating Branching Quests (Player Choices)
+
+Branching quests allow players to make meaningful choices that affect quest progression and the game world.
+
+**Stage-Based Quest Structure:**
+1. Create > HelloDev > Quest System > Scriptable Objects > Quest
+2. Enable stage-based structure in the quest inspector
+3. Add stages with unique indices (0, 1, 10, 20, etc.)
+4. Configure transitions between stages
+
+**Player Choice Transitions:**
+1. In a stage's transitions, set `Trigger` to `PlayerChoice`
+2. Enable `IsPlayerChoice` flag
+3. Set a unique `ChoiceId` (e.g., "combat_path", "diplomacy_path")
+4. Add optional conditions to gate certain choices
+5. Add `WorldFlagsOnSelect` to set world flags when the choice is made
+
+**Conditional Choices (e.g., Reputation Gates):**
+1. Create a `WorldFlagInt_SO` for the reputation (e.g., GuardReputation)
+2. Create a `ConditionWorldFlagInt_SO` that checks reputation >= 20
+3. Add the condition to the choice's transition conditions
+4. The choice only appears if the condition is met
+
+**World Consequences:**
+Each choice can modify world flags when selected:
+- Bool flags: Set true/false (e.g., "ChoseCombatPath = true")
+- Int flags: Set, Add, or Subtract values (e.g., "Reputation += 10")
+
+**Implicit Choices (Action-Based):**
+Choices can be made through player actions instead of explicit menus:
+1. Create a condition that triggers on player action (e.g., buying an item)
+2. Add the condition to a choice transition
+3. When the player performs the action, the choice auto-selects
+
+**Example: The Merchant's Dilemma (see BasicQuestExample)**
+```
+Stage 0: Talk to Merchant
+    → auto-transition to Stage 1
+
+Stage 1: The Choice (presents 3 options)
+    → [Combat] Confront Bandits → Stage 10 (sets ChoseCombat flag)
+    → [Diplomacy] Negotiate → Stage 20 (sets ChoseDiplomacy flag)
+    → [Lawful] Report to Guards → Stage 30 (requires Guard Rep >= 20, sets ChoseLawful flag)
+
+Stage 10: Combat Path (defeat bandits) → Stage 100
+Stage 20: Diplomacy Path (negotiate) → Stage 100
+Stage 30: Lawful Path (report to guards) → Stage 100
+
+Stage 100: Return to Merchant (resolution, terminal)
+```
+
+**Using Branching in Code:**
+```csharp
+// Get available choices at current stage
+var choices = quest.GetAvailableChoices();
+foreach (var choice in choices)
+{
+    Debug.Log($"Choice: {choice.TransitionLabel} (ID: {choice.ChoiceId})");
+    if (!choice.AreConditionsMet())
+        Debug.Log("  [Locked - conditions not met]");
+}
+
+// Select a choice
+quest.SelectChoiceById("combat_path");
+
+// Subscribe to choice events
+quest.OnChoicesAvailable += (q, choices) => ShowChoiceUI(choices);
+quest.OnChoiceMade += (q, choice) => Debug.Log($"Player chose: {choice.ChoiceId}");
+```
+
+### AAA Integration Patterns
+
+The branching and world state systems are designed to support AAA-style quest patterns found in games like Skyrim, Witcher 3, Mass Effect, and Cyberpunk 2077.
+
+**Pattern 1: Cross-Quest Consequences (Witcher 3 Style)**
+Choices in one quest affect other quests:
+```
+Quest A: Choose to save or sacrifice the village
+  → Sets WorldFlag: VillageSaved = true/false
+
+Quest B: (starts later)
+  → Start condition: ConditionWorldFlagBool_SO checks VillageSaved
+  → If saved: Village welcomes you, new merchants available
+  → If sacrificed: Village is ruins, hostile NPCs
+```
+
+**Pattern 2: Reputation Gates (Skyrim Style)**
+Faction standing unlocks dialogue and quest options:
+```
+WorldFlagInt: GuardReputation (0-100)
+Quest: The Merchant's Dilemma
+  → "Report to Guards" choice requires GuardReputation >= 20
+  → Choosing this path grants +10 reputation
+```
+
+**Pattern 3: Branching Narrative Paths (Mass Effect Style)**
+Major story decisions tracked across the entire game:
+```
+WorldFlagBool: ChoseParagonPath, ChoseRenegadePath
+WorldFlagInt: ParagonScore, RenegadeScore
+
+Quest choices add to scores and set flags
+Future quests check flags for dialogue variations
+Ending quests check cumulative scores
+```
+
+**Pattern 4: Implicit Choices (Cyberpunk 2077 Style)**
+Player actions make choices without explicit menus:
+```
+Stage 1: Approach the deal
+  → [Buy drugs] triggered by purchasing illegal items
+  → [Call police] triggered by phone call action
+  → [Attack] triggered by combat initiation
+
+Game systems raise events, quest conditions detect and auto-select choices
+```
+
+**Pattern 5: Dynamic Availability (Living World)**
+World flags control which content is available:
+```
+WorldFlagBool: DragonDefeated
+WorldFlagInt: GuildRank
+
+Quest A: Only available if DragonDefeated = true
+Quest B: Only available if GuildRank >= 5
+Quest C: Only available if both conditions met
+```
+
+**Combining Patterns:**
+All patterns work together - a single quest can:
+- Check world flags to gate availability (Pattern 5)
+- Present reputation-gated choices (Pattern 2)
+- Set world flags that affect other quests (Pattern 1)
+- Track choices for narrative endings (Pattern 3)
+- Respond to player actions (Pattern 4)
 
 ### Creating QuestLines
 
@@ -552,6 +703,53 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.0.0 (2025-12-28)
+**Stage-Based Branching Quests:**
+- Added `QuestStage` for organizing quests into discrete stages
+- Added `StageTransition` for defining how stages connect
+- Added `TransitionTrigger` enum: OnComplete, OnFail, Conditional, PlayerChoice
+- Stages support multiple task groups with parallel/sequential execution
+- Non-sequential stage indices (0, 1, 10, 20, 100) for flexible quest design
+
+**Player Choice System:**
+- Added `isPlayerChoice` flag to mark transitions as explicit choices
+- Added `choiceId` for unique choice identification
+- Added `choiceText`, `choiceIcon`, `choiceTooltip` for UI presentation
+- Choices can be gated by conditions (e.g., reputation requirements)
+- Added `QuestRuntime.GetAvailableChoices()` - get valid choices at current stage
+- Added `QuestRuntime.SelectChoice()` / `SelectChoiceById()` - make a choice
+- Added `QuestRuntime.OnChoicesAvailable` event - fired when stage has choices
+- Added `QuestRuntime.OnChoiceMade` event - fired when player selects choice
+- Added `QuestRuntime.BranchDecisions` dictionary - tracks all choices made
+
+**World State Flags:**
+- Added `WorldFlagBool_SO` - boolean state flags (met_king, chose_evil_path)
+- Added `WorldFlagInt_SO` - integer state flags (reputation, kill_count)
+- Added `ConditionWorldFlagBool_SO` - check boolean flags in conditions
+- Added `ConditionWorldFlagInt_SO` - check integer flags with comparisons
+- Added `WorldFlagModification` - defines how to modify flags (set, add, subtract)
+- Added `worldFlagsOnSelect` to `StageTransition` - apply modifications on choice
+
+**Cross-Quest Consequences:**
+- Choices in one quest can set world flags
+- Other quests can check world flags in start/fail conditions
+- Enables Witcher 3-style persistent world consequences
+
+**Implicit Choices:**
+- Choices can use conditions that trigger on player actions
+- When condition is met, choice auto-selects (no UI needed)
+- Supports action-driven narrative (buying items, entering areas)
+
+**New Example Quest:**
+- "The Merchant's Dilemma" - demonstrates all branching features
+- 3 player choices with different paths
+- Reputation-gated choice (requires Guard Reputation >= 20)
+- World flag modifications on each choice
+
+**Breaking Changes:**
+- Quest_SO now uses stage-based structure (legacy quests auto-migrate)
+- `TransitionTrigger` values: 0=OnComplete, 1=OnFail, 2=Conditional, 3=PlayerChoice
 
 ### v1.8.0 (2025-12-24)
 **QuestLines (Story Arcs):**

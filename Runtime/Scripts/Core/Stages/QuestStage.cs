@@ -327,5 +327,115 @@ namespace HelloDev.QuestSystem.Stages
         }
 
         #endregion
+
+        #region Player Choice Methods
+
+        /// <summary>
+        /// Gets whether this stage has any player choice transitions.
+        /// </summary>
+        public bool HasPlayerChoices =>
+            transitions != null && transitions.Any(t => t.IsPlayerChoice);
+
+        /// <summary>
+        /// Gets whether this stage requires player to make a choice before progressing.
+        /// True if all non-Manual transitions are PlayerChoice type.
+        /// </summary>
+        public bool RequiresPlayerChoice
+        {
+            get
+            {
+                if (transitions == null || transitions.Count == 0)
+                    return false;
+
+                // Stage requires choice if it has PlayerChoice transitions
+                // and no automatic transitions that could fire instead
+                var hasPlayerChoices = transitions.Any(t => t.Trigger == TransitionTrigger.PlayerChoice);
+                var hasAutoTransitions = transitions.Any(t =>
+                    t.Trigger == TransitionTrigger.OnGroupsComplete ||
+                    t.Trigger == TransitionTrigger.OnConditionsMet);
+
+                return hasPlayerChoices && !hasAutoTransitions;
+            }
+        }
+
+        /// <summary>
+        /// Gets all PlayerChoice transitions, regardless of condition state.
+        /// Use this to show all possible choices (with some potentially greyed out).
+        /// </summary>
+        public List<StageTransition> GetAllPlayerChoices()
+        {
+            if (transitions == null || transitions.Count == 0)
+                return new List<StageTransition>();
+
+            return transitions
+                .Where(t => t.IsPlayerChoice)
+                .OrderByDescending(t => t.Priority)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets PlayerChoice transitions that have all conditions met.
+        /// Use this to show only currently available choices.
+        /// </summary>
+        public List<StageTransition> GetAvailablePlayerChoices()
+        {
+            if (transitions == null || transitions.Count == 0)
+                return new List<StageTransition>();
+
+            return transitions
+                .Where(t => t.IsPlayerChoice && t.EvaluateConditions())
+                .OrderByDescending(t => t.Priority)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets a player choice by its ID.
+        /// </summary>
+        /// <param name="choiceId">The choice ID to find.</param>
+        /// <returns>The matching transition, or null if not found.</returns>
+        public StageTransition GetPlayerChoiceById(string choiceId)
+        {
+            if (string.IsNullOrEmpty(choiceId) || transitions == null)
+                return null;
+
+            return transitions.FirstOrDefault(t =>
+                t.IsPlayerChoice && t.ChoiceId == choiceId);
+        }
+
+        /// <summary>
+        /// Checks if a specific choice is currently available (conditions met).
+        /// </summary>
+        /// <param name="choiceId">The choice ID to check.</param>
+        /// <returns>True if the choice exists and its conditions are met.</returns>
+        public bool IsChoiceAvailable(string choiceId)
+        {
+            var choice = GetPlayerChoiceById(choiceId);
+            return choice != null && choice.EvaluateConditions();
+        }
+
+        /// <summary>
+        /// Gets the first PlayerChoice transition whose conditions were just met.
+        /// This is used for implicit choices triggered by event-driven conditions.
+        /// Returns null if no implicit choice is ready.
+        /// </summary>
+        /// <remarks>
+        /// Implicit choices are those where the player's action (buying an item,
+        /// completing a task, entering an area, etc.) fulfills the condition,
+        /// automatically selecting that branch without explicit UI interaction.
+        /// </remarks>
+        public StageTransition GetImplicitlySelectedChoice()
+        {
+            if (transitions == null || transitions.Count == 0)
+                return null;
+
+            // Find player choices with met conditions
+            // Priority determines which one wins if multiple conditions met simultaneously
+            return transitions
+                .Where(t => t.IsPlayerChoice && t.EvaluateConditions())
+                .OrderByDescending(t => t.Priority)
+                .FirstOrDefault();
+        }
+
+        #endregion
     }
 }

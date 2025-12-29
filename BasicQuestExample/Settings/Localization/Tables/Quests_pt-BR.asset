@@ -109,7 +109,8 @@ MonoBehaviour:
   - m_Id: 47741405567696896
     m_Localized: Terra Arrasada
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 1502424919329210480
   references:
     version: 2
     RefIds:
@@ -127,6 +128,7 @@ MonoBehaviour:
         - id: 735193919963136
         - id: 735317442215936
         - id: 735424451493888
+        - id: 47741405567696896
         - id: 45854794508713988
         - id: 45854794508713987
         - id: 45854794508713986

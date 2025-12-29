@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using HelloDev.Conditions;
 using HelloDev.Events;
+using HelloDev.QuestSystem.Stages;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions.Types;
@@ -372,20 +373,32 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             var cardBg = new Color(0.2f, 0.2f, 0.2f);
+            var stageColor = new Color(0.6f, 0.5f, 0.9f);
+            var groupColor = new Color(0.5f, 0.4f, 0.7f);
+            var choiceColor = new Color(0.9f, 0.6f, 0.3f);
+            var branchColor = new Color(0.5f, 0.7f, 0.9f);
 
             foreach (var questInfo in containingQuests)
             {
                 var quest = questInfo.quest;
-                float rowHeight = 44f;
+                bool hasBranchInfo = questInfo.hasChoices || questInfo.isBranchPath;
+                float rowHeight = hasBranchInfo ? 64f : 54f; // Taller if branching info
 
                 var rowRect = GUILayoutUtility.GetRect(0, rowHeight, GUILayout.ExpandWidth(true));
                 DrawRoundedRect(rowRect, cardBg, 4f);
 
+                // Left accent for branch paths
+                if (questInfo.isBranchPath)
+                {
+                    var accentRect = new Rect(rowRect.x, rowRect.y, 3, rowRect.height);
+                    EditorGUI.DrawRect(accentRect, branchColor);
+                }
+
                 float padding = 8f;
 
                 // Quest icon
-                float iconSize = 32f;
-                var iconRect = new Rect(rowRect.x + padding, rowRect.y + (rowHeight - iconSize) / 2f, iconSize, iconSize);
+                float iconSize = 36f;
+                var iconRect = new Rect(rowRect.x + padding, rowRect.y + 8, iconSize, iconSize);
                 if (quest.QuestSprite != null)
                 {
                     GUI.DrawTexture(iconRect, quest.QuestSprite.texture, ScaleMode.ScaleToFit);
@@ -396,23 +409,67 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 }
 
                 // Quest name
-                var nameRect = new Rect(iconRect.xMax + 10, rowRect.y + 6, rowRect.width - 240, 18);
+                var nameRect = new Rect(iconRect.xMax + 10, rowRect.y + 6, rowRect.width - 220, 18);
                 GUI.Label(nameRect, quest.DevName, Styles.ItemName);
 
                 // Quest type tag
+                float tagX = iconRect.xMax + 10;
                 if (quest.QuestType != null)
                 {
-                    var typeRect = new Rect(iconRect.xMax + 10, rowRect.y + 26, 80, 14);
+                    var typeRect = new Rect(tagX, rowRect.y + 26, 70, 14);
                     DrawMiniTag(typeRect, quest.QuestType.DevName, quest.QuestType.Color);
+                    tagX += 76;
                 }
 
-                // Group info
-                var groupRect = new Rect(rowRect.xMax - padding - 220, rowRect.y + 26, 60, 14);
-                DrawMiniTag(groupRect, $"G{questInfo.groupIndex + 1}", new Color(0.5f, 0.4f, 0.7f));
+                // Stage info tag
+                var stageText = $"S{questInfo.stageIndex}";
+                var stageRect = new Rect(tagX, rowRect.y + 26, 30, 14);
+                DrawMiniTag(stageRect, stageText, stageColor);
+                tagX += 36;
+
+                // Group info tag
+                var groupRect = new Rect(tagX, rowRect.y + 26, 30, 14);
+                DrawMiniTag(groupRect, $"G{questInfo.groupIndex + 1}", groupColor);
+                tagX += 36;
+
+                // Branching indicators
+                if (questInfo.hasChoices)
+                {
+                    var choiceRect = new Rect(tagX, rowRect.y + 26, 55, 14);
+                    DrawMiniTag(choiceRect, "Choices", choiceColor);
+                    tagX += 60;
+                }
+                if (questInfo.isBranchPath)
+                {
+                    var branchRect = new Rect(tagX, rowRect.y + 26, 50, 14);
+                    DrawMiniTag(branchRect, "Branch", branchColor);
+                }
+
+                // Stage name (below tags)
+                var stageNameStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    fontSize = 9,
+                    normal = { textColor = new Color(0.55f, 0.5f, 0.7f) }
+                };
+                var stageNameRect = new Rect(iconRect.xMax + 10, rowRect.y + 42, 200, 12);
+                GUI.Label(stageNameRect, $"Stage: {questInfo.stageName}", stageNameStyle);
+
+                // Branch path indicator text
+                if (questInfo.isBranchPath)
+                {
+                    var branchStyle = new GUIStyle(EditorStyles.miniLabel)
+                    {
+                        fontSize = 8,
+                        fontStyle = FontStyle.Italic,
+                        normal = { textColor = branchColor }
+                    };
+                    var branchTextRect = new Rect(iconRect.xMax + 120, rowRect.y + 42, 150, 12);
+                    GUI.Label(branchTextRect, "(reached via player choice)", branchStyle);
+                }
 
                 // Object field
-                var fieldRect = new Rect(rowRect.xMax - padding - 150, rowRect.y + (rowHeight - EditorGUIUtility.singleLineHeight) / 2f,
-                                        150, EditorGUIUtility.singleLineHeight);
+                var fieldRect = new Rect(rowRect.xMax - padding - 140, rowRect.y + (rowHeight - EditorGUIUtility.singleLineHeight) / 2f,
+                                        140, EditorGUIUtility.singleLineHeight);
                 EditorGUI.ObjectField(fieldRect, quest, typeof(Quest_SO), false);
 
                 GUILayout.Space(2);
@@ -584,9 +641,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             };
         }
 
-        private List<(Quest_SO quest, int groupIndex)> FindContainingQuests()
+        private List<(Quest_SO quest, int stageIndex, string stageName, int groupIndex, bool hasChoices, bool isBranchPath)> FindContainingQuests()
         {
-            var result = new List<(Quest_SO, int)>();
+            var result = new List<(Quest_SO, int, string, int, bool, bool)>();
 
             var guids = AssetDatabase.FindAssets("t:Quest_SO");
             foreach (var guid in guids)
@@ -594,15 +651,32 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var quest = AssetDatabase.LoadAssetAtPath<Quest_SO>(path);
 
-                if (quest != null && quest.TaskGroups != null)
+                if (quest != null && quest.Stages != null)
                 {
-                    for (int g = 0; g < quest.TaskGroups.Count; g++)
+                    bool found = false;
+                    for (int s = 0; s < quest.Stages.Count && !found; s++)
                     {
-                        var group = quest.TaskGroups[g];
-                        if (group.Tasks != null && group.Tasks.Contains(this))
+                        var stage = quest.Stages[s];
+                        if (stage.TaskGroups != null)
                         {
-                            result.Add((quest, g));
-                            break;
+                            for (int g = 0; g < stage.TaskGroups.Count && !found; g++)
+                            {
+                                var group = stage.TaskGroups[g];
+                                if (group.Tasks != null && group.Tasks.Contains(this))
+                                {
+                                    // Check if this stage has player choices (branching point)
+                                    bool hasChoices = stage.Transitions != null &&
+                                        stage.Transitions.Any(t => t.IsPlayerChoice);
+
+                                    // Check if this stage is a branch path (reached via player choice)
+                                    bool isBranchPath = quest.Stages.Any(st =>
+                                        st.Transitions != null &&
+                                        st.Transitions.Any(t => t.IsPlayerChoice && t.TargetStageIndex == stage.StageIndex));
+
+                                    result.Add((quest, stage.StageIndex, stage.StageName, g, hasChoices, isBranchPath));
+                                    found = true;
+                                }
+                            }
                         }
                     }
                 }

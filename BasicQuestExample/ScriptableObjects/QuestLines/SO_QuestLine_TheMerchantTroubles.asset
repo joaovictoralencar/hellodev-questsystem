@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9d640fb551b0b34cbebe3937f33484c, type: 3}
+  m_Name: SO_QuestLine_TheMerchantTroubles
+  m_EditorClassIdentifier:
+  _description: 'Side storyline: The Merchant Troubles. Help the merchant deal with bandits through combat, diplomacy, or lawful means. Player choices affect reputation and world state.'
+  devName: TheMerchantTroubles
+  questLineId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  displayName:
+    m_TableReference:
+      m_TableCollectionName:
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  description:
+    m_TableReference:
+      m_TableCollectionName:
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  icon: {fileID: 0}
+  quests:
+  - {fileID: 11400000, guid: 83624a944c2469049b51864d56669cff, type: 2}
+  requireSequentialCompletion: 0
+  prerequisiteLine: {fileID: 0}
+  failOnAnyQuestFailed: 0
+  completionRewards:
+  - rewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
+    amount: 250
+  references:
+    version: 2
+    RefIds: []

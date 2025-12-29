@@ -44,16 +44,22 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         private string _rewardsPlaceholder => "";
 
         [TabGroup("Tabs", "Overview")]
-        [OnInspectorGUI("DrawTaskGroupsSection")]
+        [OnInspectorGUI("DrawStagesSection")]
         [PropertyOrder(-60)]
         [ShowInInspector, HideLabel, ReadOnly, DisplayAsString]
-        private string _taskGroupsPlaceholder => "";
+        private string _stagesPlaceholder => "";
 
         [TabGroup("Tabs", "Overview")]
         [OnInspectorGUI("DrawConditionsSection")]
         [PropertyOrder(-50)]
         [ShowInInspector, HideLabel, ReadOnly, DisplayAsString]
         private string _conditionsPlaceholder => "";
+
+        [TabGroup("Tabs", "Overview")]
+        [OnInspectorGUI("DrawBranchingSection")]
+        [PropertyOrder(-45)]
+        [ShowInInspector, HideLabel, ReadOnly, DisplayAsString]
+        private string _branchingPlaceholder => "";
 
         [TabGroup("Tabs", "Overview")]
         [OnInspectorGUI("DrawQuestLinesSection")]
@@ -501,6 +507,283 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             EditorGUILayout.EndHorizontal();
         }
 
+        private void DrawStagesSection()
+        {
+            GUILayout.Space(8);
+            DrawSectionHeader("Quest Stages", new Color(0.6f, 0.5f, 0.9f));
+
+            if (stages == null || stages.Count == 0)
+            {
+                DrawEmptyState("No stages configured");
+                return;
+            }
+
+            // Responsive breakpoints
+            float availableWidth = EditorGUIUtility.currentViewWidth - 40f;
+            bool isNarrow = availableWidth < 350f;
+            bool isWide = availableWidth > 500f;
+
+            // Stage colors
+            var stageColor = new Color(0.6f, 0.5f, 0.9f);
+            var transitionColor = new Color(0.4f, 0.7f, 0.6f);
+            var cardBg = new Color(0.18f, 0.18f, 0.18f);
+            var taskGroupBg = new Color(0.22f, 0.22f, 0.22f);
+            var taskBg = new Color(0.26f, 0.26f, 0.26f);
+
+            // Execution mode icons and colors for task groups
+            var modeIcons = new Dictionary<TaskExecutionMode, string>
+            {
+                { TaskExecutionMode.Sequential, "1→2→3" },
+                { TaskExecutionMode.Parallel, "1|2|3" },
+                { TaskExecutionMode.AnyOrder, "?→?→?" },
+                { TaskExecutionMode.OptionalXofY, "X/Y" }
+            };
+            var modeColors = new Dictionary<TaskExecutionMode, Color>
+            {
+                { TaskExecutionMode.Sequential, new Color(0.4f, 0.7f, 1f) },
+                { TaskExecutionMode.Parallel, new Color(0.6f, 0.5f, 0.9f) },
+                { TaskExecutionMode.AnyOrder, new Color(0.4f, 0.8f, 0.6f) },
+                { TaskExecutionMode.OptionalXofY, new Color(0.9f, 0.6f, 0.4f) }
+            };
+
+            for (int s = 0; s < stages.Count; s++)
+            {
+                var stage = stages[s];
+
+                // Stage header card
+                float headerHeight = isNarrow ? 70f : 56f;
+                var headerRect = GUILayoutUtility.GetRect(0, headerHeight, GUILayout.ExpandWidth(true));
+                DrawRoundedRect(headerRect, cardBg, 4f);
+
+                // Accent line at top
+                var accentRect = new Rect(headerRect.x, headerRect.y, headerRect.width, 3);
+                DrawRoundedRect(accentRect, stageColor, 2f);
+
+                float padding = 10f;
+
+                // Stage index badge
+                var indexStyle = new GUIStyle(EditorStyles.boldLabel)
+                {
+                    fontSize = 14,
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = { textColor = Color.white }
+                };
+                var indexBadgeRect = new Rect(headerRect.x + padding, headerRect.y + 12, 36, 24);
+                DrawRoundedRect(indexBadgeRect, stageColor, 4f);
+                GUI.Label(indexBadgeRect, stage.StageIndex.ToString(), indexStyle);
+
+                // Stage name
+                var nameRect = new Rect(headerRect.x + padding + 44, headerRect.y + 14, headerRect.width - 200, 20);
+                GUI.Label(nameRect, stage.StageName, Styles.ItemName);
+
+                // Stage settings tags row
+                float tagY = isNarrow ? 42 : 14;
+                float tagX = isNarrow ? headerRect.x + padding : headerRect.xMax - 170;
+
+                if (stage.IsTerminal)
+                {
+                    var terminalRect = new Rect(tagX, headerRect.y + tagY, 55, 14);
+                    DrawMiniTag(terminalRect, "Terminal", new Color(0.5f, 0.7f, 0.4f));
+                    tagX += 60;
+                }
+                if (stage.IsOptional)
+                {
+                    var optionalRect = new Rect(tagX, headerRect.y + tagY, 55, 14);
+                    DrawMiniTag(optionalRect, "Optional", new Color(0.7f, 0.6f, 0.3f));
+                    tagX += 60;
+                }
+                if (stage.IsHidden)
+                {
+                    var hiddenRect = new Rect(tagX, headerRect.y + tagY, 50, 14);
+                    DrawMiniTag(hiddenRect, "Hidden", new Color(0.5f, 0.5f, 0.5f));
+                }
+
+                // Journal entry indicator
+                bool hasJournal = stage.JournalEntry != null && !stage.JournalEntry.IsEmpty;
+                var journalTagRect = new Rect(headerRect.x + padding + 44, headerRect.y + 34, 70, 14);
+                DrawMiniTag(journalTagRect, hasJournal ? "Journal ✓" : "No Journal",
+                    hasJournal ? new Color(0.3f, 0.6f, 0.4f) : new Color(0.4f, 0.4f, 0.4f));
+
+                // Task count
+                var taskCountStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    fontSize = 10,
+                    alignment = TextAnchor.MiddleLeft,
+                    normal = { textColor = new Color(0.6f, 0.6f, 0.6f) }
+                };
+                var taskCountRect = new Rect(headerRect.x + padding + 120, headerRect.y + 34, 100, 14);
+                GUI.Label(taskCountRect, $"{stage.TotalTaskCount} task(s) in {stage.TaskGroups?.Count ?? 0} group(s)", taskCountStyle);
+
+                // Draw task groups within this stage (collapsed view)
+                if (stage.TaskGroups != null && stage.TaskGroups.Count > 0)
+                {
+                    GUILayout.Space(2);
+                    foreach (var group in stage.TaskGroups)
+                    {
+                        var groupColor = modeColors.TryGetValue(group.ExecutionMode, out var c) ? c : new Color(0.5f, 0.5f, 0.5f);
+                        var modeIcon = modeIcons.TryGetValue(group.ExecutionMode, out var icon) ? icon : "???";
+
+                        float groupHeight = 28f;
+                        var groupRect = GUILayoutUtility.GetRect(0, groupHeight, GUILayout.ExpandWidth(true));
+                        var groupCardRect = new Rect(groupRect.x + 16, groupRect.y, groupRect.width - 16, groupRect.height - 2);
+                        DrawRoundedRect(groupCardRect, taskGroupBg, 3f);
+
+                        // Accent
+                        var groupAccentRect = new Rect(groupCardRect.x, groupCardRect.y, 3, groupCardRect.height);
+                        EditorGUI.DrawRect(groupAccentRect, groupColor);
+
+                        // Mode icon
+                        var modeIconStyle = new GUIStyle(EditorStyles.miniLabel)
+                        {
+                            fontSize = 9,
+                            fontStyle = FontStyle.Bold,
+                            alignment = TextAnchor.MiddleCenter,
+                            normal = { textColor = groupColor }
+                        };
+                        var modeIconRect = new Rect(groupCardRect.x + 8, groupCardRect.y + 6, 44, 14);
+                        GUI.Label(modeIconRect, modeIcon, modeIconStyle);
+
+                        // Group name
+                        var groupNameRect = new Rect(groupCardRect.x + 56, groupCardRect.y + 6, groupCardRect.width - 150, 14);
+                        GUI.Label(groupNameRect, group.GroupName, Styles.ItemName);
+
+                        // Mode tag
+                        var modeText = GetExecutionModeText(group.ExecutionMode, group.RequiredCount, group.TaskCount);
+                        var modeTagRect = new Rect(groupCardRect.xMax - 90, groupCardRect.y + 6, 80, 14);
+                        DrawMiniTag(modeTagRect, modeText, groupColor);
+                    }
+                }
+
+                // Draw transitions
+                if (stage.Transitions != null && stage.Transitions.Count > 0)
+                {
+                    GUILayout.Space(4);
+
+                    // Colors for different elements
+                    var choiceColor = new Color(0.9f, 0.6f, 0.3f);        // Orange for player choices
+                    var lockedColor = new Color(0.7f, 0.3f, 0.3f);        // Red for locked/gated
+                    var worldFlagColor = new Color(0.5f, 0.7f, 0.9f);     // Blue for world flags
+
+                    foreach (var transition in stage.Transitions)
+                    {
+                        bool isChoice = transition.IsPlayerChoice;
+                        bool hasConditions = transition.Conditions != null && transition.Conditions.Count > 0;
+                        bool hasWorldFlags = transition.HasWorldFlagModifications;
+
+                        // Taller card for choices with extra info
+                        float transitionHeight = isChoice && (hasConditions || hasWorldFlags) ? 42f : 24f;
+                        var transitionRect = GUILayoutUtility.GetRect(0, transitionHeight, GUILayout.ExpandWidth(true));
+
+                        // Different background for choices
+                        var bgColor = isChoice ? new Color(0.22f, 0.18f, 0.14f) : new Color(0.16f, 0.22f, 0.2f);
+                        var transitionCardRect = new Rect(transitionRect.x + 24, transitionRect.y, transitionRect.width - 24, transitionRect.height - 2);
+                        DrawRoundedRect(transitionCardRect, bgColor, 3f);
+
+                        // Left accent for choices
+                        if (isChoice)
+                        {
+                            var rect = new Rect(transitionCardRect.x, transitionCardRect.y, 3, transitionCardRect.height);
+                            EditorGUI.DrawRect(rect, hasConditions ? lockedColor : choiceColor);
+                        }
+
+                        // Arrow icon (different for choices)
+                        var arrowStyle = new GUIStyle(EditorStyles.miniLabel)
+                        {
+                            fontSize = 11,
+                            fontStyle = FontStyle.Bold,
+                            alignment = TextAnchor.MiddleCenter,
+                            normal = { textColor = isChoice ? choiceColor : transitionColor }
+                        };
+                        var arrowRect = new Rect(transitionCardRect.x + 6, transitionCardRect.y + 3, 20, 16);
+                        GUI.Label(arrowRect, isChoice ? "?" : "→", arrowStyle);
+
+                        // Choice indicator
+                        float labelX = transitionCardRect.x + 30;
+                        if (isChoice)
+                        {
+                            var choiceTagRect = new Rect(labelX, transitionCardRect.y + 4, 50, 14);
+                            DrawMiniTag(choiceTagRect, "Choice", choiceColor);
+                            labelX += 56;
+                        }
+
+                        // Target stage or choice label
+                        var targetText = !string.IsNullOrEmpty(transition.TransitionLabel)
+                            ? transition.TransitionLabel
+                            : $"Stage {transition.TargetStageIndex}";
+                        var targetStage = stages.FirstOrDefault(st => st.StageIndex == transition.TargetStageIndex);
+                        if (targetStage != null && string.IsNullOrEmpty(transition.TransitionLabel))
+                        {
+                            targetText = $"→ {targetStage.StageName}";
+                        }
+
+                        var targetRect = new Rect(labelX, transitionCardRect.y + 3, transitionCardRect.width - labelX - 120, 16);
+                        GUI.Label(targetRect, targetText, Styles.ItemName);
+
+                        // Right side: Trigger type tag
+                        var triggerText = transition.Trigger.ToString().Replace("On", "");
+                        if (isChoice) triggerText = "PlayerChoice";
+                        var triggerRect = new Rect(transitionCardRect.xMax - 95, transitionCardRect.y + 4, 85, 14);
+                        DrawMiniTag(triggerRect, triggerText, isChoice ? choiceColor : transitionColor);
+
+                        // Priority if > 0
+                        if (transition.Priority > 0)
+                        {
+                            var priorityRect = new Rect(transitionCardRect.xMax - 125, transitionCardRect.y + 4, 25, 14);
+                            DrawMiniTag(priorityRect, $"P{transition.Priority}", new Color(0.5f, 0.5f, 0.5f));
+                        }
+
+                        // Second row for choice details
+                        if (isChoice && (hasConditions || hasWorldFlags))
+                        {
+                            float detailY = transitionCardRect.y + 22;
+                            float detailX = transitionCardRect.x + 10;
+
+                            // Choice ID
+                            if (!string.IsNullOrEmpty(transition.ChoiceId))
+                            {
+                                var idStyle = new GUIStyle(EditorStyles.miniLabel)
+                                {
+                                    fontSize = 9,
+                                    normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
+                                };
+                                var idRect = new Rect(detailX, detailY, 80, 14);
+                                GUI.Label(idRect, $"ID: {transition.ChoiceId}", idStyle);
+                                detailX += 90;
+                            }
+
+                            // Conditions indicator
+                            if (hasConditions)
+                            {
+                                var condRect = new Rect(detailX, detailY, 70, 14);
+                                DrawMiniTag(condRect, $"Gated ({transition.Conditions.Count})", lockedColor);
+                                detailX += 76;
+                            }
+
+                            // World flags indicator
+                            if (hasWorldFlags)
+                            {
+                                var flagRect = new Rect(detailX, detailY, 75, 14);
+                                DrawMiniTag(flagRect, $"Flags ({transition.WorldFlagsOnSelect.Count})", worldFlagColor);
+                            }
+                        }
+                    }
+                }
+
+                GUILayout.Space(8);
+
+                // Draw connector line to next stage (if not the last)
+                if (s < stages.Count - 1 && !stage.IsTerminal)
+                {
+                    var connectorRect = GUILayoutUtility.GetRect(0, 12, GUILayout.ExpandWidth(true));
+                    var lineRect = new Rect(connectorRect.x + 27, connectorRect.y, 2, connectorRect.height);
+                    EditorGUI.DrawRect(lineRect, new Color(0.3f, 0.3f, 0.4f));
+
+                    var dotRect = new Rect(connectorRect.x + 24, connectorRect.y + connectorRect.height - 4, 8, 8);
+                    DrawRoundedRect(dotRect, stageColor, 4f);
+                }
+            }
+        }
+
         private void DrawTaskGroupsSection()
         {
             GUILayout.Space(8);
@@ -813,6 +1096,163 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             DrawConditionList("Global Task Failure", globalTaskFailureConditions, new Color(0.9f, 0.6f, 0.3f));
         }
 
+        private void DrawBranchingSection()
+        {
+            // Count choices and world flags
+            int choiceCount = 0;
+            int choiceStagesCount = 0;
+            int worldFlagModCount = 0;
+            int gatedChoiceCount = 0;
+            var allChoices = new List<(QuestStage stage, StageTransition transition)>();
+
+            if (stages != null)
+            {
+                foreach (var stage in stages)
+                {
+                    if (stage.Transitions == null) continue;
+                    bool stageHasChoice = false;
+                    foreach (var transition in stage.Transitions)
+                    {
+                        if (transition.IsPlayerChoice)
+                        {
+                            choiceCount++;
+                            stageHasChoice = true;
+                            allChoices.Add((stage, transition));
+                            if (transition.HasWorldFlagModifications)
+                                worldFlagModCount += transition.WorldFlagsOnSelect.Count;
+                            if (transition.Conditions != null && transition.Conditions.Count > 0)
+                                gatedChoiceCount++;
+                        }
+                    }
+                    if (stageHasChoice) choiceStagesCount++;
+                }
+            }
+
+            // Only show if there are choices
+            if (choiceCount == 0) return;
+
+            GUILayout.Space(8);
+            DrawSectionHeader("Branching & Choices", new Color(0.9f, 0.6f, 0.3f));
+
+            // Mini dashboard
+            var dashBg = new Color(0.18f, 0.18f, 0.18f);
+            var dashRect = GUILayoutUtility.GetRect(0, 50, GUILayout.ExpandWidth(true));
+            EditorGUI.DrawRect(dashRect, dashBg);
+
+            float cardWidth = (dashRect.width - 30) / 4f;
+            float cardHeight = 36;
+            float startX = dashRect.x + 5;
+            float startY = dashRect.y + 7;
+            var cardBg = new Color(0.22f, 0.22f, 0.22f);
+
+            DrawMiniStatCard(new Rect(startX, startY, cardWidth - 3, cardHeight), cardBg,
+                choiceCount.ToString(), "Choices", new Color(0.9f, 0.6f, 0.3f));
+            DrawMiniStatCard(new Rect(startX + cardWidth, startY, cardWidth - 3, cardHeight), cardBg,
+                choiceStagesCount.ToString(), "Choice Pts", new Color(0.6f, 0.5f, 0.9f));
+            DrawMiniStatCard(new Rect(startX + cardWidth * 2, startY, cardWidth - 3, cardHeight), cardBg,
+                gatedChoiceCount.ToString(), "Gated", new Color(0.7f, 0.3f, 0.3f));
+            DrawMiniStatCard(new Rect(startX + cardWidth * 3, startY, cardWidth - 3, cardHeight), cardBg,
+                worldFlagModCount.ToString(), "World Flags", new Color(0.5f, 0.7f, 0.9f));
+
+            GUILayout.Space(4);
+
+            // List choices
+            var choiceColor = new Color(0.9f, 0.6f, 0.3f);
+            var lockedColor = new Color(0.7f, 0.3f, 0.3f);
+            var flagColor = new Color(0.5f, 0.7f, 0.9f);
+
+            foreach (var (stage, choice) in allChoices)
+            {
+                bool hasConditions = choice.Conditions != null && choice.Conditions.Count > 0;
+                bool hasFlags = choice.HasWorldFlagModifications;
+
+                float rowHeight = 32f;
+                var rowRect = GUILayoutUtility.GetRect(0, rowHeight, GUILayout.ExpandWidth(true));
+                var cardRect = new Rect(rowRect.x + 4, rowRect.y, rowRect.width - 4, rowRect.height - 2);
+                DrawRoundedRect(cardRect, new Color(0.22f, 0.18f, 0.14f), 3f);
+
+                // Left accent
+                var accentRect = new Rect(cardRect.x, cardRect.y, 3, cardRect.height);
+                EditorGUI.DrawRect(accentRect, hasConditions ? lockedColor : choiceColor);
+
+                // Choice icon
+                var iconStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    fontSize = 12,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = { textColor = choiceColor }
+                };
+                var iconRect = new Rect(cardRect.x + 8, cardRect.y + 7, 20, 18);
+                GUI.Label(iconRect, "?", iconStyle);
+
+                // Stage info
+                var stageStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    fontSize = 9,
+                    normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
+                };
+                var stageRect = new Rect(cardRect.x + 32, cardRect.y + 4, 60, 12);
+                GUI.Label(stageRect, $"Stage {stage.StageIndex}", stageStyle);
+
+                // Choice label
+                var labelText = !string.IsNullOrEmpty(choice.TransitionLabel) ? choice.TransitionLabel : choice.ChoiceId;
+                var labelRect = new Rect(cardRect.x + 32, cardRect.y + 16, cardRect.width - 180, 14);
+                GUI.Label(labelRect, labelText, Styles.ItemName);
+
+                // Target tag
+                var targetStage = stages?.FirstOrDefault(s => s.StageIndex == choice.TargetStageIndex);
+                var targetText = targetStage != null ? targetStage.StageName : $"Stage {choice.TargetStageIndex}";
+                var targetRect = new Rect(cardRect.xMax - 140, cardRect.y + 4, 90, 12);
+                GUI.Label(targetRect, $"→ {targetText}", stageStyle);
+
+                // Tags row
+                float tagX = cardRect.xMax - 140;
+                float tagY = cardRect.y + 16;
+
+                if (hasConditions)
+                {
+                    var condRect = new Rect(tagX, tagY, 50, 12);
+                    DrawMiniTag(condRect, "Gated", lockedColor);
+                    tagX += 54;
+                }
+                if (hasFlags)
+                {
+                    var flagRect = new Rect(tagX, tagY, 45, 12);
+                    DrawMiniTag(flagRect, "Flags", flagColor);
+                }
+            }
+        }
+
+        private void DrawMiniStatCard(Rect rect, Color bgColor, string value, string label, Color accentColor)
+        {
+            DrawRoundedRect(rect, bgColor, 3f);
+
+            // Accent line
+            var accentRect = new Rect(rect.x, rect.y, rect.width, 2);
+            EditorGUI.DrawRect(accentRect, accentColor);
+
+            // Value
+            var valueStyle = new GUIStyle(EditorStyles.boldLabel)
+            {
+                fontSize = 14,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = accentColor }
+            };
+            var valueRect = new Rect(rect.x, rect.y + 4, rect.width, 16);
+            GUI.Label(valueRect, value, valueStyle);
+
+            // Label
+            var labelStyle = new GUIStyle(EditorStyles.miniLabel)
+            {
+                fontSize = 8,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
+            };
+            var labelRect = new Rect(rect.x, rect.y + 20, rect.width, 12);
+            GUI.Label(labelRect, label, labelStyle);
+        }
+
         private void DrawQuestLinesSection()
         {
             GUILayout.Space(8);
@@ -1067,6 +1507,85 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 }
             }
 
+            // Validate player choices
+            if (stages != null)
+            {
+                var choiceIds = new HashSet<string>();
+                foreach (var stage in stages)
+                {
+                    if (stage.Transitions == null) continue;
+                    foreach (var transition in stage.Transitions)
+                    {
+                        if (transition.IsPlayerChoice)
+                        {
+                            // Check for missing choice ID
+                            if (string.IsNullOrEmpty(transition.ChoiceId))
+                            {
+                                issues.Add($"Stage '{stage.StageName}': Player choice to stage {transition.TargetStageIndex} has no Choice ID");
+                            }
+                            else
+                            {
+                                // Check for duplicate choice IDs
+                                if (!choiceIds.Add(transition.ChoiceId))
+                                {
+                                    issues.Add($"Duplicate Choice ID '{transition.ChoiceId}' found");
+                                }
+                            }
+
+                            // Check for null conditions in choice
+                            if (transition.Conditions != null)
+                            {
+                                for (int c = 0; c < transition.Conditions.Count; c++)
+                                {
+                                    if (transition.Conditions[c] == null)
+                                    {
+                                        issues.Add($"Stage '{stage.StageName}': Choice '{transition.ChoiceId}' has null condition at index {c}");
+                                    }
+                                }
+                            }
+
+                            // Check for null world flag modifications
+                            if (transition.WorldFlagsOnSelect != null)
+                            {
+                                for (int w = 0; w < transition.WorldFlagsOnSelect.Count; w++)
+                                {
+                                    var mod = transition.WorldFlagsOnSelect[w];
+                                    if (mod != null && !mod.IsValid)
+                                    {
+                                        issues.Add($"Stage '{stage.StageName}': Choice '{transition.ChoiceId}' has invalid world flag modification at index {w}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Check for unreachable stages
+                var reachableStages = new HashSet<int> { 0 }; // Stage 0 is always reachable
+                bool changed = true;
+                while (changed)
+                {
+                    changed = false;
+                    foreach (var stage in stages)
+                    {
+                        if (!reachableStages.Contains(stage.StageIndex)) continue;
+                        if (stage.Transitions == null) continue;
+                        foreach (var t in stage.Transitions)
+                        {
+                            if (reachableStages.Add(t.TargetStageIndex))
+                                changed = true;
+                        }
+                    }
+                }
+                foreach (var stage in stages)
+                {
+                    if (stage.StageIndex != 0 && !reachableStages.Contains(stage.StageIndex))
+                    {
+                        issues.Add($"Stage '{stage.StageName}' (index {stage.StageIndex}) is unreachable");
+                    }
+                }
+            }
+
             return issues;
         }
 
@@ -1094,6 +1613,46 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     if (cond != null && !(cond is IConditionEventDriven))
                         warnings.Add($"Start condition '{cond.name}' is not event-driven");
                 }
+            }
+
+            // Check for choice-related warnings
+            if (stages != null)
+            {
+                int choiceCount = 0;
+                int choicesWithFlags = 0;
+                bool hasTerminalStage = false;
+                int choiceStageCount = 0;
+
+                foreach (var stage in stages)
+                {
+                    if (stage.IsTerminal) hasTerminalStage = true;
+                    if (stage.Transitions == null) continue;
+
+                    bool stageHasChoices = false;
+                    foreach (var transition in stage.Transitions)
+                    {
+                        if (transition.IsPlayerChoice)
+                        {
+                            choiceCount++;
+                            stageHasChoices = true;
+                            if (transition.HasWorldFlagModifications)
+                                choicesWithFlags++;
+
+                            // Warn if choice has no transition label
+                            if (string.IsNullOrEmpty(transition.TransitionLabel))
+                                warnings.Add($"Stage '{stage.StageName}': Choice '{transition.ChoiceId}' has no display label");
+                        }
+                    }
+                    if (stageHasChoices) choiceStageCount++;
+                }
+
+                // Warn if branching quest has no terminal stage
+                if (choiceCount > 0 && !hasTerminalStage)
+                    warnings.Add("Branching quest has no terminal stage (quest may never complete)");
+
+                // Warn if choices don't modify world state (missed opportunity for consequences)
+                if (choiceCount > 0 && choicesWithFlags == 0)
+                    warnings.Add("No choices modify world state (consider adding world flag consequences)");
             }
 
             return warnings;
