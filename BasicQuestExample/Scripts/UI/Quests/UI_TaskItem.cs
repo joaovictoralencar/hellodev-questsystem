@@ -87,6 +87,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _onTaskSelectedCallback = onTaskSelected;
             gameObject.name = $"TaskItem_{task.Data.DevName}";
 
+            // Initialize selection visual to hidden state
+            if (selectedBackground != null)
+            {
+                Tween.StopAll(selectedBackground);
+                selectedBackground.fillAmount = 0f;
+                selectedBackground.enabled = false;
+            }
+
             SetupLocalizedText();
             ApplyStateVisuals(task.CurrentState);
             SubscribeToTaskEvents();
