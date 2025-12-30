@@ -1,4 +1,5 @@
 using System.Linq;
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 
 namespace HelloDev.QuestSystem.Tasks
@@ -14,6 +15,11 @@ namespace HelloDev.QuestSystem.Tasks
         /// Gets the progress of this task. Returns 1 if completed, 0 otherwise.
         /// </summary>
         public override float Progress => CurrentState == TaskState.Completed ? 1 : 0;
+
+        /// <summary>
+        /// Gets whether the task is completed. Used for save/load.
+        /// </summary>
+        public bool IsCompleted => CurrentState == TaskState.Completed;
 
         /// <summary>
         /// Initializes a new instance of the BoolTaskRuntime class.
@@ -62,5 +68,22 @@ namespace HelloDev.QuestSystem.Tasks
                 CompleteTask();
             }
         }
+
+        #region Save/Load
+
+        /// <inheritdoc />
+        public override void CaptureProgress(TaskProgressData progressData)
+        {
+            progressData.BoolValue = IsCompleted;
+        }
+
+        /// <inheritdoc />
+        public override void RestoreProgress(TaskProgressData progressData)
+        {
+            // Bool task state is restored via task state, not internal value
+            // If saved as completed, the task will be completed via CompleteTask()
+        }
+
+        #endregion
     }
 }

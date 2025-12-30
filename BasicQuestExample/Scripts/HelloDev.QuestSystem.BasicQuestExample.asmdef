@@ -1,0 +1,16 @@
+{
+    "name": "HelloDev.QuestSystem.BasicQuestExample",
+    "rootNamespace": "HelloDev.QuestSystem.BasicQuestExample",
+    "references": [
+        "HelloDev.QuestSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -27,6 +28,11 @@ namespace HelloDev.QuestSystem.Tasks
         /// Gets the current number of fulfilled conditions (discoveries).
         /// </summary>
         public int DiscoveredCount => _fulfilledConditions.Count;
+
+        /// <summary>
+        /// Gets the set of fulfilled conditions. Used for save/load.
+        /// </summary>
+        public IReadOnlyCollection<Condition_SO> FulfilledConditions => _fulfilledConditions;
 
         /// <summary>
         /// Initializes a new instance of the DiscoveryTask class.
@@ -146,5 +152,61 @@ namespace HelloDev.QuestSystem.Tasks
                 CompleteTask();
             }
         }
+
+        #region Save/Load
+
+        /// <inheritdoc />
+        public override void CaptureProgress(TaskProgressData progressData)
+        {
+            // Store fulfilled condition indices for reliable lookup
+            var allConditions = Data.Conditions;
+            foreach (var condition in _fulfilledConditions)
+            {
+                int index = allConditions?.IndexOf(condition) ?? -1;
+                if (index >= 0)
+                {
+                    progressData.FulfilledConditionIndices.Add(index);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public override void RestoreProgress(TaskProgressData progressData)
+        {
+            _fulfilledConditions.Clear();
+
+            // Restore by index (preferred) or count (legacy)
+            if (progressData.FulfilledConditionIndices.Count > 0)
+            {
+                // New format: restore specific conditions by index
+                var allConditions = Data.Conditions;
+                if (allConditions != null)
+                {
+                    foreach (int index in progressData.FulfilledConditionIndices)
+                    {
+                        if (index >= 0 && index < allConditions.Count)
+                        {
+                            _fulfilledConditions.Add(allConditions[index]);
+                        }
+                    }
+                }
+            }
+            else if (progressData.FulfilledConditionGuids.Count > 0)
+            {
+                // Legacy format: restore by count
+                var allConditions = Data.Conditions;
+                if (allConditions != null)
+                {
+                    for (int i = 0; i < progressData.FulfilledConditionGuids.Count && i < allConditions.Count; i++)
+                    {
+                        _fulfilledConditions.Add(allConditions[i]);
+                    }
+                }
+            }
+
+            OnTaskUpdated.SafeInvoke(this);
+        }
+
+        #endregion
     }
 }

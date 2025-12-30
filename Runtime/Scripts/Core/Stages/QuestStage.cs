@@ -21,90 +21,57 @@ namespace HelloDev.QuestSystem.Stages
         #region Serialized Fields
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Stage Identity")]
-        [PropertyOrder(0)]
-        [Tooltip("Unique index for this stage. Use gaps (0, 10, 20) to allow inserting stages later.")]
+        [BoxGroup("Stage Identity"), PropertyOrder(0)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Unique index for this stage. Use gaps (0, 10, 20) to allow inserting stages later.")]
         private int stageIndex;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Stage Identity")]
-        [PropertyOrder(1)]
-        [Tooltip("Developer-friendly name for this stage.")]
+        [BoxGroup("Stage Identity"), PropertyOrder(1)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Developer-friendly name for this stage.")]
         private string stageName = "New Stage";
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Stage Identity")]
-        [PropertyOrder(2)]
-        [Tooltip("Localized journal entry shown to the player when this stage is active.")]
+        [BoxGroup("Stage Identity"), PropertyOrder(2)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Localized journal entry shown to the player when this stage is active.")]
         private LocalizedString journalEntry;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Stage Identity")]
-        [PropertyOrder(3)]
-        [Tooltip("Icon displayed in the journal for this stage.")]
-        [PreviewField(40, Alignment = ObjectFieldAlignment.Left)]
+        [BoxGroup("Stage Identity"), PropertyOrder(3), PreviewField(40, Alignment = ObjectFieldAlignment.Left)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Icon displayed in the journal for this stage.")]
         private Sprite stageIcon;
 
-        #endregion
-
-        #region Task Groups
-
 #if ODIN_INSPECTOR
-        [BoxGroup("Task Groups")]
-        [PropertyOrder(10)]
-        [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
-        [Tooltip("Task groups that must be completed in this stage.")]
+        [BoxGroup("Task Groups"), PropertyOrder(10), ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Task groups that must be completed in this stage.")]
         private List<TaskGroup> taskGroups = new();
 
-        #endregion
-
-        #region Transitions
-
 #if ODIN_INSPECTOR
-        [BoxGroup("Transitions")]
-        [PropertyOrder(20)]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [Tooltip("Defines how to move from this stage to other stages.")]
+        [BoxGroup("Transitions"), PropertyOrder(20), ListDrawerSettings(ShowFoldout = true)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Defines how to move from this stage to other stages.")]
         private List<StageTransition> transitions = new();
 
-        #endregion
-
-        #region Settings
-
 #if ODIN_INSPECTOR
-        [BoxGroup("Settings")]
-        [PropertyOrder(30)]
-        [Tooltip("If true, this stage can be skipped without failing the quest.")]
+        [BoxGroup("Settings"), PropertyOrder(30)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("If true, this stage can be skipped without failing the quest.")]
         private bool isOptional;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Settings")]
-        [PropertyOrder(31)]
-        [Tooltip("If true, this stage won't appear in the journal until reached. Useful for secret paths.")]
+        [BoxGroup("Settings"), PropertyOrder(31)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("If true, this stage won't appear in the journal until reached. Useful for secret paths.")]
         private bool isHidden;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Settings")]
-        [PropertyOrder(32)]
-        [Tooltip("If true, this stage is a terminal stage (quest ends when completed, no transitions needed).")]
+        [BoxGroup("Settings"), PropertyOrder(32)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("If true, this stage is a terminal stage (quest ends when completed, no transitions needed).")]
         private bool isTerminal;
 
         #endregion

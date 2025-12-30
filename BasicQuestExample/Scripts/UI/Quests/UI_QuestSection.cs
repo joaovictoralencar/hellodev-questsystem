@@ -117,8 +117,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (quests == null) return;
 
+            Debug.Log($"[UI_QuestSection] SpawnQuestItems called with {quests.Count} quests for section '{QuestType?.name ?? "null"}'");
+
             foreach (QuestRuntime quest in quests)
             {
+                Debug.Log($"[UI_QuestSection]   Creating item for '{quest.QuestData.DevName}': State={quest.CurrentState}");
                 CreateQuestItem(quest, onQuestSelected);
             }
         }

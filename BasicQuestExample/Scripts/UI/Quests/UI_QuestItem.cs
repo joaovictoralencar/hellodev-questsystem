@@ -97,6 +97,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (newQuest?.QuestData == null) return;
 
+            Debug.Log($"[UI_QuestItem] Setup called for '{newQuest.QuestData.DevName}': State={newQuest.CurrentState}\nStack Trace:\n{UnityEngine.StackTraceUtility.ExtractStackTrace()}");
+
             if (_isInitialized)
                 UnsubscribeFromQuestEvents();
 
@@ -239,8 +241,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void SetupQuestStateVisuals()
         {
+            Debug.Log($"[UI_QuestItem] SetupQuestStateVisuals for '{_quest.QuestData.DevName}': CurrentState={_quest.CurrentState}");
+
             switch (_quest.CurrentState)
             {
+                case QuestState.NotStarted:
+                    Debug.Log($"[UI_QuestItem] Quest '{_quest.QuestData.DevName}' is NotStarted - no visuals applied");
+                    // NotStarted quests don't show next task or status indicators
+                    break;
                 case QuestState.InProgress:
                     HandleQuestInProgress(_quest);
                     break;

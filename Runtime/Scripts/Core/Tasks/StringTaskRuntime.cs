@@ -1,3 +1,4 @@
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 
 namespace HelloDev.QuestSystem.Tasks
@@ -67,5 +68,21 @@ namespace HelloDev.QuestSystem.Tasks
                 CompleteTask();
             }
         }
+
+        #region Save/Load
+
+        /// <inheritdoc />
+        public override void CaptureProgress(TaskProgressData progressData)
+        {
+            progressData.StringValue = _currentValue;
+        }
+
+        /// <inheritdoc />
+        public override void RestoreProgress(TaskProgressData progressData)
+        {
+            _currentValue = progressData.StringValue ?? string.Empty;
+        }
+
+        #endregion
     }
 }

@@ -19,7 +19,7 @@ namespace HelloDev.QuestSystem.Quests
     /// </summary>
     public class QuestRuntime
     {
-        #region Events
+        #region Events - Quest Lifecycle
 
         /// <summary>Fired when the quest starts.</summary>
         public UnityEvent<QuestRuntime> OnQuestStarted = new();
@@ -36,17 +36,25 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>Fired when quest progress changes (stage advances, group advances, task completes, etc.).</summary>
         public UnityEvent<QuestRuntime> OnQuestUpdated = new();
 
+        #endregion
+
+        #region Events - Tasks
+
         /// <summary>Fired when any task in this quest starts.</summary>
-        public UnityEvent<TaskRuntime> OnAnyTaskStarted = new();
+        public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskStarted = new();
 
         /// <summary>Fired when any task in this quest is updated.</summary>
-        public UnityEvent<TaskRuntime> OnAnyTaskUpdated = new();
+        public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskUpdated = new();
 
         /// <summary>Fired when any task in this quest completes.</summary>
-        public UnityEvent<TaskRuntime> OnAnyTaskCompleted = new();
+        public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskCompleted = new();
 
         /// <summary>Fired when any task in this quest fails.</summary>
-        public UnityEvent<TaskRuntime> OnAnyTaskFailed = new();
+        public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskFailed = new();
+
+        #endregion
+
+        #region Events - Stages
 
         /// <summary>Fired when a stage is entered.</summary>
         public UnityEvent<QuestRuntime, QuestStageRuntime> OnStageEntered = new();
@@ -55,7 +63,11 @@ namespace HelloDev.QuestSystem.Quests
         public UnityEvent<QuestRuntime, QuestStageRuntime> OnStageCompleted = new();
 
         /// <summary>Fired when a stage transition occurs.</summary>
-        public UnityEvent<QuestRuntime, int, int> OnStageTransition = new();
+        public UnityEvent<QuestRuntime, StageTransitionInfo> OnStageTransition = new();
+
+        #endregion
+
+        #region Events - Player Choices
 
         /// <summary>
         /// Fired when a stage with player choices becomes active.
@@ -314,7 +326,7 @@ namespace HelloDev.QuestSystem.Quests
 
             int previousIndex = CurrentStageIndex;
             TransitionToStage(targetStage);
-            OnStageTransition.SafeInvoke(this, previousIndex, stageIndex);
+            OnStageTransition.SafeInvoke(this, new StageTransitionInfo(previousIndex, stageIndex));
 
             return true;
         }
@@ -456,7 +468,7 @@ namespace HelloDev.QuestSystem.Quests
             if (targetStage != null)
             {
                 TransitionToStage(targetStage);
-                OnStageTransition.SafeInvoke(this, previousIndex, choice.TargetStageIndex);
+                OnStageTransition.SafeInvoke(this, new StageTransitionInfo(previousIndex, choice.TargetStageIndex));
                 return true;
             }
             else
@@ -716,7 +728,7 @@ namespace HelloDev.QuestSystem.Quests
             {
                 int previousIndex = CurrentStageIndex;
                 TransitionToStage(targetStage);
-                OnStageTransition.SafeInvoke(this, previousIndex, targetStageIndex);
+                OnStageTransition.SafeInvoke(this, new StageTransitionInfo(previousIndex, targetStageIndex));
             }
             else
             {
@@ -727,7 +739,7 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleTaskInStageUpdated(QuestStageRuntime stage, TaskRuntime task)
         {
-            OnAnyTaskUpdated.SafeInvoke(task);
+            OnAnyTaskUpdated.SafeInvoke(this, task);
             NotifyQuestUpdated();
         }
 
@@ -738,9 +750,9 @@ namespace HelloDev.QuestSystem.Quests
             // Subscribe to task events for this group
             foreach (var task in group.Tasks)
             {
-                task.OnTaskStarted.SafeSubscribe(t => OnAnyTaskStarted.SafeInvoke(t));
-                task.OnTaskCompleted.SafeSubscribe(t => OnAnyTaskCompleted.SafeInvoke(t));
-                task.OnTaskFailed.SafeSubscribe(t => OnAnyTaskFailed.SafeInvoke(t));
+                task.OnTaskStarted.SafeSubscribe(t => OnAnyTaskStarted.SafeInvoke(this, t));
+                task.OnTaskCompleted.SafeSubscribe(t => OnAnyTaskCompleted.SafeInvoke(this, t));
+                task.OnTaskFailed.SafeSubscribe(t => OnAnyTaskFailed.SafeInvoke(this, t));
             }
         }
 
@@ -839,6 +851,100 @@ namespace HelloDev.QuestSystem.Quests
                 {
                     task.CompleteTask();
                 }
+            }
+        }
+
+        #endregion
+
+        #region Event Subscription Helpers
+
+        /// <summary>
+        /// Subscribes a single handler to all quest lifecycle events (Started, Completed, Failed, Restarted, Updated).
+        /// Reduces boilerplate when you need to respond to any quest state change.
+        /// </summary>
+        /// <param name="handler">Handler that receives the quest for any lifecycle event.</param>
+        public void SubscribeToLifecycleEvents(UnityAction<QuestRuntime> handler)
+        {
+            OnQuestStarted.SafeSubscribe(handler);
+            OnQuestCompleted.SafeSubscribe(handler);
+            OnQuestFailed.SafeSubscribe(handler);
+            OnQuestRestarted.SafeSubscribe(handler);
+            OnQuestUpdated.SafeSubscribe(handler);
+        }
+
+        /// <summary>
+        /// Unsubscribes a handler from all quest lifecycle events.
+        /// </summary>
+        /// <param name="handler">Handler to unsubscribe.</param>
+        public void UnsubscribeFromLifecycleEvents(UnityAction<QuestRuntime> handler)
+        {
+            OnQuestStarted.SafeUnsubscribe(handler);
+            OnQuestCompleted.SafeUnsubscribe(handler);
+            OnQuestFailed.SafeUnsubscribe(handler);
+            OnQuestRestarted.SafeUnsubscribe(handler);
+            OnQuestUpdated.SafeUnsubscribe(handler);
+        }
+
+        /// <summary>
+        /// Subscribes a single handler to all task events (Started, Updated, Completed, Failed).
+        /// Reduces boilerplate when you need to respond to any task change.
+        /// </summary>
+        /// <param name="handler">Handler that receives the quest and task for any task event.</param>
+        public void SubscribeToTaskEvents(UnityAction<QuestRuntime, TaskRuntime> handler)
+        {
+            OnAnyTaskStarted.SafeSubscribe(handler);
+            OnAnyTaskUpdated.SafeSubscribe(handler);
+            OnAnyTaskCompleted.SafeSubscribe(handler);
+            OnAnyTaskFailed.SafeSubscribe(handler);
+        }
+
+        /// <summary>
+        /// Unsubscribes a handler from all task events.
+        /// </summary>
+        /// <param name="handler">Handler to unsubscribe.</param>
+        public void UnsubscribeFromTaskEvents(UnityAction<QuestRuntime, TaskRuntime> handler)
+        {
+            OnAnyTaskStarted.SafeUnsubscribe(handler);
+            OnAnyTaskUpdated.SafeUnsubscribe(handler);
+            OnAnyTaskCompleted.SafeUnsubscribe(handler);
+            OnAnyTaskFailed.SafeUnsubscribe(handler);
+        }
+
+        /// <summary>
+        /// Subscribes a single handler to all stage events (Entered, Completed, Transition).
+        /// </summary>
+        /// <param name="stageHandler">Handler for stage entered/completed events.</param>
+        /// <param name="transitionHandler">Handler for stage transition events.</param>
+        public void SubscribeToStageEvents(
+            UnityAction<QuestRuntime, QuestStageRuntime> stageHandler,
+            UnityAction<QuestRuntime, StageTransitionInfo> transitionHandler)
+        {
+            if (stageHandler != null)
+            {
+                OnStageEntered.SafeSubscribe(stageHandler);
+                OnStageCompleted.SafeSubscribe(stageHandler);
+            }
+            if (transitionHandler != null)
+            {
+                OnStageTransition.SafeSubscribe(transitionHandler);
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribes handlers from all stage events.
+        /// </summary>
+        public void UnsubscribeFromStageEvents(
+            UnityAction<QuestRuntime, QuestStageRuntime> stageHandler,
+            UnityAction<QuestRuntime, StageTransitionInfo> transitionHandler)
+        {
+            if (stageHandler != null)
+            {
+                OnStageEntered.SafeUnsubscribe(stageHandler);
+                OnStageCompleted.SafeUnsubscribe(stageHandler);
+            }
+            if (transitionHandler != null)
+            {
+                OnStageTransition.SafeUnsubscribe(transitionHandler);
             }
         }
 

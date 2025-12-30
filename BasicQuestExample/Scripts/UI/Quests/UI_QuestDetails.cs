@@ -390,6 +390,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (quest?.QuestData == null) return;
 
+            Debug.Log($"[UI_QuestDetails] Setup called for quest '{quest.QuestData.DevName}': State={quest.CurrentState}");
+
             // Unsubscribe from previous quest
             UnsubscribeFromQuestEvents();
 
@@ -509,16 +511,27 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void CreateTaskItems(QuestRuntime quest)
         {
+            Debug.Log($"[UI_QuestDetails] CreateTaskItems for quest '{quest.QuestData.DevName}': QuestState={quest.CurrentState}, TaskCount={quest.Tasks.Count}");
+
             foreach (TaskRuntime task in quest.Tasks)
             {
-                // Skip not-started tasks
-                if (task.CurrentState == TaskState.NotStarted) continue;
+                Debug.Log($"[UI_QuestDetails]   Task '{task.DevName}': State={task.CurrentState}");
 
+                // Skip not-started tasks
+                if (task.CurrentState == TaskState.NotStarted)
+                {
+                    Debug.Log($"[UI_QuestDetails]   -> SKIPPED (NotStarted)");
+                    continue;
+                }
+
+                Debug.Log($"[UI_QuestDetails]   -> CREATING UI item");
                 var taskItem = Instantiate(taskItemPrefab, tasksHolder);
                 taskItem.Setup(task, HandleTaskSelected);
                 taskItem.SetToggleGroup(taskToggleGroup);
                 _taskItems.Add(taskItem);
             }
+
+            Debug.Log($"[UI_QuestDetails] Created {_taskItems.Count} task UI items");
         }
 
         private void ClearTaskItems()
@@ -618,7 +631,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _currentQuest.OnStageTransition.SafeUnsubscribe(HandleStageTransition);
         }
 
-        private void HandleStageTransition(QuestRuntime quest, int fromStage, int toStage)
+        private void HandleStageTransition(QuestRuntime quest, StageTransitionInfo info)
         {
             // Update stage display
             UpdateStageInfo(quest);
@@ -633,7 +646,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 Tween.Alpha(stageNameText, 0f, 1f, 0.3f, Ease.OutQuad);
         }
 
-        private void HandleTaskUpdated(TaskRuntime task)
+        private void HandleTaskUpdated(QuestRuntime quest, TaskRuntime task)
         {
             // Update progress display
             if (progressionText != null)

@@ -1,3 +1,4 @@
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -82,6 +83,15 @@ namespace HelloDev.QuestSystem.Tasks
         }
 
         /// <summary>
+        /// Sets the remaining time directly. Used for save/load restoration.
+        /// </summary>
+        /// <param name="seconds">The remaining time in seconds.</param>
+        public void SetRemainingTime(float seconds)
+        {
+            _remainingTime = UnityEngine.Mathf.Max(0f, seconds);
+        }
+
+        /// <summary>
         /// Marks the timed objective as completed (e.g., boss defeated).
         /// The task will complete successfully.
         /// </summary>
@@ -133,5 +143,23 @@ namespace HelloDev.QuestSystem.Tasks
                 CompleteTask();
             }
         }
+
+        #region Save/Load
+
+        /// <inheritdoc />
+        public override void CaptureProgress(TaskProgressData progressData)
+        {
+            progressData.FloatValue = _remainingTime;
+            progressData.BoolValue = _isCompleted;
+        }
+
+        /// <inheritdoc />
+        public override void RestoreProgress(TaskProgressData progressData)
+        {
+            _remainingTime = progressData.FloatValue;
+            _isCompleted = progressData.BoolValue;
+        }
+
+        #endregion
     }
 }

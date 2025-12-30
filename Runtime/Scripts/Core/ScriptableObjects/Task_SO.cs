@@ -21,26 +21,17 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Identity
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration", SdfIconType.Gear, Order = 1)]
-        [TitleGroup("Tabs/Configuration/Identity")]
-        [PropertyOrder(0)]
-        [Required("Dev Name is required for identification.")]
+        [TabGroup("Tabs", "Configuration", SdfIconType.Gear, Order = 1), TitleGroup("Tabs/Configuration/Identity"), PropertyOrder(0), Required("Dev Name is required.")]
 #else
         [Header("Identity")]
 #endif
-        [Tooltip("Internal name for developers, used for identification in code.")]
-        [SerializeField]
+        [SerializeField, Tooltip("Internal name for developers, used for identification in code.")]
         private string devName;
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [TitleGroup("Tabs/Configuration/Identity")]
-        [PropertyOrder(1)]
-        [ReadOnly]
-        [DisplayAsString]
+        [TabGroup("Tabs", "Configuration"), TitleGroup("Tabs/Configuration/Identity"), PropertyOrder(1), ReadOnly, DisplayAsString]
 #endif
-        [Tooltip("A unique, permanent identifier for this task. Auto-generated.")]
-        [SerializeField]
+        [SerializeField, Tooltip("A unique, permanent identifier for this task. Auto-generated.")]
         private string taskId;
 
         #endregion
@@ -48,23 +39,17 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Display
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [TitleGroup("Tabs/Configuration/Display")]
-        [PropertyOrder(10)]
+        [TabGroup("Tabs", "Configuration"), TitleGroup("Tabs/Configuration/Display"), PropertyOrder(10)]
 #else
         [Header("Display")]
 #endif
-        [Tooltip("The localized display name of the task.")]
-        [SerializeField]
+        [SerializeField, Tooltip("The localized display name of the task.")]
         private LocalizedString displayName;
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [TitleGroup("Tabs/Configuration/Display")]
-        [PropertyOrder(11)]
+        [TabGroup("Tabs", "Configuration"), TitleGroup("Tabs/Configuration/Display"), PropertyOrder(11)]
 #endif
-        [Tooltip("The localized description of the task.")]
-        [SerializeField]
+        [SerializeField, Tooltip("The localized description of the task.")]
         private LocalizedString taskDescription;
 
         #endregion
@@ -72,27 +57,19 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Conditions
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [TitleGroup("Tabs/Configuration/Conditions")]
-        [PropertyOrder(20)]
-        [ListDrawerSettings(ShowFoldout = true)]
+        [TabGroup("Tabs", "Configuration"), TitleGroup("Tabs/Configuration/Conditions"), PropertyOrder(20), ListDrawerSettings(ShowFoldout = true)]
         [InfoBox("Conditions that complete this task when met. Should be event-driven.", InfoMessageType.Info)]
 #else
         [Header("Conditions")]
 #endif
-        [Tooltip("The list of conditions that, when met, will complete this task.")]
-        [SerializeField]
+        [SerializeField, Tooltip("The list of conditions that, when met, will complete this task.")]
         private List<Condition_SO> conditions;
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [TitleGroup("Tabs/Configuration/Conditions")]
-        [PropertyOrder(21)]
-        [ListDrawerSettings(ShowFoldout = true)]
+        [TabGroup("Tabs", "Configuration"), TitleGroup("Tabs/Configuration/Conditions"), PropertyOrder(21), ListDrawerSettings(ShowFoldout = true)]
         [InfoBox("Conditions that fail this task when met.", InfoMessageType.Warning, nameof(HasFailureConditions))]
 #endif
-        [Tooltip("The list of conditions that, when all met, will cause this task to fail.")]
-        [SerializeField]
+        [SerializeField, Tooltip("The list of conditions that, when all met, will cause this task to fail.")]
         private List<Condition_SO> failureConditions;
 
         #endregion
@@ -176,15 +153,17 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Editor Buttons
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [TitleGroup("Tabs/Configuration/Identity")]
-        [Button("Generate New ID", ButtonSizes.Medium)]
-        [PropertyOrder(2)]
-#endif
+        [TabGroup("Tabs", "Configuration"), TitleGroup("Tabs/Configuration/Identity"), Button("Generate New ID", ButtonSizes.Medium), PropertyOrder(2)]
         private void GenerateNewGuid()
         {
             taskId = Guid.NewGuid().ToString();
         }
+#else
+        private void GenerateNewGuid()
+        {
+            taskId = Guid.NewGuid().ToString();
+        }
+#endif
 
         #endregion
 

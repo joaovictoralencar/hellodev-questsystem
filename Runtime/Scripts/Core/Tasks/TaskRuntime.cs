@@ -1,5 +1,6 @@
 using System;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -134,6 +135,24 @@ namespace HelloDev.QuestSystem.Tasks
         /// Increments the step for the task.
         /// </summary>
         public abstract bool OnDecrementStep();
+
+        #region Save/Load
+
+        /// <summary>
+        /// Captures task-specific progress data for saving.
+        /// Each task type implements this to serialize its own state.
+        /// </summary>
+        /// <param name="progressData">The progress data object to populate.</param>
+        public abstract void CaptureProgress(TaskProgressData progressData);
+
+        /// <summary>
+        /// Restores task-specific progress data after loading.
+        /// Each task type implements this to deserialize its own state.
+        /// </summary>
+        /// <param name="progressData">The progress data object to restore from.</param>
+        public abstract void RestoreProgress(TaskProgressData progressData);
+
+        #endregion
         
         /// <summary>
         /// Increments the step for the task.

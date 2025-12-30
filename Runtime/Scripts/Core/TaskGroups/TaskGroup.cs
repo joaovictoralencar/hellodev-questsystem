@@ -16,38 +16,27 @@ namespace HelloDev.QuestSystem.TaskGroups
     public class TaskGroup
     {
 #if ODIN_INSPECTOR
-        [BoxGroup("Group Settings")]
-        [PropertyOrder(0)]
+        [BoxGroup("Group Settings"), PropertyOrder(0)]
 #endif
-        [Tooltip("Optional name for this task group (e.g., 'Investigation Phase', 'Combat Tasks')")]
-        [SerializeField]
+        [SerializeField, Tooltip("Optional name for this task group (e.g., 'Investigation Phase', 'Combat Tasks')")]
         private string groupName = "Task Group";
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Group Settings")]
-        [PropertyOrder(1)]
+        [BoxGroup("Group Settings"), PropertyOrder(1)]
 #endif
-        [Tooltip("How tasks in this group should be executed")]
-        [SerializeField]
+        [SerializeField, Tooltip("How tasks in this group should be executed")]
         private TaskExecutionMode executionMode = TaskExecutionMode.Sequential;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Group Settings")]
-        [PropertyOrder(2)]
-        [ShowIf(nameof(IsOptionalMode))]
-        [MinValue(1)]
+        [BoxGroup("Group Settings"), PropertyOrder(2), ShowIf(nameof(IsOptionalMode)), MinValue(1)]
 #endif
-        [Tooltip("For OptionalXofY mode: minimum number of tasks required to complete the group")]
-        [SerializeField]
+        [SerializeField, Tooltip("For OptionalXofY mode: minimum number of tasks required to complete the group")]
         private int requiredCount = 1;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Tasks")]
-        [PropertyOrder(10)]
-        [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true)]
+        [BoxGroup("Tasks"), PropertyOrder(10), ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true)]
 #endif
-        [Tooltip("Tasks in this group")]
-        [SerializeField]
+        [SerializeField, Tooltip("Tasks in this group")]
         private List<Task_SO> tasks = new();
 
         #region Properties

@@ -204,6 +204,23 @@ namespace HelloDev.QuestSystem.QuestLines
             CurrentState = CheckPrerequisite() ? QuestLineState.Available : QuestLineState.Locked;
         }
 
+        /// <summary>
+        /// Restores the questline state from a saved snapshot.
+        /// Used for save/load functionality.
+        /// </summary>
+        /// <param name="state">The state to restore to.</param>
+        /// <param name="hasStarted">Whether the questline has been started.</param>
+        public void RestoreState(QuestLineState state, bool hasStarted)
+        {
+            CurrentState = state;
+            _hasStarted = hasStarted;
+        }
+
+        /// <summary>
+        /// Gets whether this questline has been started. Used for save/load.
+        /// </summary>
+        public bool HasStarted => _hasStarted;
+
         #endregion
 
         #region Private Helpers

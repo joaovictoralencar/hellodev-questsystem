@@ -1,4 +1,5 @@
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -116,12 +117,22 @@ namespace HelloDev.QuestSystem.Tasks
 
         public override bool OnIncrementStep()
         {
-            return IncrementCount();
+            if (IncrementCount())
+            {
+                OnTaskUpdated.SafeInvoke(this);
+                return true;
+            }
+            return false;
         }
 
         public override bool OnDecrementStep()
         {
-            return DecrementCount();
+            if (DecrementCount())
+            {
+                OnTaskUpdated.SafeInvoke(this);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -141,5 +152,22 @@ namespace HelloDev.QuestSystem.Tasks
                 CompleteTask();
             }
         }
+
+        #region Save/Load
+
+        /// <inheritdoc />
+        public override void CaptureProgress(TaskProgressData progressData)
+        {
+            progressData.IntValue = _currentCount;
+        }
+
+        /// <inheritdoc />
+        public override void RestoreProgress(TaskProgressData progressData)
+        {
+            _currentCount = progressData.IntValue;
+            OnTaskUpdated.SafeInvoke(this);
+        }
+
+        #endregion
     }
 }

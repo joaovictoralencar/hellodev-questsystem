@@ -427,6 +427,102 @@ All patterns work together - a single quest can:
 - Track choices for narrative endings (Pattern 3)
 - Respond to player actions (Pattern 4)
 
+### Save/Load System
+
+The quest system includes a flexible save/load system that allows you to persist quest progress. The system uses an interface-based design so you can integrate with any save system (JSON files, cloud saves, Easy Save 3, etc.).
+
+**Quick Start:**
+```csharp
+using HelloDev.QuestSystem.SaveLoad;
+
+// Setup (typically in game initialization)
+QuestSaveManager.Instance.SetProvider(new JsonFileSaveProvider());
+
+// Save quest progress
+await QuestSaveManager.Instance.SaveAsync("save_slot_1");
+
+// Load quest progress
+await QuestSaveManager.Instance.LoadAsync("save_slot_1");
+
+// Check if save exists
+bool exists = await QuestSaveManager.Instance.SaveExistsAsync("save_slot_1");
+
+// Delete a save
+await QuestSaveManager.Instance.DeleteSaveAsync("save_slot_1");
+
+// List all saves
+string[] slots = await QuestSaveManager.Instance.GetAllSaveSlotsAsync();
+```
+
+**Custom Save Provider:**
+Implement `ISaveDataProvider` to integrate with your preferred save system:
+
+```csharp
+using HelloDev.QuestSystem.SaveLoad;
+
+// Example: Easy Save 3 integration
+public class ES3SaveProvider : ISaveDataProvider
+{
+    public Task<bool> SaveAsync(string slotKey, QuestSystemSnapshot snapshot)
+    {
+        ES3.Save(slotKey, snapshot);
+        return Task.FromResult(true);
+    }
+
+    public Task<QuestSystemSnapshot> LoadAsync(string slotKey)
+    {
+        if (!ES3.KeyExists(slotKey)) return Task.FromResult<QuestSystemSnapshot>(null);
+        return Task.FromResult(ES3.Load<QuestSystemSnapshot>(slotKey));
+    }
+
+    public Task<bool> ExistsAsync(string slotKey) => Task.FromResult(ES3.KeyExists(slotKey));
+    public Task<bool> DeleteAsync(string slotKey) { ES3.DeleteKey(slotKey); return Task.FromResult(true); }
+    public Task<SaveSlotMetadata> GetMetadataAsync(string slotKey) => Task.FromResult<SaveSlotMetadata>(null);
+    public Task<string[]> GetAllSlotsAsync() => Task.FromResult(Array.Empty<string>());
+}
+
+// Use custom provider
+QuestSaveManager.Instance.SetProvider(new ES3SaveProvider());
+```
+
+**What Gets Saved:**
+- All quest states (active, completed, failed)
+- Current stage and task progress
+- Branch decisions (which choices were made)
+- World flag values (boolean and integer)
+- QuestLine progress
+
+**World Flags:**
+For world flags to be saved, register them with the save manager:
+```csharp
+// Option 1: Add to QuestSaveManager's worldFlagRegistry in the inspector
+
+// Option 2: Register programmatically
+QuestSaveManager.Instance.RegisterWorldFlag(myWorldFlag);
+```
+
+**Save Events:**
+```csharp
+QuestSaveManager.Instance.OnBeforeSave.AddListener(slotKey => Debug.Log($"Saving to {slotKey}..."));
+QuestSaveManager.Instance.OnAfterSave.AddListener((slotKey, success) => Debug.Log($"Save {(success ? "succeeded" : "failed")}"));
+QuestSaveManager.Instance.OnBeforeLoad.AddListener(slotKey => Debug.Log($"Loading from {slotKey}..."));
+QuestSaveManager.Instance.OnAfterLoad.AddListener((slotKey, success) => Debug.Log($"Load {(success ? "succeeded" : "failed")}"));
+```
+
+**Manual Snapshots:**
+For custom implementations, you can capture/restore snapshots directly:
+```csharp
+// Capture current state
+QuestSystemSnapshot snapshot = QuestSaveManager.Instance.CaptureSnapshot();
+
+// Serialize to JSON
+string json = JsonUtility.ToJson(snapshot);
+
+// Later: deserialize and restore
+var loaded = JsonUtility.FromJson<QuestSystemSnapshot>(json);
+QuestSaveManager.Instance.RestoreSnapshot(loaded);
+```
+
 ### Creating QuestLines
 
 QuestLines group related quests into narrative arcs. They work alongside quest chains (execution dependencies).
@@ -703,6 +799,34 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.1.0 (2025-12-29)
+**Save/Load System:**
+- Added `QuestSaveManager` singleton for managing save/load operations
+- Added `ISaveDataProvider` interface for custom save system integration
+- Added `JsonFileSaveProvider` default implementation using JSON files
+- Added `QuestSystemSnapshot` for capturing complete system state
+- Captures quest states, task progress, stage positions, branch decisions
+- Captures QuestLine progress
+- Captures WorldFlag values (boolean and integer)
+- Async API for non-blocking save/load operations
+- Events: `OnBeforeSave`, `OnAfterSave`, `OnBeforeLoad`, `OnAfterLoad`
+- Save slot metadata for UI display (timestamp, quest counts)
+
+**New Classes:**
+- `QuestSaveManager` - Main save/load manager
+- `ISaveDataProvider` - Interface for custom save systems
+- `JsonFileSaveProvider` - Default JSON file implementation
+- `QuestSystemSnapshot` - Complete state snapshot
+- `QuestSnapshot` - Individual quest state
+- `TaskSnapshot` - Individual task state
+- `QuestLineSnapshot` - QuestLine state
+- `WorldFlagSnapshot` - World flag state
+- `SaveSlotMetadata` - Save slot info for UI
+
+**TaskRuntime Enhancements:**
+- Added `BoolTaskRuntime.IsCompleted` property
+- Added `DiscoveryTaskRuntime.FulfilledConditions` property
 
 ### v3.0.0 (2025-12-28)
 **Stage-Based Branching Quests:**

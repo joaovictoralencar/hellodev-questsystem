@@ -5,6 +5,7 @@ using System.Linq;
 using HelloDev.QuestSystem.Internal;
 using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.Quests;
+using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -158,6 +159,13 @@ namespace HelloDev.QuestSystem
         /// <summary>Fired when a questline fails.</summary>
         [HideInInspector] public UnityEvent<QuestLineRuntime> QuestLineFailed = new();
 
+        // Aggregate Events for Save System
+        /// <summary>
+        /// Fired whenever quest data changes (quest started, completed, failed, task updated, etc.).
+        /// Use this for auto-save triggers. Passes the type of change that occurred.
+        /// </summary>
+        [HideInInspector] public UnityEvent<QuestDataChangeType> OnQuestDataChanged = new();
+
         #endregion
 
         #region Properties
@@ -220,8 +228,11 @@ namespace HelloDev.QuestSystem
 
         private void Start()
         {
+            QuestLogger.Log("[QuestManager] Start() called (v2 - with skipAutoStart fix)");
+
             if (autoStartQuestsOnStart)
             {
+                QuestLogger.Log($"[QuestManager] Adding {questsDatabase.Count} quests from database...");
                 foreach (Quest_SO quest in questsDatabase)
                 {
                     if (quest != null)
@@ -307,8 +318,12 @@ namespace HelloDev.QuestSystem
         /// </summary>
         /// <param name="questData">The quest data to add.</param>
         /// <param name="forceStart">If true, starts the quest immediately regardless of conditions.</param>
+        /// <param name="skipAutoStart">If true, the quest will not auto-start even if start conditions are met.
+        /// Used during save/load restore to prevent auto-starting quests that should remain NotStarted.</param>
+        /// <param name="skipEventSubscription">If true, the quest will not subscribe to start condition events.
+        /// Used during save/load restore to prevent events from triggering auto-start before restore completes.</param>
         /// <returns>True if the quest was successfully added.</returns>
-        public bool AddQuest(Quest_SO questData, bool forceStart = false)
+        public bool AddQuest(Quest_SO questData, bool forceStart = false, bool skipAutoStart = false, bool skipEventSubscription = false)
         {
             if (questData == null)
             {
@@ -357,14 +372,18 @@ namespace HelloDev.QuestSystem
 
             QuestLogger.Log($"Quest '{questData.DevName}' added.");
             QuestAdded.SafeInvoke(newQuest);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestAdded);
 
             // Start or wait for conditions
-            if (forceStart || newQuest.CheckStartConditions())
+            // When skipAutoStart is true (e.g., during restore), don't auto-start even if conditions are met
+            if (!skipAutoStart && (forceStart || newQuest.CheckStartConditions()))
             {
                 newQuest.StartQuest();
             }
-            else
+            else if (!skipEventSubscription)
             {
+                // Only subscribe to events if not skipping event subscription
+                // (e.g., during restore, we skip to prevent events from triggering auto-start)
                 newQuest.SubscribeToStartQuestEvents();
             }
 
@@ -406,6 +425,7 @@ namespace HelloDev.QuestSystem
                 _questRegistry.RemoveActive(questId);
                 QuestLogger.Log($"Quest '{quest.QuestData.DevName}' removed.");
                 QuestRemoved.SafeInvoke(quest);
+                OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestUpdated);
                 return true;
             }
 
@@ -485,6 +505,7 @@ namespace HelloDev.QuestSystem
         private void HandleQuestStarted(QuestRuntime quest)
         {
             QuestStarted.SafeInvoke(quest);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestStarted);
         }
 
         private void HandleQuestCompleted(QuestRuntime quest)
@@ -493,6 +514,7 @@ namespace HelloDev.QuestSystem
             _questRegistry.MoveToCompleted(quest.QuestId);
             QuestLogger.Log($"Quest '{quest.QuestData.DevName}' completed.");
             QuestCompleted.SafeInvoke(quest);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestCompleted);
 
             // Notify questlines that contain this quest
             NotifyQuestLinesOfQuestCompleted(quest);
@@ -504,6 +526,7 @@ namespace HelloDev.QuestSystem
             _questRegistry.MoveToFailed(quest.QuestId);
             QuestLogger.Log($"Quest '{quest.QuestData.DevName}' failed.");
             QuestFailed.SafeInvoke(quest);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestFailed);
 
             // Notify questlines that contain this quest
             NotifyQuestLinesOfQuestFailed(quest);
@@ -512,11 +535,13 @@ namespace HelloDev.QuestSystem
         private void HandleQuestUpdated(QuestRuntime quest)
         {
             QuestUpdated.SafeInvoke(quest);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestUpdated);
         }
 
         private void HandleQuestRestarted(QuestRuntime quest)
         {
             QuestRestarted.SafeInvoke(quest);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestRestarted);
         }
 
         #endregion
@@ -570,6 +595,7 @@ namespace HelloDev.QuestSystem
 
             QuestLogger.Log($"QuestLine '{lineData.DevName}' added.");
             QuestLineAdded.SafeInvoke(newLine);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineAdded);
 
             // Check initial progress (some quests may already be complete)
             newLine.CheckProgress();
@@ -648,6 +674,7 @@ namespace HelloDev.QuestSystem
         {
             QuestLogger.Log($"QuestLine '{line.Data.DevName}' started.");
             QuestLineStarted.SafeInvoke(line);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineStarted);
         }
 
         private void HandleQuestLineCompleted(QuestLineRuntime line)
@@ -657,6 +684,7 @@ namespace HelloDev.QuestSystem
             line.DistributeCompletionRewards();
             QuestLogger.Log($"QuestLine '{line.Data.DevName}' completed.");
             QuestLineCompleted.SafeInvoke(line);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineCompleted);
         }
 
         private void HandleQuestLineUpdated(QuestLineRuntime line)
@@ -670,6 +698,7 @@ namespace HelloDev.QuestSystem
             _questLineRegistry.RemoveActive(line.QuestLineId);
             QuestLogger.Log($"QuestLine '{line.Data.DevName}' failed.");
             QuestLineFailed.SafeInvoke(line);
+            OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineFailed);
         }
 
         /// <summary>
@@ -735,6 +764,22 @@ namespace HelloDev.QuestSystem
         public ReadOnlyCollection<QuestRuntime> GetFailedQuests()
         {
             return _questRegistry.GetAllFailed().ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Re-subscribes all NotStarted quests to their start condition events.
+        /// Called after save/load restore completes to enable auto-start for restored NotStarted quests.
+        /// </summary>
+        public void ResubscribeNotStartedQuestsToEvents()
+        {
+            foreach (var quest in _questRegistry.GetAllActive())
+            {
+                if (quest.CurrentState == QuestState.NotStarted)
+                {
+                    quest.SubscribeToStartQuestEvents();
+                    QuestLogger.Log($"[QuestManager] Re-subscribed NotStarted quest '{quest.QuestData.DevName}' to start events.");
+                }
+            }
         }
 
         /// <summary>

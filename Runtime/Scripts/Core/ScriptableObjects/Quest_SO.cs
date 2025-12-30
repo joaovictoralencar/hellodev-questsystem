@@ -25,9 +25,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Odin Constants
 
 #if ODIN_INSPECTOR
-        private const string TAB_OVERVIEW = "Tabs/Overview";
         private const string TAB_CONFIG = "Tabs/Configuration";
-        private const string TAB_VALIDATION = "Tabs/Validation";
 #endif
 
         #endregion
@@ -35,33 +33,27 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Identity
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration", SdfIconType.GearFill, Order = 1)]
-        [BoxGroup(TAB_CONFIG + "/Identity")]
-        [LabelText("Dev Name"), PropertyOrder(0)]
+        [TabGroup("Tabs", "Configuration", SdfIconType.GearFill, Order = 1), BoxGroup(TAB_CONFIG + "/Identity"), LabelText("Dev Name"), PropertyOrder(0)]
 #endif
         [SerializeField] private string devName;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Identity")]
-        [LabelText("Quest ID"), DisplayAsString, PropertyOrder(1)]
+        [BoxGroup(TAB_CONFIG + "/Identity"), LabelText("Quest ID"), DisplayAsString, PropertyOrder(1)]
 #endif
         [SerializeField] private string questId;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Identity")]
-        [LabelText("Quest Type"), PropertyOrder(2)]
+        [BoxGroup(TAB_CONFIG + "/Identity"), LabelText("Quest Type"), PropertyOrder(2)]
 #endif
         [SerializeField] private QuestType_SO questType;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Identity")]
-        [LabelText("Recommended Level"), PropertyOrder(3)]
+        [BoxGroup(TAB_CONFIG + "/Identity"), LabelText("Recommended Level"), PropertyOrder(3)]
 #endif
         [SerializeField] private int recommendedLevel = -1;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Identity")]
-        [Button("Generate New ID", ButtonSizes.Small), PropertyOrder(4)]
+        [BoxGroup(TAB_CONFIG + "/Identity"), Button("Generate New ID", ButtonSizes.Small), PropertyOrder(4)]
         private void GenerateNewIdButton()
         {
             questId = Guid.NewGuid().ToString();
@@ -76,28 +68,22 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Display
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [BoxGroup(TAB_CONFIG + "/Display")]
-        [PropertyOrder(10)]
+        [TabGroup("Tabs", "Configuration"), BoxGroup(TAB_CONFIG + "/Display"), PropertyOrder(10)]
 #endif
         [SerializeField] private LocalizedString displayName;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Display")]
-        [PropertyOrder(11)]
+        [BoxGroup(TAB_CONFIG + "/Display"), PropertyOrder(11)]
 #endif
         [SerializeField] private LocalizedString questDescription;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Display")]
-        [PropertyOrder(12)]
+        [BoxGroup(TAB_CONFIG + "/Display"), PropertyOrder(12)]
 #endif
         [SerializeField] private LocalizedString questLocation;
 
 #if ODIN_INSPECTOR
-        [BoxGroup(TAB_CONFIG + "/Display")]
-        [PreviewField(60, Alignment = ObjectFieldAlignment.Left)]
-        [PropertyOrder(13)]
+        [BoxGroup(TAB_CONFIG + "/Display"), PreviewField(60, Alignment = ObjectFieldAlignment.Left), PropertyOrder(13)]
 #endif
         [SerializeField] private Sprite questSprite;
 
@@ -106,9 +92,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Stages
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true)]
-        [PropertyOrder(20)]
+        [TabGroup("Tabs", "Configuration"), ListDrawerSettings(ShowIndexLabels = true, DraggableItems = true, ShowFoldout = true), PropertyOrder(20)]
         [InfoBox("Stages define the quest structure. Each stage contains task groups and transitions.", InfoMessageType.Info)]
 #endif
         [SerializeField] private List<QuestStage> stages = new();
@@ -118,27 +102,17 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Conditions
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [FoldoutGroup(TAB_CONFIG + "/Conditions", Expanded = true)]
-        [LabelText("Start Conditions")]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [PropertyOrder(30)]
+        [TabGroup("Tabs", "Configuration"), FoldoutGroup(TAB_CONFIG + "/Conditions", Expanded = true), LabelText("Start Conditions"), ListDrawerSettings(ShowFoldout = true), PropertyOrder(30)]
 #endif
         [SerializeField] private List<Condition_SO> startConditions;
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup(TAB_CONFIG + "/Conditions")]
-        [LabelText("Failure Conditions")]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [PropertyOrder(31)]
+        [FoldoutGroup(TAB_CONFIG + "/Conditions"), LabelText("Failure Conditions"), ListDrawerSettings(ShowFoldout = true), PropertyOrder(31)]
 #endif
         [SerializeField] private List<Condition_SO> failureConditions;
 
 #if ODIN_INSPECTOR
-        [FoldoutGroup(TAB_CONFIG + "/Conditions")]
-        [LabelText("Global Task Failure")]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [PropertyOrder(32)]
+        [FoldoutGroup(TAB_CONFIG + "/Conditions"), LabelText("Global Task Failure"), ListDrawerSettings(ShowFoldout = true), PropertyOrder(32)]
 #endif
         [SerializeField] private List<Condition_SO> globalTaskFailureConditions;
 
@@ -147,9 +121,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         #region Serialized Fields - Rewards
 
 #if ODIN_INSPECTOR
-        [TabGroup("Tabs", "Configuration")]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [PropertyOrder(40)]
+        [TabGroup("Tabs", "Configuration"), ListDrawerSettings(ShowFoldout = true), PropertyOrder(40)]
 #endif
         [SerializeField] private List<RewardInstance> rewards;
 

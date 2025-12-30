@@ -19,94 +19,65 @@ namespace HelloDev.QuestSystem.Stages
     public class StageTransition
     {
 #if ODIN_INSPECTOR
-        [BoxGroup("Transition")]
-        [PropertyOrder(0)]
-        [LabelText("Target Stage")]
-        [Tooltip("The stage index to transition to when this transition is triggered.")]
+        [BoxGroup("Transition"), PropertyOrder(0), LabelText("Target Stage")]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("The stage index to transition to when this transition is triggered.")]
         private int targetStageIndex;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Transition")]
-        [PropertyOrder(1)]
-        [Tooltip("What triggers this transition.")]
+        [BoxGroup("Transition"), PropertyOrder(1)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("What triggers this transition.")]
         private TransitionTrigger trigger = TransitionTrigger.OnGroupsComplete;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Transition")]
-        [PropertyOrder(2)]
-        [ShowIf(nameof(HasConditions))]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [Tooltip("Conditions that must be met for this transition (used with OnConditionsMet trigger, or as additional gate for other triggers).")]
+        [BoxGroup("Transition"), PropertyOrder(2), ShowIf(nameof(HasConditions)), ListDrawerSettings(ShowFoldout = true)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Conditions that must be met for this transition.")]
         private List<Condition_SO> conditions = new();
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Transition")]
-        [PropertyOrder(3)]
-        [Tooltip("Optional label for this transition (useful for branching choices).")]
+        [BoxGroup("Transition"), PropertyOrder(3)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Optional label for this transition (useful for branching choices).")]
         private string transitionLabel;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Transition")]
-        [PropertyOrder(4)]
-        [Tooltip("Priority when multiple transitions are valid. Higher priority is evaluated first.")]
+        [BoxGroup("Transition"), PropertyOrder(4)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Priority when multiple transitions are valid. Higher priority is evaluated first.")]
         private int priority;
 
         #region Player Choice Fields
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Player Choice")]
-        [PropertyOrder(10)]
-        [Tooltip("When true, this transition requires player selection (shows in choice UI).")]
-        [OnValueChanged(nameof(OnIsPlayerChoiceChanged))]
+        [BoxGroup("Player Choice"), PropertyOrder(10), OnValueChanged(nameof(OnIsPlayerChoiceChanged))]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("When true, this transition requires player selection (shows in choice UI).")]
         private bool isPlayerChoice;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Player Choice")]
-        [PropertyOrder(11)]
-        [ShowIf(nameof(isPlayerChoice))]
-        [Tooltip("Unique identifier for this choice (used for save/load and tracking).")]
+        [BoxGroup("Player Choice"), PropertyOrder(11), ShowIf(nameof(isPlayerChoice))]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Unique identifier for this choice (used for save/load and tracking).")]
         private string choiceId;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Player Choice")]
-        [PropertyOrder(12)]
-        [ShowIf(nameof(isPlayerChoice))]
-        [Tooltip("Localized text displayed to the player for this choice.")]
+        [BoxGroup("Player Choice"), PropertyOrder(12), ShowIf(nameof(isPlayerChoice))]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Localized text displayed to the player for this choice.")]
         private LocalizedString choiceText;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Player Choice")]
-        [PropertyOrder(13)]
-        [ShowIf(nameof(isPlayerChoice))]
-        [PreviewField(50)]
-        [Tooltip("Optional icon displayed with this choice.")]
+        [BoxGroup("Player Choice"), PropertyOrder(13), ShowIf(nameof(isPlayerChoice)), PreviewField(50)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Optional icon displayed with this choice.")]
         private Sprite choiceIcon;
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Player Choice")]
-        [PropertyOrder(14)]
-        [ShowIf(nameof(isPlayerChoice))]
-        [Tooltip("Tooltip or additional description for this choice.")]
+        [BoxGroup("Player Choice"), PropertyOrder(14), ShowIf(nameof(isPlayerChoice))]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("Tooltip or additional description for this choice.")]
         private LocalizedString choiceTooltip;
 
         #endregion
@@ -114,13 +85,9 @@ namespace HelloDev.QuestSystem.Stages
         #region Consequences (World State)
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Consequences")]
-        [PropertyOrder(20)]
-        [ShowIf(nameof(isPlayerChoice))]
-        [ListDrawerSettings(ShowFoldout = true)]
-        [Tooltip("World flags to modify when this choice is selected. Use this to record decisions for cross-quest consequences.")]
+        [BoxGroup("Consequences"), PropertyOrder(20), ShowIf(nameof(isPlayerChoice)), ListDrawerSettings(ShowFoldout = true)]
 #endif
-        [SerializeField]
+        [SerializeField, Tooltip("World flags to modify when this choice is selected.")]
         private List<WorldFlagModification> worldFlagsOnSelect = new();
 
         #endregion

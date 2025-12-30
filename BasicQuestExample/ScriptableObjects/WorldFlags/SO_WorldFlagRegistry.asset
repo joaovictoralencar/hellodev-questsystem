@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71d21bf0720aa124998f1a6ccf288488, type: 3}
+  m_Name: SO_WorldFlagRegistry
+  m_EditorClassIdentifier: HelloDev.Conditions::HelloDev.Conditions.WorldFlags.WorldFlagRegistry_SO
+  worldFlags:
+  - {fileID: 11400000, guid: 403b20f15c7514244babced236623411, type: 2}
+  - {fileID: 11400000, guid: 6943833d92ae6a647b3245de78020ae0, type: 2}
+  - {fileID: 11400000, guid: 7d93028b9d609d246af7cd4d69e71b5d, type: 2}
+  - {fileID: 11400000, guid: 73c0edbedf250304a9441da2e330a019, type: 2}
+  debugService: {fileID: 0}
