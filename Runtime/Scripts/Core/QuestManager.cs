@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using HelloDev.QuestSystem.Internal;
 using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.Quests;
@@ -23,11 +24,23 @@ namespace HelloDev.QuestSystem
     /// interact with quest data without knowing its internal logic.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Architecture: QuestManager acts as a facade, delegating data storage to
     /// internal registries (QuestRegistry, QuestLineRegistry) while maintaining
     /// the public API for quest and questline lifecycle operations.
+    /// </para>
+    /// <para>
+    /// Supports two initialization modes:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><term>Standalone</term><description>Self-initializes in Awake (default)</description></item>
+    /// <item><term>Bootstrap</term><description>Waits for GameBootstrap to call InitializeAsync</description></item>
+    /// </list>
+    /// <para>
+    /// Set <c>initializeOnAwake = false</c> when using with GameBootstrap.
+    /// </para>
     /// </remarks>
-    public partial class QuestManager : MonoBehaviour
+    public partial class QuestManager : MonoBehaviour, IBootstrapInitializable
     {
         #region Serialized Fields
 
@@ -117,6 +130,17 @@ namespace HelloDev.QuestSystem
 
         private readonly QuestRegistry _questRegistry = new();
         private readonly QuestLineRegistry _questLineRegistry = new();
+        private bool _isInitialized;
+
+        #endregion
+
+        #region IBootstrapInitializable
+
+        /// <inheritdoc />
+        public int InitializationPriority => 150; // Game systems layer
+
+        /// <inheritdoc />
+        public bool IsInitialized => _isInitialized;
 
         #endregion
 
@@ -215,9 +239,10 @@ namespace HelloDev.QuestSystem
                 DontDestroyOnLoad(gameObject);
                 QuestLogger.IsLoggingEnabled = enableDebugLogging;
 
+                // Only self-initialize if in standalone mode
                 if (initializeOnAwake)
                 {
-                    InitializeManager(questsDatabase);
+                    _ = InitializeAsync();
                 }
             }
             else
@@ -228,11 +253,9 @@ namespace HelloDev.QuestSystem
 
         private void Start()
         {
-            QuestLogger.Log("[QuestManager] Start() called (v2 - with skipAutoStart fix)");
-
             if (autoStartQuestsOnStart)
             {
-                QuestLogger.Log($"[QuestManager] Adding {questsDatabase.Count} quests from database...");
+                QuestLogger.LogVerbose(LogSubsystem.Manager, $"Auto-adding {questsDatabase.Count} quests from database");
                 foreach (Quest_SO quest in questsDatabase)
                 {
                     if (quest != null)
@@ -269,6 +292,28 @@ namespace HelloDev.QuestSystem
 
         #region Core Manager Lifecycle
 
+        /// <inheritdoc />
+        public Task InitializeAsync()
+        {
+            if (_isInitialized)
+                return Task.CompletedTask;
+
+            InitializeManager(questsDatabase);
+            _isInitialized = true;
+
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Shutdown()
+        {
+            if (!_isInitialized)
+                return;
+
+            ShutdownManager();
+            _isInitialized = false;
+        }
+
         /// <summary>
         /// Initializes the quest manager with the given quest data.
         /// </summary>
@@ -277,14 +322,14 @@ namespace HelloDev.QuestSystem
         {
             if (allQuestData == null)
             {
-                QuestLogger.LogError("InitializeManager: allQuestData is null.");
+                QuestLogger.LogError(LogSubsystem.Manager, "InitializeManager: allQuestData is null");
                 return;
             }
 
             _questRegistry.InitializeDatabase(allQuestData);
             _questLineRegistry.InitializeDatabase(questLinesDatabase);
 
-            QuestLogger.Log($"QuestManager initialized with {_questRegistry.DatabaseCount} quests and {_questLineRegistry.DatabaseCount} questlines.");
+            QuestLogger.Log(LogSubsystem.Manager, $"Initialized with <b>{_questRegistry.DatabaseCount}</b> quests, <b>{_questLineRegistry.DatabaseCount}</b> questlines");
         }
 
         /// <summary>
@@ -306,7 +351,7 @@ namespace HelloDev.QuestSystem
             _questRegistry.ClearRuntimeState();
             _questLineRegistry.ClearRuntimeState();
 
-            QuestLogger.Log("QuestManager shut down.");
+            QuestLogger.LogVerbose(LogSubsystem.Manager, "Shutdown complete");
         }
 
         #endregion
@@ -327,7 +372,7 @@ namespace HelloDev.QuestSystem
         {
             if (questData == null)
             {
-                QuestLogger.LogError("AddQuest: questData is null.");
+                QuestLogger.LogError(LogSubsystem.Manager, "AddQuest: questData is null");
                 return false;
             }
 
@@ -336,25 +381,25 @@ namespace HelloDev.QuestSystem
             // Validation checks
             if (requireQuestInDatabase && !_questRegistry.IsInDatabase(questId))
             {
-                QuestLogger.LogWarning($"Quest '{questData.DevName}' is not in the available quests database.");
+                QuestLogger.LogWarning(LogSubsystem.Manager, $"Quest '{questData.DevName}' not in database");
                 return false;
             }
 
             if (_questRegistry.IsActive(questId))
             {
-                QuestLogger.Log($"Quest '{questData.DevName}' is already active.");
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"'{questData.DevName}' already active");
                 return false;
             }
 
             if (!allowReplayingCompletedQuests && _questRegistry.IsCompleted(questId))
             {
-                QuestLogger.Log($"Quest '{questData.DevName}' has already been completed and replaying is disabled.");
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"'{questData.DevName}' already completed, replay disabled");
                 return false;
             }
 
             if (!allowMultipleActiveQuests && _questRegistry.ActiveCount > 0)
             {
-                QuestLogger.Log($"Cannot add '{questData.DevName}': Another quest is already active and multiple active quests are disabled.");
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"Cannot add '{questData.DevName}': multiple active quests disabled");
                 return false;
             }
 
@@ -364,13 +409,13 @@ namespace HelloDev.QuestSystem
 
             if (!_questRegistry.AddActive(newQuest))
             {
-                QuestLogger.LogError($"Failed to add quest '{questData.DevName}' to active quests.");
+                QuestLogger.LogError(LogSubsystem.Manager, $"Failed to add quest '{questData.DevName}'");
                 return false;
             }
 
             SubscribeToQuestEvents(newQuest);
 
-            QuestLogger.Log($"Quest '{questData.DevName}' added.");
+            QuestLogger.Log(LogSubsystem.Quest, $"Added <b>'{questData.DevName}'</b>");
             QuestAdded.SafeInvoke(newQuest);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestAdded);
 
@@ -404,7 +449,7 @@ namespace HelloDev.QuestSystem
             }
             else
             {
-                QuestLogger.LogWarning($"FailQuest: Quest '{questData.DevName}' is not active.");
+                QuestLogger.LogWarning(LogSubsystem.Quest, $"Cannot fail '{questData.DevName}': not active");
             }
         }
 
@@ -423,13 +468,13 @@ namespace HelloDev.QuestSystem
             {
                 UnsubscribeFromQuestEvents(quest);
                 _questRegistry.RemoveActive(questId);
-                QuestLogger.Log($"Quest '{quest.QuestData.DevName}' removed.");
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"'{quest.QuestData.DevName}' removed");
                 QuestRemoved.SafeInvoke(quest);
                 OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestUpdated);
                 return true;
             }
 
-            QuestLogger.LogWarning($"RemoveQuest: Quest '{questData.DevName}' is not active.");
+            QuestLogger.LogWarning(LogSubsystem.Quest, $"Cannot remove '{questData.DevName}': not active");
             return false;
         }
 
@@ -474,7 +519,7 @@ namespace HelloDev.QuestSystem
                 return true;
             }
 
-            QuestLogger.LogWarning($"RestartQuest: Quest '{questData.DevName}' not found in active, completed, or failed quests.");
+            QuestLogger.LogWarning(LogSubsystem.Quest, $"Cannot restart '{questData.DevName}': not found");
             return false;
         }
 
@@ -512,7 +557,7 @@ namespace HelloDev.QuestSystem
         {
             UnsubscribeFromQuestEvents(quest);
             _questRegistry.MoveToCompleted(quest.QuestId);
-            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' completed.");
+            QuestLogger.LogComplete(LogSubsystem.Quest, "Quest", quest.QuestData.DevName);
             QuestCompleted.SafeInvoke(quest);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestCompleted);
 
@@ -524,7 +569,7 @@ namespace HelloDev.QuestSystem
         {
             UnsubscribeFromQuestEvents(quest);
             _questRegistry.MoveToFailed(quest.QuestId);
-            QuestLogger.Log($"Quest '{quest.QuestData.DevName}' failed.");
+            QuestLogger.LogFail(LogSubsystem.Quest, "Quest", quest.QuestData.DevName);
             QuestFailed.SafeInvoke(quest);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestFailed);
 
@@ -557,7 +602,7 @@ namespace HelloDev.QuestSystem
         {
             if (lineData == null)
             {
-                QuestLogger.LogError("AddQuestLine: lineData is null.");
+                QuestLogger.LogError(LogSubsystem.Manager, "AddQuestLine: lineData is null");
                 return false;
             }
 
@@ -565,13 +610,13 @@ namespace HelloDev.QuestSystem
 
             if (_questLineRegistry.IsActive(lineId))
             {
-                QuestLogger.Log($"QuestLine '{lineData.DevName}' is already active.");
+                QuestLogger.LogVerbose(LogSubsystem.QuestLine, $"'{lineData.DevName}' already active");
                 return false;
             }
 
             if (_questLineRegistry.IsCompleted(lineId))
             {
-                QuestLogger.Log($"QuestLine '{lineData.DevName}' has already been completed.");
+                QuestLogger.LogVerbose(LogSubsystem.QuestLine, $"'{lineData.DevName}' already completed");
                 return false;
             }
 
@@ -581,19 +626,19 @@ namespace HelloDev.QuestSystem
             // Check prerequisite
             if (!newLine.CheckPrerequisite())
             {
-                QuestLogger.Log($"QuestLine '{lineData.DevName}' prerequisite not met. Not adding.");
+                QuestLogger.LogVerbose(LogSubsystem.QuestLine, $"'{lineData.DevName}' prerequisite not met");
                 return false;
             }
 
             if (!_questLineRegistry.AddActive(newLine))
             {
-                QuestLogger.LogError($"Failed to add questline '{lineData.DevName}' to active questlines.");
+                QuestLogger.LogError(LogSubsystem.Manager, $"Failed to add questline '{lineData.DevName}'");
                 return false;
             }
 
             SubscribeToQuestLineEvents(newLine);
 
-            QuestLogger.Log($"QuestLine '{lineData.DevName}' added.");
+            QuestLogger.Log(LogSubsystem.QuestLine, $"Added <b>'{lineData.DevName}'</b>");
             QuestLineAdded.SafeInvoke(newLine);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineAdded);
 
@@ -672,7 +717,7 @@ namespace HelloDev.QuestSystem
 
         private void HandleQuestLineStarted(QuestLineRuntime line)
         {
-            QuestLogger.Log($"QuestLine '{line.Data.DevName}' started.");
+            QuestLogger.LogStart(LogSubsystem.QuestLine, "QuestLine", line.Data.DevName);
             QuestLineStarted.SafeInvoke(line);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineStarted);
         }
@@ -682,7 +727,7 @@ namespace HelloDev.QuestSystem
             UnsubscribeFromQuestLineEvents(line);
             _questLineRegistry.MoveToCompleted(line.QuestLineId);
             line.DistributeCompletionRewards();
-            QuestLogger.Log($"QuestLine '{line.Data.DevName}' completed.");
+            QuestLogger.LogComplete(LogSubsystem.QuestLine, "QuestLine", line.Data.DevName);
             QuestLineCompleted.SafeInvoke(line);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineCompleted);
         }
@@ -696,7 +741,7 @@ namespace HelloDev.QuestSystem
         {
             UnsubscribeFromQuestLineEvents(line);
             _questLineRegistry.RemoveActive(line.QuestLineId);
-            QuestLogger.Log($"QuestLine '{line.Data.DevName}' failed.");
+            QuestLogger.LogFail(LogSubsystem.QuestLine, "QuestLine", line.Data.DevName);
             QuestLineFailed.SafeInvoke(line);
             OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestLineFailed);
         }
@@ -777,7 +822,7 @@ namespace HelloDev.QuestSystem
                 if (quest.CurrentState == QuestState.NotStarted)
                 {
                     quest.SubscribeToStartQuestEvents();
-                    QuestLogger.Log($"[QuestManager] Re-subscribed NotStarted quest '{quest.QuestData.DevName}' to start events.");
+                    QuestLogger.LogVerbose(LogSubsystem.Quest, $"Re-subscribed '{quest.QuestData.DevName}' to start events");
                 }
             }
         }

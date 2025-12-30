@@ -161,7 +161,6 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (OnIncrementStep() && CurrentState == TaskState.InProgress)
             {
-                QuestLogger.Log($"Incremented step for Task '{DevName}'");
                 OnTaskUpdated.SafeInvoke(this);
             }
         }
@@ -173,7 +172,6 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (OnDecrementStep() && CurrentState == TaskState.InProgress)
             {
-                QuestLogger.Log($"Decremented step for Task '{DevName}'");
                 OnTaskUpdated.SafeInvoke(this);
             }
         }
@@ -199,7 +197,6 @@ namespace HelloDev.QuestSystem.Tasks
         public virtual void ResetTask()
         {
             SetTaskState(TaskState.NotStarted);
-            QuestLogger.Log($"Task '{DevName}' reset.");
             UnsubscribeFromEvents();
         }
         
@@ -249,7 +246,18 @@ namespace HelloDev.QuestSystem.Tasks
         private void SetTaskState(TaskState state)
         {
             CurrentState = state;
-            QuestLogger.Log($"Task '{DevName}' state changed to {state}.");
+            switch (state)
+            {
+                case TaskState.InProgress:
+                    QuestLogger.LogStart(LogSubsystem.Task, "Task", DevName);
+                    break;
+                case TaskState.Completed:
+                    QuestLogger.LogComplete(LogSubsystem.Task, "Task", DevName);
+                    break;
+                case TaskState.Failed:
+                    QuestLogger.LogFail(LogSubsystem.Task, "Task", DevName);
+                    break;
+            }
         }
         
         public override bool Equals(object obj)

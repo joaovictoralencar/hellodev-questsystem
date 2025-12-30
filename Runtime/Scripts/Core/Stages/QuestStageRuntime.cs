@@ -181,7 +181,7 @@ namespace HelloDev.QuestSystem.Stages
         {
             if (CurrentState == StageState.InProgress)
             {
-                QuestLogger.Log($"Stage '{StageName}' is already in progress.");
+                QuestLogger.LogVerbose(LogSubsystem.Stage, $"'{StageName}' already in progress");
                 return;
             }
 
@@ -194,11 +194,11 @@ namespace HelloDev.QuestSystem.Stages
             if (TaskGroups.Count > 0)
             {
                 TaskGroups[0].StartGroup();
-                QuestLogger.Log($"Stage '{StageName}' entered. First group: '{TaskGroups[0].GroupName}'");
+                QuestLogger.LogStart(LogSubsystem.Stage, "Stage", StageName);
             }
             else
             {
-                QuestLogger.Log($"Stage '{StageName}' entered with no task groups.");
+                QuestLogger.LogStart(LogSubsystem.Stage, "Stage", $"{StageName} (no groups)");
                 // If no task groups, immediately check for transitions
                 CheckAndExecuteTransition();
             }
@@ -216,7 +216,7 @@ namespace HelloDev.QuestSystem.Stages
             CurrentState = StageState.Completed;
             UnsubscribeFromAllEvents();
 
-            QuestLogger.Log($"Stage '{StageName}' completed.");
+            QuestLogger.LogComplete(LogSubsystem.Stage, "Stage", StageName);
             OnStageCompleted.SafeInvoke(this);
         }
 
@@ -230,7 +230,7 @@ namespace HelloDev.QuestSystem.Stages
             CurrentState = StageState.Failed;
             UnsubscribeFromAllEvents();
 
-            QuestLogger.Log($"Stage '{StageName}' failed.");
+            QuestLogger.LogFail(LogSubsystem.Stage, "Stage", StageName);
             OnStageFailed.SafeInvoke(this);
         }
 
@@ -244,7 +244,7 @@ namespace HelloDev.QuestSystem.Stages
             CurrentState = StageState.Skipped;
             UnsubscribeFromAllEvents();
 
-            QuestLogger.Log($"Stage '{StageName}' skipped.");
+            QuestLogger.LogVerbose(LogSubsystem.Stage, $"'{StageName}' skipped");
             OnStageSkipped.SafeInvoke(this);
         }
 
@@ -262,8 +262,6 @@ namespace HelloDev.QuestSystem.Stages
 
             _currentGroupIndex = -1;
             CurrentState = StageState.NotReached;
-
-            QuestLogger.Log($"Stage '{StageName}' reset.");
         }
 
         /// <summary>
@@ -358,13 +356,13 @@ namespace HelloDev.QuestSystem.Stages
 
         private void HandleGroupStarted(TaskGroupRuntime group)
         {
-            QuestLogger.Log($"Group '{group.GroupName}' started in stage '{StageName}'.");
+            QuestLogger.LogStart(LogSubsystem.Group, "Group", group.GroupName);
             OnGroupInStageStarted.SafeInvoke(this, group);
         }
 
         private void HandleGroupCompleted(TaskGroupRuntime group)
         {
-            QuestLogger.Log($"Group '{group.GroupName}' completed in stage '{StageName}'.");
+            QuestLogger.LogComplete(LogSubsystem.Group, "Group", group.GroupName);
             OnGroupInStageCompleted.SafeInvoke(this, group);
 
             if (AreAllGroupsCompleted())
@@ -378,7 +376,6 @@ namespace HelloDev.QuestSystem.Stages
                 if (_currentGroupIndex < TaskGroups.Count)
                 {
                     TaskGroups[_currentGroupIndex].StartGroup();
-                    QuestLogger.Log($"Starting next group '{TaskGroups[_currentGroupIndex].GroupName}' in stage '{StageName}'.");
                 }
                 OnStageUpdated.SafeInvoke(this);
             }
@@ -386,7 +383,7 @@ namespace HelloDev.QuestSystem.Stages
 
         private void HandleGroupFailed(TaskGroupRuntime group)
         {
-            QuestLogger.Log($"Group '{group.GroupName}' failed in stage '{StageName}'.");
+            QuestLogger.LogFail(LogSubsystem.Group, "Group", group.GroupName);
             OnGroupInStageFailed.SafeInvoke(this, group);
 
             // Stage fails if any group fails
@@ -405,7 +402,7 @@ namespace HelloDev.QuestSystem.Stages
 
             if (transition.EvaluateConditions())
             {
-                QuestLogger.Log($"Condition transition triggered in stage '{StageName}'. Target: {transition.TargetStageIndex}");
+                QuestLogger.LogTransition(LogSubsystem.Stage, StageName, $"Stage {transition.TargetStageIndex}");
                 OnTransitionReady.SafeInvoke(this, transition.TargetStageIndex);
             }
         }
@@ -417,7 +414,6 @@ namespace HelloDev.QuestSystem.Stages
             // Check for terminal stage
             if (Data.IsTerminal)
             {
-                QuestLogger.Log($"Stage '{StageName}' is terminal. Completing.");
                 Complete();
                 return;
             }
@@ -426,7 +422,7 @@ namespace HelloDev.QuestSystem.Stages
             // If so, do NOT auto-transition - wait for player selection via QuestRuntime.SelectChoice()
             if (Data.RequiresPlayerChoice)
             {
-                QuestLogger.Log($"Stage '{StageName}' requires player choice. Waiting for selection.");
+                QuestLogger.LogVerbose(LogSubsystem.Stage, $"'{StageName}' awaiting player choice");
                 // The stage remains InProgress until player makes a choice
                 // QuestRuntime will fire OnChoicesAvailable when it handles this stage
                 return;
@@ -436,14 +432,12 @@ namespace HelloDev.QuestSystem.Stages
             int nextStage = GetNextStageOnGroupsComplete();
             if (nextStage >= 0)
             {
-                QuestLogger.Log($"Groups complete transition in stage '{StageName}'. Target: {nextStage}");
                 Complete();
                 OnTransitionReady.SafeInvoke(this, nextStage);
             }
             else
             {
                 // No transition defined, stage is terminal by default
-                QuestLogger.Log($"Stage '{StageName}' has no valid transition. Treating as terminal.");
                 Complete();
             }
         }

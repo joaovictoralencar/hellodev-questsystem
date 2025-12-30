@@ -215,7 +215,7 @@ namespace HelloDev.QuestSystem.Quests
         {
             if (CurrentState != QuestState.NotStarted)
             {
-                QuestLogger.Log($"Quest '{QuestData.DevName}' is already in progress.");
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"'{QuestData.DevName}' already in progress");
                 return;
             }
 
@@ -229,11 +229,11 @@ namespace HelloDev.QuestSystem.Quests
             if (firstStage != null)
             {
                 TransitionToStage(firstStage);
-                QuestLogger.Log($"Quest '{QuestData.DevName}' started. First stage: '{firstStage.StageName}'");
+                QuestLogger.LogStart(LogSubsystem.Quest, "Quest", QuestData.DevName);
             }
             else
             {
-                QuestLogger.Log($"Quest '{QuestData.DevName}' started with no stages.");
+                QuestLogger.LogStart(LogSubsystem.Quest, "Quest", $"{QuestData.DevName} (no stages)");
             }
 
             OnQuestStarted.SafeInvoke(this);
@@ -257,7 +257,7 @@ namespace HelloDev.QuestSystem.Quests
                         if (reward.RewardType != null)
                         {
                             reward.RewardType.GiveReward(reward.Amount);
-                            QuestLogger.Log($"Distributed reward: {reward.RewardType.name} x{reward.Amount}");
+                            QuestLogger.LogVerbose(LogSubsystem.Quest, $"Reward: {reward.RewardType.name} x{reward.Amount}");
                         }
                     }
                 }
@@ -313,14 +313,14 @@ namespace HelloDev.QuestSystem.Quests
         {
             if (CurrentState != QuestState.InProgress)
             {
-                QuestLogger.LogWarning($"Cannot set stage on quest '{QuestData.DevName}' - not in progress.");
+                QuestLogger.LogWarning(LogSubsystem.Stage, $"Cannot set stage: '{QuestData.DevName}' not in progress");
                 return false;
             }
 
             var targetStage = GetStageByIndex(stageIndex);
             if (targetStage == null)
             {
-                QuestLogger.LogWarning($"Stage index {stageIndex} not found in quest '{QuestData.DevName}'.");
+                QuestLogger.LogWarning(LogSubsystem.Stage, $"Stage {stageIndex} not found in '{QuestData.DevName}'");
                 return false;
             }
 
@@ -422,38 +422,38 @@ namespace HelloDev.QuestSystem.Quests
         {
             if (choice == null)
             {
-                QuestLogger.LogWarning("Cannot select null choice.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, "Cannot select null choice");
                 return false;
             }
 
             if (CurrentState != QuestState.InProgress)
             {
-                QuestLogger.LogWarning($"Cannot select choice - quest '{QuestData.DevName}' is not in progress.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, $"Quest '{QuestData.DevName}' not in progress");
                 return false;
             }
 
             if (CurrentStage == null)
             {
-                QuestLogger.LogWarning($"Cannot select choice - no current stage in quest '{QuestData.DevName}'.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, $"No current stage in '{QuestData.DevName}'");
                 return false;
             }
 
             if (!choice.IsPlayerChoice)
             {
-                QuestLogger.LogWarning($"Transition to stage {choice.TargetStageIndex} is not a player choice.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, $"Transition to stage {choice.TargetStageIndex} is not a player choice");
                 return false;
             }
 
             if (!choice.EvaluateConditions())
             {
-                QuestLogger.LogWarning($"Choice '{choice.ChoiceId}' conditions not met.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, $"Choice '{choice.ChoiceId}' conditions not met");
                 return false;
             }
 
             // Record the decision
             string stageKey = $"stage_{CurrentStageIndex}";
             BranchDecisions[stageKey] = choice.ChoiceId;
-            QuestLogger.Log($"Player chose '{choice.ChoiceId}' in quest '{QuestData.DevName}' stage {CurrentStageIndex}.");
+            QuestLogger.LogChoice(QuestData.DevName, choice.ChoiceId);
 
             // Apply world flag modifications (consequences of the choice)
             choice.ApplyWorldFlagModifications();
@@ -473,7 +473,7 @@ namespace HelloDev.QuestSystem.Quests
             }
             else
             {
-                QuestLogger.LogWarning($"Target stage {choice.TargetStageIndex} not found. Completing quest.");
+                QuestLogger.LogVerbose(LogSubsystem.Stage, $"Target stage {choice.TargetStageIndex} not found, completing quest");
                 CompleteQuest();
                 return true;
             }
@@ -488,20 +488,20 @@ namespace HelloDev.QuestSystem.Quests
         {
             if (string.IsNullOrEmpty(choiceId))
             {
-                QuestLogger.LogWarning("Cannot select choice with null/empty ID.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, "Cannot select choice with null/empty ID");
                 return false;
             }
 
             if (CurrentStage == null)
             {
-                QuestLogger.LogWarning($"Cannot select choice - no current stage in quest '{QuestData.DevName}'.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, $"No current stage in '{QuestData.DevName}'");
                 return false;
             }
 
             var choice = CurrentStage.Data.GetPlayerChoiceById(choiceId);
             if (choice == null)
             {
-                QuestLogger.LogWarning($"Choice '{choiceId}' not found in current stage.");
+                QuestLogger.LogWarning(LogSubsystem.Choice, $"Choice '{choiceId}' not found");
                 return false;
             }
 
@@ -530,7 +530,7 @@ namespace HelloDev.QuestSystem.Quests
             var choices = CurrentStage.Data.GetAllPlayerChoices();
             if (choices.Count > 0)
             {
-                QuestLogger.Log($"Player choices available in quest '{QuestData.DevName}' stage '{CurrentStage.StageName}': {choices.Count} options.");
+                QuestLogger.Log(LogSubsystem.Choice, $"<b>{choices.Count}</b> choices available in <b>'{CurrentStage.StageName}'</b>");
                 OnChoicesAvailable.SafeInvoke(this, choices);
             }
         }
@@ -600,7 +600,7 @@ namespace HelloDev.QuestSystem.Quests
                 var implicitChoice = CurrentStage.Data.GetImplicitlySelectedChoice();
                 if (implicitChoice == choice)
                 {
-                    QuestLogger.Log($"Implicit choice detected: '{choice.ChoiceId}' - conditions met through player action.");
+                    QuestLogger.LogVerbose(LogSubsystem.Choice, $"Implicit choice '{choice.ChoiceId}' triggered");
                     SelectChoice(choice);
                 }
             }
@@ -633,7 +633,6 @@ namespace HelloDev.QuestSystem.Quests
                     if (condition is IConditionEventDriven conditionEventDriven)
                     {
                         conditionEventDriven.SubscribeToEvent(HandleGlobalTaskFailure);
-                        QuestLogger.Log($"Subscribed to global task failure condition '{condition.name}' for quest '{QuestData.DevName}'.");
                     }
                 }
             }
@@ -689,7 +688,6 @@ namespace HelloDev.QuestSystem.Quests
             {
                 if (condition is IConditionEventDriven conditionEventDriven)
                     conditionEventDriven.SubscribeToEvent(TryStartQuestIfConditionsMet);
-                QuestLogger.Log($"Subscribed to '{condition.name}' for quest '{QuestData.DevName}' start conditions.");
             }
         }
 
@@ -699,13 +697,11 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleStageEntered(QuestStageRuntime stage)
         {
-            QuestLogger.Log($"Stage '{stage.StageName}' entered in quest '{QuestData.DevName}'.");
+            // Logged by stage itself
         }
 
         private void HandleStageCompleted(QuestStageRuntime stage)
         {
-            QuestLogger.Log($"Stage '{stage.StageName}' completed in quest '{QuestData.DevName}'.");
-
             // Check if all stages are completed (for terminal stages)
             if (stage.Data.IsTerminal)
             {
@@ -715,14 +711,11 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleStageFailed(QuestStageRuntime stage)
         {
-            QuestLogger.Log($"Stage '{stage.StageName}' failed in quest '{QuestData.DevName}'.");
             FailQuest();
         }
 
         private void HandleTransitionReady(QuestStageRuntime stage, int targetStageIndex)
         {
-            QuestLogger.Log($"Transition ready from stage '{stage.StageName}' to stage index {targetStageIndex}.");
-
             var targetStage = GetStageByIndex(targetStageIndex);
             if (targetStage != null)
             {
@@ -732,7 +725,7 @@ namespace HelloDev.QuestSystem.Quests
             }
             else
             {
-                QuestLogger.LogWarning($"Target stage index {targetStageIndex} not found. Completing quest.");
+                QuestLogger.LogVerbose(LogSubsystem.Stage, $"Target stage {targetStageIndex} not found, completing quest");
                 CompleteQuest();
             }
         }
@@ -745,8 +738,6 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleGroupInStageStarted(QuestStageRuntime stage, TaskGroupRuntime group)
         {
-            QuestLogger.Log($"Group '{group.GroupName}' started in stage '{stage.StageName}'.");
-
             // Subscribe to task events for this group
             foreach (var task in group.Tasks)
             {
@@ -758,13 +749,12 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleGroupInStageCompleted(QuestStageRuntime stage, TaskGroupRuntime group)
         {
-            QuestLogger.Log($"Group '{group.GroupName}' completed in stage '{stage.StageName}'.");
             NotifyQuestUpdated();
         }
 
         private void HandleGroupInStageFailed(QuestStageRuntime stage, TaskGroupRuntime group)
         {
-            QuestLogger.Log($"Group '{group.GroupName}' failed in stage '{stage.StageName}'.");
+            // Logged by group itself
         }
 
         #endregion
@@ -778,7 +768,6 @@ namespace HelloDev.QuestSystem.Quests
             {
                 foreach (var task in currentTasks)
                 {
-                    QuestLogger.Log($"Global task failure condition met. Failing task '{task.DevName}' in quest '{QuestData.DevName}'.");
                     task.FailTask();
                 }
             }
@@ -790,7 +779,6 @@ namespace HelloDev.QuestSystem.Quests
 
             if (CheckStartConditions())
             {
-                QuestLogger.Log($"All start conditions met for quest '{QuestData.DevName}'. Starting quest.");
                 StartQuest();
             }
         }

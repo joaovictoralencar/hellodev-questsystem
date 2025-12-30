@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
+using static HelloDev.QuestSystem.Utils.QuestLogger;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -390,8 +391,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (quest?.QuestData == null) return;
 
-            Debug.Log($"[UI_QuestDetails] Setup called for quest '{quest.QuestData.DevName}': State={quest.CurrentState}");
-
             // Unsubscribe from previous quest
             UnsubscribeFromQuestEvents();
 
@@ -511,27 +510,17 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void CreateTaskItems(QuestRuntime quest)
         {
-            Debug.Log($"[UI_QuestDetails] CreateTaskItems for quest '{quest.QuestData.DevName}': QuestState={quest.CurrentState}, TaskCount={quest.Tasks.Count}");
-
             foreach (TaskRuntime task in quest.Tasks)
             {
-                Debug.Log($"[UI_QuestDetails]   Task '{task.DevName}': State={task.CurrentState}");
-
                 // Skip not-started tasks
                 if (task.CurrentState == TaskState.NotStarted)
-                {
-                    Debug.Log($"[UI_QuestDetails]   -> SKIPPED (NotStarted)");
                     continue;
-                }
 
-                Debug.Log($"[UI_QuestDetails]   -> CREATING UI item");
                 var taskItem = Instantiate(taskItemPrefab, tasksHolder);
                 taskItem.Setup(task, HandleTaskSelected);
                 taskItem.SetToggleGroup(taskToggleGroup);
                 _taskItems.Add(taskItem);
             }
-
-            Debug.Log($"[UI_QuestDetails] Created {_taskItems.Count} task UI items");
         }
 
         private void ClearTaskItems()

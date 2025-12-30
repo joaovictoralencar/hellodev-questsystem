@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
+using HelloDev.QuestSystem.Utils;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
@@ -184,18 +185,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (QuestManager.Instance == null)
             {
-                Debug.LogWarning("[UI_Quests] QuestManager.Instance is null, cannot setup quest UI.");
+                QuestLogger.LogWarning(LogSubsystem.UI, "QuestManager not available");
                 return;
-            }
-
-            Debug.Log("[UI_Quests] SetupQuestUI called (v2 - with debug logs)");
-
-            // Debug: Log all quests from GetActiveQuests
-            var activeQuests = QuestManager.Instance.GetActiveQuests();
-            Debug.Log($"[UI_Quests] GetActiveQuests returned {activeQuests.Count} quests:");
-            foreach (var q in activeQuests)
-            {
-                Debug.Log($"[UI_Quests]   - '{q.QuestData.DevName}': State={q.CurrentState}");
             }
 
             ClearQuestSections();
@@ -239,16 +230,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 .Where(q => q.QuestData?.QuestType != null && q.QuestData.QuestType != completedQuestType)
                 .GroupBy(q => q.QuestData.QuestType);
 
-            Debug.Log($"[UI_Quests] CreateActiveSections: Processing {groupedQuests.Count()} quest type groups");
-
             foreach (var group in groupedQuests)
             {
-                Debug.Log($"[UI_Quests] Group '{group.Key.name}': {group.Count()} quests");
-                foreach (var q in group)
-                {
-                    Debug.Log($"[UI_Quests]   - '{q.QuestData.DevName}': State={q.CurrentState}");
-                }
-
                 var section = GetOrCreateSection(group.Key);
                 section.SpawnQuestItems(group.ToList(), HandleQuestSelected);
             }

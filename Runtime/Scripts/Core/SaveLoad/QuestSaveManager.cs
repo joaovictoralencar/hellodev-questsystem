@@ -138,11 +138,11 @@ namespace HelloDev.QuestSystem.SaveLoad
                 OnBeforeLoad.AddListener(slot => service.OnBeforeLoad?.Invoke(slot));
                 OnAfterLoad.AddListener((slot, success) => service.OnAfterLoad?.Invoke(slot, success));
 
-                QuestLogger.Log($"[QuestSaveManager] Registered with service.");
+                QuestLogger.LogVerbose(LogSubsystem.Save, "SaveManager registered with service");
             }
             else
             {
-                Debug.LogWarning($"[QuestSaveManager] No service assigned on {name}. Save/load will not be accessible via service.");
+                QuestLogger.LogWarning(LogSubsystem.Save, $"No service assigned on {name}");
             }
         }
 
@@ -171,7 +171,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         public void SetProvider(ISaveDataProvider provider)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            QuestLogger.Log($"[QuestSaveManager] Provider set: {provider.GetType().Name}");
+            QuestLogger.LogVerbose(LogSubsystem.Save, $"Provider: {provider.GetType().Name}");
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             _worldFlagRegistrySO = registry;
             if (registry != null)
             {
-                QuestLogger.Log($"[QuestSaveManager] WorldFlagRegistry set with {registry.Count} flags.");
+                QuestLogger.LogVerbose(LogSubsystem.Save, $"WorldFlagRegistry: {registry.Count} flags");
             }
         }
 
@@ -233,7 +233,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             var questManager = QuestManager.Instance;
             if (questManager == null)
             {
-                QuestLogger.LogWarning("[QuestSaveManager] QuestManager not found. Snapshot will be empty.");
+                QuestLogger.LogWarning(LogSubsystem.Save, "QuestManager not found, snapshot empty");
                 return new QuestSystemSnapshot { Version = 1, Timestamp = DateTime.UtcNow.ToString("O") };
             }
 
@@ -249,7 +249,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 
             snapshot.Version = 1;
 
-            QuestLogger.Log($"[QuestSaveManager] Snapshot captured: {snapshot.ActiveQuests.Count} active, {snapshot.CompletedQuests.Count} completed, {snapshot.FailedQuests.Count} failed quests.");
+            QuestLogger.Log(LogSubsystem.Save, $"Captured: <b>{snapshot.ActiveQuests.Count}</b> active, <b>{snapshot.CompletedQuests.Count}</b> completed, <b>{snapshot.FailedQuests.Count}</b> failed");
 
             return snapshot;
         }
@@ -264,14 +264,14 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (snapshot == null)
             {
-                QuestLogger.LogError("[QuestSaveManager] Cannot restore null snapshot.");
+                QuestLogger.LogError(LogSubsystem.Save, "Cannot restore null snapshot");
                 return false;
             }
 
             var questManager = QuestManager.Instance;
             if (questManager == null)
             {
-                QuestLogger.LogError("[QuestSaveManager] QuestManager not found. Cannot restore snapshot.");
+                QuestLogger.LogError(LogSubsystem.Save, "QuestManager not found");
                 return false;
             }
 
@@ -297,12 +297,12 @@ namespace HelloDev.QuestSystem.SaveLoad
                 // This must happen AFTER all quests are restored to prevent events from triggering auto-start during restore
                 questManager.ResubscribeNotStartedQuestsToEvents();
 
-                QuestLogger.Log($"[QuestSaveManager] Snapshot restored from {snapshot.Timestamp}");
+                QuestLogger.LogLoad(snapshot.Timestamp, true);
                 return true;
             }
             catch (Exception ex)
             {
-                QuestLogger.LogError($"[QuestSaveManager] Restore failed: {ex.Message}");
+                QuestLogger.LogError(LogSubsystem.Save, $"Restore failed: {ex.Message}");
                 return false;
             }
         }
@@ -316,7 +316,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (_provider == null)
             {
-                QuestLogger.LogError("[QuestSaveManager] No save provider set. Call SetProvider first.");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
                 return false;
             }
 
@@ -339,7 +339,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (_provider == null)
             {
-                QuestLogger.LogError("[QuestSaveManager] No save provider set. Call SetProvider first.");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
                 return false;
             }
 
@@ -480,13 +480,12 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (_provider == null)
             {
-                Debug.LogError("[QuestSaveManager] No provider set. Call SetProvider() first.");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
                 return;
             }
 
-            QuestLogger.Log("[DEBUG] Quick Save started...");
             var success = await SaveAsync(DEBUG_SLOT);
-            QuestLogger.Log($"[DEBUG] Quick Save {(success ? "succeeded" : "failed")}");
+            QuestLogger.LogSave(DEBUG_SLOT, success);
         }
 
         [Button("Quick Load (debug_save)", ButtonSizes.Medium)]
@@ -496,13 +495,12 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (_provider == null)
             {
-                Debug.LogError("[QuestSaveManager] No provider set. Call SetProvider() first.");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
                 return;
             }
 
-            QuestLogger.Log("[DEBUG] Quick Load started...");
             var success = await LoadAsync(DEBUG_SLOT);
-            QuestLogger.Log($"[DEBUG] Quick Load {(success ? "succeeded" : "failed")}");
+            QuestLogger.LogLoad(DEBUG_SLOT, success);
         }
 
         [Button("Log Current Snapshot", ButtonSizes.Medium)]
@@ -511,25 +509,10 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             var snapshot = CaptureSnapshot();
 
-            QuestLogger.Log("=== SNAPSHOT DETAILS ===");
-            QuestLogger.Log($"Timestamp: {snapshot.Timestamp}");
-            QuestLogger.Log($"Active Quests: {snapshot.ActiveQuests.Count}");
-            QuestLogger.Log($"Completed Quests: {snapshot.CompletedQuests.Count}");
-            QuestLogger.Log($"Failed Quests: {snapshot.FailedQuests.Count}");
-            QuestLogger.Log($"Active QuestLines: {snapshot.ActiveQuestLines.Count}");
-            QuestLogger.Log($"Completed QuestLines: {snapshot.CompletedQuestLines.Count}");
-            QuestLogger.Log($"World Flags: {snapshot.WorldFlags.Count}");
-
-            if (snapshot.WorldFlags.Count > 0)
-            {
-                QuestLogger.Log("--- World Flag Values ---");
-                foreach (var flag in snapshot.WorldFlags)
-                {
-                    string value = flag.IsBoolFlag ? flag.BoolValue.ToString() : flag.IntValue.ToString();
-                    string type = flag.IsBoolFlag ? "Bool" : "Int";
-                    QuestLogger.Log($"  [{type}] {flag.FlagGuid}: {value}");
-                }
-            }
+            Debug.Log($"<color=#A8D8EA><b>=== SNAPSHOT ({snapshot.Timestamp}) ===</b></color>");
+            Debug.Log($"  Active: {snapshot.ActiveQuests.Count} | Completed: {snapshot.CompletedQuests.Count} | Failed: {snapshot.FailedQuests.Count}");
+            Debug.Log($"  QuestLines - Active: {snapshot.ActiveQuestLines.Count} | Completed: {snapshot.CompletedQuestLines.Count}");
+            Debug.Log($"  World Flags: {snapshot.WorldFlags.Count}");
         }
 
         [Button("Reset All World Flags", ButtonSizes.Medium)]
@@ -540,11 +523,11 @@ namespace HelloDev.QuestSystem.SaveLoad
             if (worldFlagService != null && worldFlagService.IsAvailable)
             {
                 worldFlagService.ResetAllFlags();
-                QuestLogger.Log("[DEBUG] All world flags reset to defaults.");
+                QuestLogger.Log(LogSubsystem.Save, "All world flags reset");
             }
             else
             {
-                Debug.LogWarning("[QuestSaveManager] WorldFlagService not available.");
+                QuestLogger.LogWarning(LogSubsystem.Save, "WorldFlagService not available");
             }
         }
 
@@ -555,12 +538,12 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (_provider == null)
             {
-                Debug.LogError("[QuestSaveManager] No provider set.");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
                 return;
             }
 
             var success = await DeleteSaveAsync(DEBUG_SLOT);
-            QuestLogger.Log($"[DEBUG] Delete save {(success ? "succeeded" : "failed")}");
+            QuestLogger.Log(LogSubsystem.Save, $"Delete <b>'{DEBUG_SLOT}'</b> {(success ? "succeeded" : "failed")}");
         }
 
 #endif
