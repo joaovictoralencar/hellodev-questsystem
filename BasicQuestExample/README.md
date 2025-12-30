@@ -1,6 +1,30 @@
 # Basic Quest Example
 
-A sample implementation demonstrating the HelloDev Quest System. Includes a complete UI, debug tools, and example quest (Goblin's Bane).
+A sample implementation demonstrating the HelloDev Quest System. Includes a complete UI, debug tools, and example quests.
+
+## Getting Started
+
+### 1. Set Up the Example in Your Scene
+
+The BasicQuestExample provides reusable components and assets. To use them:
+
+1. Create a new scene or use an existing one
+2. Add a QuestManager component to a GameObject
+3. Add the example quests from `ScriptableObjects/Quests/` to the QuestManager's database
+4. Add the Quest UI prefab from `Prefabs/` to your Canvas
+
+### 2. Enter Play Mode
+
+The example will:
+- Initialize the QuestManager with example quests
+- Display the Quest UI panel
+- Allow you to interact with quests via debug tools
+
+### 3. Test the Quest System
+
+1. Select a quest in the UI
+2. Use the debug buttons in the Inspector (requires Odin Inspector)
+3. Watch quest states update in real-time
 
 ## Features
 
@@ -8,28 +32,37 @@ A sample implementation demonstrating the HelloDev Quest System. Includes a comp
 - Task list with progress tracking
 - Reward display
 - Debug buttons for testing (requires Odin Inspector for quick actions)
+- Example quests demonstrating different task types
+- Localization setup
 
 ## Structure
 
 ```
 BasicQuestExample/
+├── Docs/                 ← Documentation (EventIntegrationGuide.md)
+├── Fonts/                ← Font assets (Source Sans 3)
 ├── Prefabs/              ← UI prefabs
-├── Scenes/               ← Example scene
 ├── Scripts/
-│   ├── Conditions/       ← Example conditions
-│   ├── GameEvents/       ← Example game events
+│   ├── Conditions/       ← Example condition types (ConditionID_SO)
+│   ├── GameEvents/       ← Example game event types (GameEventID_SO)
 │   ├── Rewards/          ← Example reward types
-│   └── UI/               ← Quest UI components
-│       └── Quests/       ← Quest-specific UI
-└── ScriptableObjects/
-    ├── Conditions/       ← Condition instances
-    ├── Events/           ← Event instances
-    ├── IDs/              ← ID_SO instances
-    │   └── Locations/    ← Location IDs
-    ├── Quests/           ← Quest assets
-    │   └── Goblin's Bane/  ← Example quest + tasks
-    ├── QuestType/        ← Quest categories
-    └── Rewards/          ← Reward instances
+│   ├── UI/               ← Quest UI components
+│   └── SaveSystemSetup.cs ← Save system configuration component
+├── ScriptableObjects/
+│   ├── Conditions/       ← Condition instances
+│   │   ├── Branching/    ← Branching quest conditions
+│   │   └── QuestChains/  ← Quest chain conditions
+│   ├── Events/           ← Event instances
+│   ├── IDs/              ← ID_SO instances (Enemies, NPCs, Locations)
+│   ├── Quests/           ← Quest assets
+│   │   └── Goblin's Bane/ ← Example quest + tasks
+│   ├── QuestLines/       ← QuestLine assets
+│   ├── QuestType/        ← Quest categories
+│   ├── Rewards/          ← Reward instances
+│   ├── SaveLoad/         ← Save system configuration assets
+│   └── WorldFlags/       ← World flag instances
+├── Settings/             ← Import presets
+└── Textures/             ← Sprite textures
 ```
 
 ## UI Components
@@ -45,9 +78,10 @@ BasicQuestExample/
 
 ## Debug Tools
 
-Debug buttons are available in `UI_QuestDetails` Inspector (Play Mode only).
+Debug buttons are available in `UI_QuestDetails` Inspector (Play Mode only, requires Odin Inspector).
 
 ### Task Actions
+
 | Button | Action |
 |--------|--------|
 | Complete Current Task | Force complete selected task |
@@ -58,6 +92,7 @@ Debug buttons are available in `UI_QuestDetails` Inspector (Play Mode only).
 | Invoke Event Task | Trigger task conditions |
 
 ### Quest Actions
+
 | Button | Action |
 |--------|--------|
 | Complete Current Quest | Complete all tasks |
@@ -65,6 +100,7 @@ Debug buttons are available in `UI_QuestDetails` Inspector (Play Mode only).
 | Reset Current Quest | Restart quest from beginning |
 
 ### Task-Type Specific (Odin Quick Actions)
+
 | Button | Task Type | Action |
 |--------|-----------|--------|
 | Trigger Location Reached | LocationTask | Mark location as reached |
@@ -125,19 +161,23 @@ Debug buttons are available in `UI_QuestDetails` Inspector (Play Mode only).
 ## Creating New Quests
 
 ### 1. Create Task Assets
+
 ```
 Right-click > Create > HelloDev > Quest System > Scriptable Objects > Tasks > [Type]
 ```
 
-Available types:
-- **Int Task** - Counter-based (kill X, collect Y)
-- **Bool Task** - Binary state (find item, talk to NPC)
-- **String Task** - Text matching
-- **Location Task** - Reach location (uses ID_SO)
-- **Timed Task** - Time limit
-- **Discovery Task** - Find items (uses List<ID_SO>)
+**Available types:**
+| Type | Description | Use Case |
+|------|-------------|----------|
+| Int Task | Counter-based | Kill X, Collect Y |
+| Bool Task | Binary state | Find item, Talk to NPC |
+| String Task | Text matching | Enter password |
+| Location Task | Reach location (uses ID_SO) | Go to waypoint |
+| Timed Task | Time limit | Survive, Escape |
+| Discovery Task | Find items (uses List\<ID_SO\>) | Find all clues |
 
 ### 2. Create Quest Asset
+
 ```
 Right-click > Create > HelloDev > Quest System > Scriptable Objects > Quest
 ```
@@ -150,6 +190,7 @@ Configure:
 - Add Rewards (optional)
 
 ### 3. Add to QuestManager
+
 Reference the Quest_SO in QuestManager's database.
 
 ## Localization
@@ -162,14 +203,12 @@ Add entries in your StringTable and link via Inspector.
 
 ### Smart String Variables
 
-| Task Type | Variables |
-|-----------|-----------|
-| IntTask | `{current}`, `{required}`, `{target}` |
-| DiscoveryTask | `{current}`, `{required}` |
-| TimedTask | `{remaining}`, `{limit}` |
-| LocationTask | `{target}` |
-
-Example: `"Kill {current}/{required} goblins"`
+| Task Type | Variables | Example |
+|-----------|-----------|---------|
+| IntTask | `{current}`, `{required}`, `{target}` | "Kill {current}/{required} goblins" |
+| DiscoveryTask | `{current}`, `{required}` | "Found {current}/{required} items" |
+| TimedTask | `{remaining}`, `{limit}` | "{remaining}s remaining" |
+| LocationTask | `{target}` | "Go to {target}" |
 
 ## Dependencies
 

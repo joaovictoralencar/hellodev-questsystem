@@ -2,6 +2,107 @@
 
 A data-driven quest system for Unity games. Designers assemble quests from reusable components; programmers extend the system with new task types and conditions.
 
+## Getting Started
+
+### 1. Install the Package
+
+**Via Package Manager (Local):**
+1. Open Unity Package Manager (Window > Package Manager)
+2. Click "+" > "Add package from disk"
+3. Navigate to this folder and select `package.json`
+
+**Dependencies:**
+- `com.hellodev.utils`
+- `com.hellodev.events`
+- `com.hellodev.conditions`
+- `com.hellodev.ids`
+- `com.unity.localization`
+
+### 2. Set Up the QuestManager
+
+1. Create an empty GameObject named "QuestManager"
+2. Add the **QuestManager** component
+3. Add your Quest_SO assets directly to the QuestManager's `Quests Database` list in the inspector
+
+### 3. Create Your First Quest
+
+**Step 1: Create a Task**
+```
+Right-click > Create > HelloDev > Quest System > Scriptable Objects > Tasks > Int Task
+```
+Configure:
+- Set `DevName` (e.g., "KillGoblins")
+- Set `RequiredCount` (e.g., 5)
+- Configure localized `DisplayName` and `TaskDescription`
+
+**Step 2: Create a Quest**
+```
+Right-click > Create > HelloDev > Quest System > Scriptable Objects > Quest
+```
+Configure:
+- Set `DevName` (e.g., "GoblinsBane")
+- Add your task to the `Tasks` list
+- Configure localized `DisplayName` and `Description`
+
+**Step 3: Add Quest to QuestManager**
+- Select your QuestManager in the scene
+- Add your quest to the `Quests Database` list
+
+### 4. Use in Code
+
+```csharp
+using HelloDev.QuestSystem;
+using HelloDev.QuestSystem.Quests;
+using UnityEngine;
+
+public class QuestGiver : MonoBehaviour
+{
+    [SerializeField] private Quest_SO goblinsBaneQuest;
+
+    public void GiveQuest()
+    {
+        // Add and start the quest
+        QuestManager.Instance.AddQuest(goblinsBaneQuest, forceStart: true);
+    }
+}
+
+public class GoblinEnemy : MonoBehaviour
+{
+    [SerializeField] private Quest_SO goblinsBaneQuest;
+
+    public void OnDeath()
+    {
+        // Progress the quest when a goblin is killed
+        var quest = QuestManager.Instance.GetActiveQuest(goblinsBaneQuest);
+        quest?.CurrentTask?.IncrementStep();
+    }
+}
+```
+
+### 5. Subscribe to Events
+
+```csharp
+void Start()
+{
+    QuestManager.Instance.QuestCompleted.AddListener(OnQuestCompleted);
+    QuestManager.Instance.QuestStarted.AddListener(OnQuestStarted);
+}
+
+void OnQuestCompleted(QuestRuntime quest)
+{
+    Debug.Log($"Quest completed: {quest.Data.DevName}");
+}
+
+void OnQuestStarted(QuestRuntime quest)
+{
+    Debug.Log($"Quest started: {quest.Data.DevName}");
+}
+```
+
+### 6. Try the Example
+
+See `BasicQuestExample/README.md` for instructions on setting up the example with UI and debug tools.
+
 ## Features
 
 ### Core System
