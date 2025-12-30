@@ -454,6 +454,37 @@ await QuestSaveManager.Instance.DeleteSaveAsync("save_slot_1");
 string[] slots = await QuestSaveManager.Instance.GetAllSaveSlotsAsync();
 ```
 
+**Per-Slot Autosave:**
+
+The save system supports slot-based autosave, where each save slot gets its own autosave file. When playing on slot 1, autosaves go to "autosave-1"; when playing on slot 2, autosaves go to "autosave-2".
+
+1. Create > HelloDev > Services > Save Slot Service
+2. Assign to SaveSystemSetup's `Slot Service` field
+3. Set `Default Slot Index` (0 = first slot)
+
+```csharp
+// Programmatic slot management
+slotService.SetActiveSlot(0);  // Autosaves now go to "autosave-0"
+slotService.SetActiveSlot(2);  // Autosaves now go to "autosave-2"
+
+// Get slot keys
+string autoKey = slotService.CurrentAutosaveSlotKey;  // "autosave-2"
+string saveKey = slotService.CurrentManualSlotKey;    // "save-2"
+
+// When loading a different save
+await saveService.LoadAsync("save-1");
+slotService.SetActiveSlot(1);  // Future autosaves go to "autosave-1"
+```
+
+**SaveSlotService_SO Properties:**
+| Property | Description |
+|----------|-------------|
+| `MaxSlots` | Maximum number of save slots (configurable) |
+| `CurrentSlotIndex` | Currently active slot index (-1 if none) |
+| `HasActiveSlot` | True if a slot is active |
+| `CurrentAutosaveSlotKey` | Returns "autosave-X" for current slot |
+| `CurrentManualSlotKey` | Returns "save-X" for current slot |
+
 **Custom Save Provider:**
 Implement `ISaveDataProvider` to integrate with your preferred save system:
 
@@ -799,6 +830,20 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.2.0 (2025-12-29)
+**Per-Slot Autosave:**
+- Added `SaveSlotService_SO` for managing save slot selection
+- Each save slot now gets its own autosave file (autosave-0, autosave-1, etc.)
+- Configurable `maxSlots`, `manualSavePrefix`, and `autosavePrefix`
+- `SaveSystemSetup` now supports optional slot service reference
+- Added `defaultSlotIndex` to auto-activate a slot on start
+- Slot changes fire `OnSlotChanged` event
+
+**Bug Fixes:**
+- Fixed task UI not updating after `RestoreProgress` (int tasks showed 0/2 instead of restored value)
+- Fixed `OnDecrementStep` not notifying UI of changes
+- Fixed `OnIncrementStep` not notifying UI when called directly (not via event conditions)
 
 ### v3.1.0 (2025-12-29)
 **Save/Load System:**

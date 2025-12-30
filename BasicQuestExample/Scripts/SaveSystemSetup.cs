@@ -38,11 +38,23 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         private bool prettyPrint = true;
 
 #if ODIN_INSPECTOR
+        [Title("Slot Management")]
+#endif
+        [SerializeField]
+        [Tooltip("Optional slot service for per-slot autosave. When assigned and active, autosaves go to 'autosave-X' based on current slot.")]
+        private SaveSlotService_SO slotService;
+
+        [SerializeField]
+        [Tooltip("The default slot index to activate on start. Set to -1 to not auto-activate any slot.")]
+        [Min(-1)]
+        private int defaultSlotIndex = 0;
+
+#if ODIN_INSPECTOR
         [Title("Auto Save/Load")]
 #endif
         [SerializeField]
-        [Tooltip("The slot used for auto-save and auto-load.")]
-        private string autoSlot = "autosave";
+        [Tooltip("Fallback slot used for auto-save/load when no slot service is assigned or no slot is active.")]
+        private string fallbackAutoSlot = "autosave";
 
         [SerializeField]
         [Tooltip("If true, automatically loads from the auto slot on startup.")]
@@ -70,6 +82,19 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the current autosave slot key.
+        /// Uses slot service if available and active, otherwise falls back to fallbackAutoSlot.
+        /// </summary>
+        private string CurrentAutoSlot =>
+            (slotService != null && slotService.HasActiveSlot)
+                ? slotService.CurrentAutosaveSlotKey
+                : fallbackAutoSlot;
+
+        #endregion
+
         #region Unity Lifecycle
 
         private async void Start()
@@ -94,6 +119,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             saveService.SetProvider(provider);
 
             Debug.Log($"[SaveSystemSetup] Provider set. HasProvider: {saveService.HasProvider}");
+
+            // Set default active slot if slot service is assigned
+            if (slotService != null && defaultSlotIndex >= 0)
+            {
+                slotService.SetActiveSlot(defaultSlotIndex);
+                Debug.Log($"[SaveSystemSetup] Active slot set to {defaultSlotIndex}. Autosave target: {slotService.CurrentAutosaveSlotKey}");
+            }
 
             _isInitialized = true;
             _autoSaveTimer = autoSaveInterval;
@@ -139,78 +171,81 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private async System.Threading.Tasks.Task AutoLoadAsync()
         {
-            if (string.IsNullOrEmpty(autoSlot))
+            string targetSlot = CurrentAutoSlot;
+            if (string.IsNullOrEmpty(targetSlot))
             {
                 Debug.LogWarning("[SaveSystemSetup] Auto-load enabled but no slot specified.");
                 return;
             }
 
-            bool exists = await saveService.SaveExistsAsync(autoSlot);
+            bool exists = await saveService.SaveExistsAsync(targetSlot);
             if (!exists)
             {
-                Debug.Log($"[SaveSystemSetup] Auto-load slot '{autoSlot}' does not exist. Skipping.");
+                Debug.Log($"[SaveSystemSetup] Auto-load slot '{targetSlot}' does not exist. Skipping.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Auto-loading from slot '{autoSlot}'...");
-            bool success = await saveService.LoadAsync(autoSlot);
+            Debug.Log($"[SaveSystemSetup] Auto-loading from slot '{targetSlot}'...");
+            bool success = await saveService.LoadAsync(targetSlot);
 
             if (success)
             {
-                Debug.Log($"[SaveSystemSetup] Auto-load from '{autoSlot}' successful.");
+                Debug.Log($"[SaveSystemSetup] Auto-load from '{targetSlot}' successful.");
             }
             else
             {
-                Debug.LogWarning($"[SaveSystemSetup] Auto-load from '{autoSlot}' failed.");
+                Debug.LogWarning($"[SaveSystemSetup] Auto-load from '{targetSlot}' failed.");
             }
         }
 
         private async System.Threading.Tasks.Task AutoSaveAsync(string trigger)
         {
-            if (string.IsNullOrEmpty(autoSlot))
+            string targetSlot = CurrentAutoSlot;
+            if (string.IsNullOrEmpty(targetSlot))
             {
                 Debug.LogWarning("[SaveSystemSetup] Auto-save triggered but no slot specified.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{autoSlot}' (trigger: {trigger})...");
-            bool success = await saveService.SaveAsync(autoSlot);
+            Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
+            bool success = await saveService.SaveAsync(targetSlot);
 
             if (success)
             {
-                Debug.Log($"[SaveSystemSetup] Auto-save to '{autoSlot}' successful.");
+                Debug.Log($"[SaveSystemSetup] Auto-save to '{targetSlot}' successful.");
             }
             else
             {
-                Debug.LogWarning($"[SaveSystemSetup] Auto-save to '{autoSlot}' failed.");
+                Debug.LogWarning($"[SaveSystemSetup] Auto-save to '{targetSlot}' failed.");
             }
         }
 
         private void AutoSaveSync(string trigger)
         {
-            if (string.IsNullOrEmpty(autoSlot))
+            string targetSlot = CurrentAutoSlot;
+            if (string.IsNullOrEmpty(targetSlot))
             {
                 Debug.LogWarning("[SaveSystemSetup] Auto-save triggered but no slot specified.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{autoSlot}' (trigger: {trigger})...");
+            Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
 
             // Use synchronous snapshot + save for quit scenarios
             var snapshot = saveService.CaptureSnapshot();
             if (snapshot != null)
             {
                 // We need to save synchronously, so we'll wait on the task
-                var task = saveService.SaveAsync(autoSlot);
+                var task = saveService.SaveAsync(targetSlot);
                 task.Wait();
 
                 if (task.Result)
                 {
-                    Debug.Log($"[SaveSystemSetup] Auto-save to '{autoSlot}' successful.");
+                    Debug.Log($"[SaveSystemSetup] Auto-save to '{targetSlot}' successful.");
                 }
                 else
                 {
-                    Debug.LogWarning($"[SaveSystemSetup] Auto-save to '{autoSlot}' failed.");
+                    Debug.LogWarning($"[SaveSystemSetup] Auto-save to '{targetSlot}' failed.");
                 }
             }
         }
@@ -236,6 +271,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         [ShowInInspector, ReadOnly]
         private string SavePath => System.IO.Path.Combine(Application.persistentDataPath, saveSubdirectory);
+
+        [ShowInInspector, ReadOnly]
+        private string DebugCurrentAutoSlot => CurrentAutoSlot ?? "(none)";
+
+        [ShowInInspector, ReadOnly]
+        [ShowIf("slotService")]
+        private int DebugCurrentSlotIndex => slotService != null ? slotService.CurrentSlotIndex : -1;
 
         [Button("Save Now")]
         [PropertyOrder(100)]
