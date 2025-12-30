@@ -2,7 +2,8 @@
     "name": "HelloDev.QuestSystem.BasicQuestExample",
     "rootNamespace": "HelloDev.QuestSystem.BasicQuestExample",
     "references": [
-        "HelloDev.QuestSystem"
+        "HelloDev.QuestSystem",
+        "HelloDev.Utils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

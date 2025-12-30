@@ -15,12 +15,12 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         #region Serialized Fields
 
 #if ODIN_INSPECTOR
-        [Title("Save Service")]
+        [Title("Save Locator")]
         [Required]
 #endif
         [SerializeField]
-        [Tooltip("The QuestSaveService_SO to configure.")]
-        private QuestSaveService_SO saveService;
+        [Tooltip("The QuestSaveLocator_SO to configure.")]
+        private QuestSaveLocator_SO saveLocator;
 
 #if ODIN_INSPECTOR
         [Title("Provider Settings")]
@@ -101,24 +101,24 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             Debug.Log("[SaveSystemSetup] Start() called.");
 
-            if (saveService == null)
+            if (saveLocator == null)
             {
-                Debug.LogWarning("[SaveSystemSetup] No QuestSaveService_SO assigned. Save system will not be initialized.");
+                Debug.LogWarning("[SaveSystemSetup] No QuestSaveLocator_SO assigned. Save system will not be initialized.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Service available: {saveService.IsAvailable}");
+            Debug.Log($"[SaveSystemSetup] Locator available: {saveLocator.IsAvailable}");
 
-            if (!saveService.IsAvailable)
+            if (!saveLocator.IsAvailable)
             {
-                Debug.LogWarning("[SaveSystemSetup] QuestSaveManager not registered with service. Ensure QuestSaveManager is in the scene.");
+                Debug.LogWarning("[SaveSystemSetup] QuestSaveManager not registered with locator. Ensure QuestSaveManager is in the scene.");
                 return;
             }
 
             var provider = new JsonFileSaveProvider(saveSubdirectory, fileExtension, prettyPrint);
-            saveService.SetProvider(provider);
+            saveLocator.SetProvider(provider);
 
-            Debug.Log($"[SaveSystemSetup] Provider set. HasProvider: {saveService.HasProvider}");
+            Debug.Log($"[SaveSystemSetup] Provider set. HasProvider: {saveLocator.HasProvider}");
 
             // Set default active slot if slot service is assigned
             if (slotService != null && defaultSlotIndex >= 0)
@@ -178,7 +178,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 return;
             }
 
-            bool exists = await saveService.SaveExistsAsync(targetSlot);
+            bool exists = await saveLocator.SaveExistsAsync(targetSlot);
             if (!exists)
             {
                 Debug.Log($"[SaveSystemSetup] Auto-load slot '{targetSlot}' does not exist. Skipping.");
@@ -186,7 +186,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             }
 
             Debug.Log($"[SaveSystemSetup] Auto-loading from slot '{targetSlot}'...");
-            bool success = await saveService.LoadAsync(targetSlot);
+            bool success = await saveLocator.LoadAsync(targetSlot);
 
             if (success)
             {
@@ -208,7 +208,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             }
 
             Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
-            bool success = await saveService.SaveAsync(targetSlot);
+            bool success = await saveLocator.SaveAsync(targetSlot);
 
             if (success)
             {
@@ -232,11 +232,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
 
             // Use synchronous snapshot + save for quit scenarios
-            var snapshot = saveService.CaptureSnapshot();
+            var snapshot = saveLocator.CaptureSnapshot();
             if (snapshot != null)
             {
                 // We need to save synchronously, so we'll wait on the task
-                var task = saveService.SaveAsync(targetSlot);
+                var task = saveLocator.SaveAsync(targetSlot);
                 task.Wait();
 
                 if (task.Result)
@@ -257,10 +257,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 #if ODIN_INSPECTOR && UNITY_EDITOR
         [Title("Debug")]
         [ShowInInspector, ReadOnly]
-        private bool IsServiceAvailable => saveService != null && saveService.IsAvailable;
+        private bool IsLocatorAvailable => saveLocator != null && saveLocator.IsAvailable;
 
         [ShowInInspector, ReadOnly]
-        private bool HasProvider => saveService != null && saveService.HasProvider;
+        private bool HasProvider => saveLocator != null && saveLocator.HasProvider;
 
         [ShowInInspector, ReadOnly]
         private bool IsInitialized => _isInitialized;

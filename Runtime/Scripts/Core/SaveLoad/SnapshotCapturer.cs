@@ -23,7 +23,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <param name="activeQuestLines">Active questlines to capture.</param>
         /// <param name="completedQuestLines">Completed questlines to capture.</param>
         /// <param name="worldFlags">World flags to capture.</param>
-        /// <param name="flagService">Optional flag service for runtime values.</param>
+        /// <param name="flagLocator">Optional flag locator for runtime values.</param>
         /// <returns>A complete snapshot of the quest system.</returns>
         public static QuestSystemSnapshot CaptureFullSnapshot(
             IEnumerable<QuestRuntime> activeQuests,
@@ -32,7 +32,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             IEnumerable<QuestLineRuntime> activeQuestLines,
             IEnumerable<QuestLineRuntime> completedQuestLines,
             IEnumerable<WorldFlagBase_SO> worldFlags,
-            WorldFlagService_SO flagService = null)
+            WorldFlagLocator_SO flagLocator = null)
         {
             var snapshot = new QuestSystemSnapshot
             {
@@ -74,7 +74,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             {
                 if (flag != null)
                 {
-                    snapshot.WorldFlags.Add(CaptureWorldFlag(flag, flagService));
+                    snapshot.WorldFlags.Add(CaptureWorldFlag(flag, flagLocator));
                     flagsCaptured++;
                 }
             }
@@ -149,21 +149,21 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         /// <summary>
         /// Captures a single world flag's state.
-        /// Requires a WorldFlagService_SO to get runtime values.
+        /// Requires a WorldFlagLocator_SO to get runtime values.
         /// </summary>
         /// <param name="flag">The flag to capture.</param>
-        /// <param name="flagService">Optional flag service for runtime values. If null, uses default values.</param>
-        public static WorldFlagSnapshot CaptureWorldFlag(WorldFlagBase_SO flag, WorldFlagService_SO flagService = null)
+        /// <param name="flagLocator">Optional flag locator for runtime values. If null, uses default values.</param>
+        public static WorldFlagSnapshot CaptureWorldFlag(WorldFlagBase_SO flag, WorldFlagLocator_SO flagLocator = null)
         {
             var snapshot = new WorldFlagSnapshot
             {
                 FlagGuid = flag.FlagId
             };
 
-            // Get runtime values from flag service
-            if (flagService == null || !flagService.IsAvailable)
+            // Get runtime values from flag locator
+            if (flagLocator == null || !flagLocator.IsAvailable)
             {
-                // Fallback to default values if service not available
+                // Fallback to default values if locator not available
                 switch (flag)
                 {
                     case WorldFlagBool_SO boolFlag:
@@ -179,18 +179,18 @@ namespace HelloDev.QuestSystem.SaveLoad
                 return snapshot;
             }
 
-            // Get runtime values from service
+            // Get runtime values from locator
             switch (flag)
             {
                 case WorldFlagBool_SO boolFlag:
                     snapshot.IsBoolFlag = true;
-                    var boolRuntime = flagService.GetBoolFlag(boolFlag);
+                    var boolRuntime = flagLocator.GetBoolFlag(boolFlag);
                     snapshot.BoolValue = boolRuntime?.Value ?? boolFlag.DefaultValue;
                     break;
 
                 case WorldFlagInt_SO intFlag:
                     snapshot.IsBoolFlag = false;
-                    var intRuntime = flagService.GetIntFlag(intFlag);
+                    var intRuntime = flagLocator.GetIntFlag(intFlag);
                     snapshot.IntValue = intRuntime?.Value ?? intFlag.DefaultValue;
                     break;
             }

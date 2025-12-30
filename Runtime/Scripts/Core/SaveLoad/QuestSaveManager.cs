@@ -21,20 +21,20 @@ namespace HelloDev.QuestSystem.SaveLoad
     /// Manages saving and loading of quest system state.
     /// Uses the ISaveDataProvider interface for storage, allowing integration
     /// with any save system (JSON files, cloud saves, etc.).
-    /// Registers itself with a QuestSaveService_SO for decoupled access.
+    /// Registers itself with a QuestSaveLocator_SO for decoupled access.
     /// </summary>
     public class QuestSaveManager : MonoBehaviour
     {
         #region Serialized Fields
 
 #if ODIN_INSPECTOR
-        [Title("Service")]
+        [Title("Locator")]
         [Required]
-        [InfoBox("Reference the QuestSaveService_SO asset. This manager will register itself with the service on enable.")]
+        [InfoBox("Reference the QuestSaveLocator_SO asset. This manager will register itself with the locator on enable.")]
 #endif
         [SerializeField]
-        [Tooltip("The service SO that provides decoupled access to this manager.")]
-        private QuestSaveService_SO service;
+        [Tooltip("The locator SO that provides decoupled access to this manager.")]
+        private QuestSaveLocator_SO locator;
 
 #if ODIN_INSPECTOR
         [Title("World Flags")]
@@ -48,8 +48,8 @@ namespace HelloDev.QuestSystem.SaveLoad
         private WorldFlagRegistry_SO worldFlagRegistryAsset;
 
         [SerializeField]
-        [Tooltip("The WorldFlagService_SO for accessing flag runtime values during save/load.")]
-        private WorldFlagService_SO worldFlagService;
+        [Tooltip("The WorldFlagLocator_SO for accessing flag runtime values during save/load.")]
+        private WorldFlagLocator_SO worldFlagLocator;
 
 #if ODIN_INSPECTOR
         [Title("Options")]
@@ -94,9 +94,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         #region Properties
 
         /// <summary>
-        /// Gets the service this manager is registered with.
+        /// Gets the locator this manager is registered with.
         /// </summary>
-        public QuestSaveService_SO Service => service;
+        public QuestSaveLocator_SO Locator => locator;
 
         /// <summary>
         /// Gets whether a save provider has been set.
@@ -127,36 +127,36 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         private void OnEnable()
         {
-            // Register with service
-            if (service != null)
+            // Register with locator
+            if (locator != null)
             {
-                service.Register(this);
+                locator.Register(this);
 
-                // Forward events to service
-                OnBeforeSave.AddListener(slot => service.OnBeforeSave?.Invoke(slot));
-                OnAfterSave.AddListener((slot, success) => service.OnAfterSave?.Invoke(slot, success));
-                OnBeforeLoad.AddListener(slot => service.OnBeforeLoad?.Invoke(slot));
-                OnAfterLoad.AddListener((slot, success) => service.OnAfterLoad?.Invoke(slot, success));
+                // Forward events to locator
+                OnBeforeSave.AddListener(slot => locator.OnBeforeSave?.Invoke(slot));
+                OnAfterSave.AddListener((slot, success) => locator.OnAfterSave?.Invoke(slot, success));
+                OnBeforeLoad.AddListener(slot => locator.OnBeforeLoad?.Invoke(slot));
+                OnAfterLoad.AddListener((slot, success) => locator.OnAfterLoad?.Invoke(slot, success));
 
-                QuestLogger.LogVerbose(LogSubsystem.Save, "SaveManager registered with service");
+                QuestLogger.LogVerbose(LogSubsystem.Save, "SaveManager registered with locator");
             }
             else
             {
-                QuestLogger.LogWarning(LogSubsystem.Save, $"No service assigned on {name}");
+                QuestLogger.LogWarning(LogSubsystem.Save, $"No locator assigned on {name}");
             }
         }
 
         private void OnDisable()
         {
-            // Unregister from service
-            if (service != null)
+            // Unregister from locator
+            if (locator != null)
             {
                 OnBeforeSave.RemoveAllListeners();
                 OnAfterSave.RemoveAllListeners();
                 OnBeforeLoad.RemoveAllListeners();
                 OnAfterLoad.RemoveAllListeners();
 
-                service.Unregister(this);
+                locator.Unregister(this);
             }
         }
 
@@ -244,7 +244,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 questManager.GetActiveQuestLines(),
                 questManager.GetCompletedQuestLines(),
                 GetAllWorldFlags(),
-                worldFlagService
+                worldFlagLocator
             );
 
             snapshot.Version = 1;
@@ -282,7 +282,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 questManager.InitializeManager(questManager.QuestsDatabase.ToList());
 
                 // Restore world flags first (quests may depend on them)
-                SnapshotRestorer.RestoreWorldFlags(snapshot.WorldFlags, GetAllWorldFlags(), worldFlagService);
+                SnapshotRestorer.RestoreWorldFlags(snapshot.WorldFlags, GetAllWorldFlags(), worldFlagLocator);
 
                 // Restore quests
                 SnapshotRestorer.RestoreQuests(snapshot.ActiveQuests, QuestState.InProgress, questManager, FindQuestByGuid);
@@ -459,7 +459,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         [Title("Debug - Save/Load")]
         [ShowInInspector, ReadOnly]
         [PropertyOrder(200)]
-        private bool ServiceRegistered => service != null && service.IsAvailable;
+        private bool LocatorRegistered => locator != null && locator.IsAvailable;
 
         [ShowInInspector, ReadOnly]
         [PropertyOrder(201)]
@@ -520,14 +520,14 @@ namespace HelloDev.QuestSystem.SaveLoad
         [GUIColor(0.9f, 0.6f, 0.4f)]
         private void DebugResetWorldFlags()
         {
-            if (worldFlagService != null && worldFlagService.IsAvailable)
+            if (worldFlagLocator != null && worldFlagLocator.IsAvailable)
             {
-                worldFlagService.ResetAllFlags();
+                worldFlagLocator.ResetAllFlags();
                 QuestLogger.Log(LogSubsystem.Save, "All world flags reset");
             }
             else
             {
-                QuestLogger.LogWarning(LogSubsystem.Save, "WorldFlagService not available");
+                QuestLogger.LogWarning(LogSubsystem.Save, "WorldFlagLocator not available");
             }
         }
 

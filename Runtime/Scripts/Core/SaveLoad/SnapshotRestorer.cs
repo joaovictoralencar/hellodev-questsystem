@@ -15,16 +15,16 @@ namespace HelloDev.QuestSystem.SaveLoad
     {
         /// <summary>
         /// Restores world flags from snapshot data.
-        /// Requires a WorldFlagService_SO to set runtime values.
+        /// Requires a WorldFlagLocator_SO to set runtime values.
         /// </summary>
         /// <param name="flagSnapshots">The world flag snapshots to restore.</param>
         /// <param name="allFlags">All available world flag assets.</param>
-        /// <param name="flagService">The flag service to use for restoring values.</param>
-        public static void RestoreWorldFlags(List<WorldFlagSnapshot> flagSnapshots, List<WorldFlagBase_SO> allFlags, WorldFlagService_SO flagService)
+        /// <param name="flagLocator">The flag locator to use for restoring values.</param>
+        public static void RestoreWorldFlags(List<WorldFlagSnapshot> flagSnapshots, List<WorldFlagBase_SO> allFlags, WorldFlagLocator_SO flagLocator)
         {
-            if (flagService == null || !flagService.IsAvailable)
+            if (flagLocator == null || !flagLocator.IsAvailable)
             {
-                QuestLogger.LogWarning("[SnapshotRestorer] WorldFlagService not available. Cannot restore world flags.");
+                QuestLogger.LogWarning("[SnapshotRestorer] WorldFlagLocator not available. Cannot restore world flags.");
                 return;
             }
 
@@ -43,18 +43,18 @@ namespace HelloDev.QuestSystem.SaveLoad
                 }
 
                 // Ensure flag is registered
-                flagService.RegisterFlag(flag);
+                flagLocator.RegisterFlag(flag);
 
-                // Set value via service
+                // Set value via locator
                 switch (flag)
                 {
                     case WorldFlagBool_SO boolFlag:
-                        flagService.SetBoolValue(boolFlag, snapshot.BoolValue);
+                        flagLocator.SetBoolValue(boolFlag, snapshot.BoolValue);
                         QuestLogger.Log($"[SnapshotRestorer] Restored bool flag '{boolFlag.FlagName}' = {snapshot.BoolValue}");
                         break;
 
                     case WorldFlagInt_SO intFlag:
-                        flagService.SetIntValue(intFlag, snapshot.IntValue);
+                        flagLocator.SetIntValue(intFlag, snapshot.IntValue);
                         QuestLogger.Log($"[SnapshotRestorer] Restored int flag '{intFlag.FlagName}' = {snapshot.IntValue}");
                         break;
                 }
