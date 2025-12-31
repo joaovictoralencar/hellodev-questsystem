@@ -528,6 +528,55 @@ All patterns work together - a single quest can:
 - Track choices for narrative endings (Pattern 3)
 - Respond to player actions (Pattern 4)
 
+### Bootstrap Support
+
+The quest system supports Unity's bootstrap pattern for controlled initialization order via `IBootstrapInitializable` from `com.hellodev.utils`.
+
+**Components with Bootstrap Support:**
+| Component | Priority | Description |
+|-----------|----------|-------------|
+| `QuestManager` | 150 | Game Systems layer |
+| `QuestSaveManager` | 200 | Persistence layer |
+| `SaveSystemSetup` | 250 | Data Loading layer |
+
+**Standalone Mode (Default):**
+Each component self-initializes in Unity's lifecycle when `selfInitialize = true`.
+
+**Bootstrap Mode:**
+Set `selfInitialize = false` on each component, then use `GameBootstrap` to control initialization order.
+
+```csharp
+// Components implement IBootstrapInitializable
+public class QuestManager : MonoBehaviour, IBootstrapInitializable
+{
+    public bool SelfInitialize => initializeOnAwake;
+    public int InitializationPriority => 150;
+    public bool IsInitialized => _isInitialized;
+
+    public Task InitializeAsync() { /* ... */ }
+    public void Shutdown() { /* ... */ }
+}
+```
+
+**QuestAutoAddMode:**
+
+Controls how quests are auto-added from the database on initialization:
+
+| Mode | Description |
+|------|-------------|
+| `Disabled` | No auto-add. Quests added via gameplay (NPCs, events, etc.). Default for production. |
+| `AllQuests` | Add all quests regardless of conditions. Useful for debugging. |
+| `WithConditionsMet` | Only add quests whose start conditions are already met. |
+
+```csharp
+// In QuestManager inspector, set "Auto Add Mode" dropdown
+// Or check programmatically:
+if (autoAddMode == QuestAutoAddMode.Disabled)
+{
+    // Quests will only be added via AddQuest() calls
+}
+```
+
 ### Save/Load System
 
 The quest system includes a flexible save/load system that allows you to persist quest progress. The system uses `SaveService` from `com.hellodev.utils` for storage, so you can integrate with any save system (JSON files, cloud saves, Easy Save 3, etc.).
@@ -931,6 +980,23 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.4.0 (2025-12-31)
+**Bootstrap Support:**
+- Added `IBootstrapInitializable` implementation to `QuestManager` (priority 150)
+- Added `IBootstrapInitializable` implementation to `QuestSaveManager` (priority 200)
+- Added `IBootstrapInitializable` implementation to `SaveSystemSetup` (priority 250)
+- Added `SelfInitialize` property to control standalone vs bootstrap mode
+- Fixed singleton timing issues when bootstrap calls `InitializeAsync` before `Awake`
+
+**QuestAutoAddMode Enum:**
+- Replaced `autoStartQuestsOnStart` bool with `QuestAutoAddMode` enum
+- `Disabled` - No auto-add (default for production)
+- `AllQuests` - Add all quests regardless of conditions (debug mode)
+- `WithConditionsMet` - Only add quests whose start conditions are met
+
+**UI Improvements:**
+- `UI_Quests` now handles quests added after UI initialization via `HandleQuestAdded`
 
 ### v3.3.0 (2025-12-30)
 **SaveService Integration:**
