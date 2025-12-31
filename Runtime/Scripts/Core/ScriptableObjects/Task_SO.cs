@@ -84,7 +84,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Gets the unique, permanent identifier for this task.
         /// </summary>
-        public Guid TaskId => Guid.Parse(taskId);
+        public Guid TaskId => string.IsNullOrEmpty(taskId) ? Guid.Empty : Guid.Parse(taskId);
 
         /// <summary>
         /// Gets the localized display name of the task.

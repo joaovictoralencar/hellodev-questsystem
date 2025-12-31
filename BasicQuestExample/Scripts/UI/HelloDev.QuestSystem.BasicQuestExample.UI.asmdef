@@ -12,7 +12,8 @@
         "QuestSystem.Utils",
         "HelloDev.IDs",
         "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
-        "HelloDev.Events"
+        "HelloDev.Events",
+        "HelloDev.Bootstrap"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

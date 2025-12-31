@@ -165,7 +165,8 @@ namespace HelloDev.QuestSystem.Tasks
         public override void RestoreProgress(TaskProgressData progressData)
         {
             _currentCount = progressData.IntValue;
-            OnTaskUpdated.SafeInvoke(this);
+            // Note: Do NOT fire OnTaskUpdated here - it triggers CheckCompletion
+            // which can auto-complete the task before state is fully restored
         }
 
         #endregion

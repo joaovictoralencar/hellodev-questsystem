@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using HelloDev.Bootstrap;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -183,6 +185,24 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void SetupQuestUI()
         {
+            // Wait for bootstrap to complete before setting up
+            if (!GameBootstrap.IsReady)
+            {
+                StartCoroutine(WaitForBootstrapAndSetup());
+                return;
+            }
+
+            SetupQuestUIInternal();
+        }
+
+        private IEnumerator WaitForBootstrapAndSetup()
+        {
+            yield return new WaitUntil(() => GameBootstrap.IsReady);
+            SetupQuestUIInternal();
+        }
+
+        private void SetupQuestUIInternal()
+        {
             if (QuestManager.Instance == null)
             {
                 QuestLogger.LogWarning(LogSubsystem.UI, "QuestManager not available");
@@ -351,6 +371,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (QuestManager.Instance == null) return;
 
+            QuestManager.Instance.QuestAdded.SafeSubscribe(HandleQuestAdded);
             QuestManager.Instance.QuestStarted.SafeSubscribe(HandleQuestStarted);
             QuestManager.Instance.QuestCompleted.SafeSubscribe(HandleQuestCompleted);
             QuestManager.Instance.QuestRestarted.SafeSubscribe(HandleQuestRestarted);
@@ -362,11 +383,46 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (QuestManager.Instance == null) return;
 
+            QuestManager.Instance.QuestAdded.SafeUnsubscribe(HandleQuestAdded);
             QuestManager.Instance.QuestStarted.SafeUnsubscribe(HandleQuestStarted);
             QuestManager.Instance.QuestCompleted.SafeUnsubscribe(HandleQuestCompleted);
             QuestManager.Instance.QuestRestarted.SafeUnsubscribe(HandleQuestRestarted);
             QuestManager.Instance.QuestFailed.SafeUnsubscribe(HandleQuestFailed);
             QuestManager.Instance.QuestRemoved.SafeUnsubscribe(HandleQuestRemoved);
+        }
+
+        private void HandleQuestAdded(QuestRuntime quest)
+        {
+            if (quest?.QuestData?.QuestType == null) return;
+
+            bool added = false;
+
+            // Handle quests loaded from save with preserved state
+            if (quest.CurrentState == QuestState.Completed)
+            {
+                if (completedQuestType != null)
+                {
+                    var completedSection = GetOrCreateSection(completedQuestType);
+                    completedSection.AddQuest(quest, HandleQuestSelected);
+                    added = true;
+                }
+            }
+            else if (quest.CurrentState == QuestState.InProgress)
+            {
+                var section = GetOrCreateSection(quest.QuestData.QuestType);
+                section.AddQuest(quest, HandleQuestSelected);
+                added = true;
+            }
+            // NotStarted and Failed quests are not displayed until state changes
+
+            if (added)
+            {
+                RebuildQuestItemList();
+
+                // Auto-select if nothing selected
+                if (_selectedQuest == null)
+                    SelectQuest(quest);
+            }
         }
 
         private void HandleQuestStarted(QuestRuntime quest)

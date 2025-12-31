@@ -264,6 +264,37 @@ namespace HelloDev.QuestSystem.Stages
             CurrentState = StageState.NotReached;
         }
 
+        #region Save/Load Restoration
+
+        /// <summary>
+        /// Directly sets the stage state and group index without triggering events or side effects.
+        /// Used during save/load restoration.
+        /// </summary>
+        /// <param name="state">The state to set.</param>
+        /// <param name="groupIndex">The current group index to set.</param>
+        public void RestoreStageState(StageState state, int groupIndex)
+        {
+            CurrentState = state;
+            _currentGroupIndex = groupIndex;
+        }
+
+        /// <summary>
+        /// Resumes a stage that was restored to InProgress state.
+        /// Subscribes to events so the stage can respond to game events.
+        /// Call this AFTER all task states have been restored.
+        /// </summary>
+        public void ResumeStage()
+        {
+            if (CurrentState == StageState.InProgress)
+            {
+                SubscribeToGroupEvents();
+                SubscribeToConditionTransitions();
+                QuestLogger.LogVerbose(LogSubsystem.Stage, $"Stage '{StageName}' resumed from save");
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Checks if all task groups are completed.
         /// </summary>

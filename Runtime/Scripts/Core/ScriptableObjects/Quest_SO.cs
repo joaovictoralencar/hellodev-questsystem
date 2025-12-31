@@ -137,7 +137,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Gets the unique, permanent identifier for this quest.
         /// </summary>
-        public Guid QuestId => Guid.Parse(questId);
+        public Guid QuestId => string.IsNullOrEmpty(questId) ? Guid.Empty : Guid.Parse(questId);
 
         /// <summary>
         /// Gets the localized display name of the quest.

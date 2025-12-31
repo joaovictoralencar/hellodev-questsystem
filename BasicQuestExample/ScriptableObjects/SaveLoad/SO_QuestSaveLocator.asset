@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffabd9e993b1d1441a2c6862accac17e, type: 3}
-  m_Name: SO_QuestSaveService
-  m_EditorClassIdentifier: HelloDev.QuestSystem::HelloDev.QuestSystem.SaveLoad.QuestSaveService_SO
+  m_Script: {fileID: 11500000, guid: e31f74e9e658f3e4b93a88a7a5fd970f, type: 3}
+  m_Name: SO_QuestSaveLocator
+  m_EditorClassIdentifier: HelloDev.QuestSystem::HelloDev.QuestSystem.SaveLoad.QuestSaveLocator_SO

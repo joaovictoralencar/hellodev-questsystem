@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using HelloDev.Conditions;
 using HelloDev.QuestSystem.Internal;
 using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.Quests;
@@ -18,6 +19,19 @@ using Sirenix.OdinInspector;
 
 namespace HelloDev.QuestSystem
 {
+    /// <summary>
+    /// Determines how quests are auto-added from the database on initialization.
+    /// </summary>
+    public enum QuestAutoAddMode
+    {
+        /// <summary>Do not auto-add any quests. Use for normal gameplay where quests are added via events/NPCs.</summary>
+        Disabled,
+        /// <summary>Add all quests from database regardless of start conditions. Useful for debugging.</summary>
+        AllQuests,
+        /// <summary>Only add quests whose start conditions are already met.</summary>
+        WithConditionsMet
+    }
+
     /// <summary>
     /// The central manager for all quests. This singleton handles quest lifecycle,
     /// state, and event delegation. It provides a clean API for game systems to
@@ -82,11 +96,13 @@ namespace HelloDev.QuestSystem
 #if ODIN_INSPECTOR
         [TitleGroup("Configuration")]
         [PropertyOrder(11)]
-        [ToggleLeft]
 #endif
-        [Tooltip("If true, all quests in the database will be added on Start. Quests only start if their start conditions are met.")]
+        [Tooltip("Controls how quests are auto-added from the database on initialization.\n\n" +
+                 "Disabled: No auto-add. Quests added via gameplay (NPCs, events, etc.).\n" +
+                 "AllQuests: Add all quests regardless of conditions (debug mode).\n" +
+                 "WithConditionsMet: Only add quests whose start conditions are met.")]
         [SerializeField]
-        private bool autoStartQuestsOnStart = true;
+        private QuestAutoAddMode autoAddMode = QuestAutoAddMode.Disabled;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Configuration")]
@@ -135,6 +151,9 @@ namespace HelloDev.QuestSystem
         #endregion
 
         #region IBootstrapInitializable
+
+        /// <inheritdoc />
+        public bool SelfInitialize => initializeOnAwake;
 
         /// <inheritdoc />
         public int InitializationPriority => 150; // Game systems layer
@@ -233,11 +252,10 @@ namespace HelloDev.QuestSystem
 
         private void Awake()
         {
+            // Set singleton early for bootstrap mode (InitializeAsync may be called before Awake)
             if (Instance == null)
             {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-                QuestLogger.IsLoggingEnabled = enableDebugLogging;
+                SetupSingleton();
 
                 // Only self-initialize if in standalone mode
                 if (initializeOnAwake)
@@ -245,25 +263,23 @@ namespace HelloDev.QuestSystem
                     _ = InitializeAsync();
                 }
             }
-            else
+            else if (Instance != this)
             {
                 Destroy(gameObject);
             }
         }
 
+        private void SetupSingleton()
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            QuestLogger.IsLoggingEnabled = enableDebugLogging;
+        }
+
         private void Start()
         {
-            if (autoStartQuestsOnStart)
-            {
-                QuestLogger.LogVerbose(LogSubsystem.Manager, $"Auto-adding {questsDatabase.Count} quests from database");
-                foreach (Quest_SO quest in questsDatabase)
-                {
-                    if (quest != null)
-                    {
-                        AddQuest(quest, forceStart: false);
-                    }
-                }
-            }
+            // Auto-add is now handled in InitializeAsync() for proper bootstrap ordering
+            // This allows save loading (priority 250) to overwrite the initial state
         }
 
         private void OnDestroy()
@@ -298,7 +314,28 @@ namespace HelloDev.QuestSystem
             if (_isInitialized)
                 return Task.CompletedTask;
 
+            // Ensure singleton is set (bootstrap may call this before Awake)
+            if (Instance == null)
+                SetupSingleton();
+
             InitializeManager(questsDatabase);
+
+            // Auto-add quests from database based on configured mode
+            if (autoAddMode != QuestAutoAddMode.Disabled)
+            {
+                QuestLogger.LogVerbose(LogSubsystem.Manager, $"Auto-add mode: {autoAddMode}, checking {questsDatabase.Count} quests");
+                foreach (Quest_SO quest in questsDatabase)
+                {
+                    if (quest == null) continue;
+
+                    bool shouldAdd = autoAddMode == QuestAutoAddMode.AllQuests || CanQuestBeAdded(quest);
+                    if (shouldAdd)
+                    {
+                        AddQuest(quest, forceStart: false);
+                    }
+                }
+            }
+
             _isInitialized = true;
 
             return Task.CompletedTask;
@@ -329,6 +366,10 @@ namespace HelloDev.QuestSystem
             _questRegistry.InitializeDatabase(allQuestData);
             _questLineRegistry.InitializeDatabase(questLinesDatabase);
 
+#if UNITY_EDITOR
+            ValidateDuplicateGUIDs();
+#endif
+
             QuestLogger.Log(LogSubsystem.Manager, $"Initialized with <b>{_questRegistry.DatabaseCount}</b> quests, <b>{_questLineRegistry.DatabaseCount}</b> questlines");
         }
 
@@ -357,6 +398,34 @@ namespace HelloDev.QuestSystem
         #endregion
 
         #region Quest Lifecycle
+
+        /// <summary>
+        /// Checks if a quest's start conditions are met (or has no conditions).
+        /// Used by <see cref="QuestAutoAddMode.WithConditionsMet"/> mode.
+        /// </summary>
+        /// <param name="questData">The quest data to check.</param>
+        /// <returns>True if the quest has no start conditions or all conditions evaluate to true.</returns>
+        private bool CanQuestBeAdded(Quest_SO questData)
+        {
+            if (questData == null)
+                return false;
+
+            var conditions = questData.StartConditions;
+            if (conditions == null || conditions.Count == 0)
+                return true;
+
+            foreach (Condition_SO condition in conditions)
+            {
+                if (condition != null && !condition.Evaluate())
+                {
+                    QuestLogger.LogVerbose(LogSubsystem.Manager,
+                        $"Quest '{questData.DevName}' skipped: start condition '{condition.name}' not met");
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Adds a quest to the active quests and optionally starts it.
@@ -867,6 +936,147 @@ namespace HelloDev.QuestSystem
         /// Gets the internal questline registry. Used by QuestManager.Editor.cs.
         /// </summary>
         internal QuestLineRegistry QuestLineRegistry => _questLineRegistry;
+
+        #endregion
+
+        #region GUID Validation
+
+        /// <summary>
+        /// Validates all quests and tasks in the database for duplicate GUIDs.
+        /// Duplicate GUIDs cause incorrect save/load behavior.
+        /// Call this during development to catch duplicated assets.
+        /// </summary>
+        /// <returns>True if no duplicates found, false if duplicates exist.</returns>
+        #if ODIN_INSPECTOR
+        [Button("Validate GUIDs")]
+        #endif
+        public bool ValidateDuplicateGUIDs()
+        {
+            bool isValid = true;
+
+            // Check for duplicate Quest GUIDs
+            var questGuidMap = new Dictionary<string, List<string>>();
+            foreach (var quest in questsDatabase)
+            {
+                if (quest == null) continue;
+
+                string guid = quest.QuestId.ToString();
+                if (!questGuidMap.ContainsKey(guid))
+                {
+                    questGuidMap[guid] = new List<string>();
+                }
+                questGuidMap[guid].Add(quest.DevName);
+            }
+
+            foreach (var kvp in questGuidMap)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    QuestLogger.LogError(LogSubsystem.Manager,
+                        $"DUPLICATE QUEST GUID: '{kvp.Key}' shared by: {string.Join(", ", kvp.Value)}. " +
+                        "Use 'Generate New ID' button in the Inspector to fix.");
+                    isValid = false;
+                }
+            }
+
+            // Check for duplicate Task GUIDs across all quests
+            var taskGuidMap = new Dictionary<string, List<string>>();
+            foreach (var quest in questsDatabase)
+            {
+                if (quest == null) continue;
+
+                foreach (var task in quest.AllTasks)
+                {
+                    if (task == null) continue;
+
+                    string guid = task.TaskId.ToString();
+                    string taskInfo = $"{quest.DevName}/{task.DevName}";
+
+                    if (!taskGuidMap.ContainsKey(guid))
+                    {
+                        taskGuidMap[guid] = new List<string>();
+                    }
+                    taskGuidMap[guid].Add(taskInfo);
+                }
+            }
+
+            foreach (var kvp in taskGuidMap)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    QuestLogger.LogError(LogSubsystem.Manager,
+                        $"DUPLICATE TASK GUID: '{kvp.Key}' shared by: {string.Join(", ", kvp.Value)}. " +
+                        "Use 'Generate New ID' button in the Inspector to fix.");
+                    isValid = false;
+                }
+            }
+
+            if (isValid)
+            {
+                QuestLogger.Log(LogSubsystem.Manager, "GUID validation passed: No duplicates found.");
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Validates GUIDs for a specific quest and its tasks.
+        /// Use this after adding a quest to check for conflicts with existing quests.
+        /// </summary>
+        /// <param name="questData">The quest to validate.</param>
+        /// <returns>True if no duplicates found.</returns>
+        public bool ValidateQuestGUIDs(Quest_SO questData)
+        {
+            if (questData == null) return true;
+
+            bool isValid = true;
+            string questGuid = questData.QuestId.ToString();
+
+            // Check quest GUID against database
+            foreach (var other in questsDatabase)
+            {
+                if (other == null || other == questData) continue;
+
+                if (other.QuestId.ToString() == questGuid)
+                {
+                    QuestLogger.LogError(LogSubsystem.Manager,
+                        $"DUPLICATE QUEST GUID: '{questData.DevName}' has same GUID as '{other.DevName}'");
+                    isValid = false;
+                }
+            }
+
+            // Check task GUIDs against all tasks in database
+            var allTaskGuids = new Dictionary<string, string>(); // guid -> questName/taskName
+            foreach (var quest in questsDatabase)
+            {
+                if (quest == null) continue;
+
+                foreach (var task in quest.AllTasks)
+                {
+                    if (task == null) continue;
+                    allTaskGuids[task.TaskId.ToString()] = $"{quest.DevName}/{task.DevName}";
+                }
+            }
+
+            foreach (var task in questData.AllTasks)
+            {
+                if (task == null) continue;
+
+                string taskGuid = task.TaskId.ToString();
+                if (allTaskGuids.TryGetValue(taskGuid, out string existingTask))
+                {
+                    string currentTask = $"{questData.DevName}/{task.DevName}";
+                    if (existingTask != currentTask)
+                    {
+                        QuestLogger.LogError(LogSubsystem.Manager,
+                            $"DUPLICATE TASK GUID: '{currentTask}' has same GUID as '{existingTask}'");
+                        isValid = false;
+                    }
+                }
+            }
+
+            return isValid;
+        }
 
         #endregion
     }

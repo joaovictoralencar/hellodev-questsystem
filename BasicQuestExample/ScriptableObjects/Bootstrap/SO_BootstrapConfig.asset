@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HelloDev.Bootstrap::HelloDev.Bootstrap.BootstrapConfig_SO
   enableDebugLogging: 1
   initializationTimeout: 10
-  services:
+  locators:
   - {fileID: 11400000, guid: c5eee9c03bfd7fd44939c037c9f2dce6, type: 2}
   - {fileID: 11400000, guid: b02d4b10f4a960d40acefb08a8a46d11, type: 2}
   OnBootstrapStarted:

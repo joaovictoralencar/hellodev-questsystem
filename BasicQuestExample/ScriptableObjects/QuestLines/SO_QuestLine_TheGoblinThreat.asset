@@ -11,8 +11,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9d640fb551b0b34cbebe3937f33484c, type: 3}
   m_Name: SO_QuestLine_TheGoblinThreat
-  m_EditorClassIdentifier:
-  _description: 'Main storyline: The Goblin Threat. Follow the trail from initial goblin attacks, through uncovering the bandit connection, to stopping the greater conspiracy.'
+  m_EditorClassIdentifier: 
+  _description: 'Main storyline: The Goblin Threat. Follow the trail from initial
+    goblin attacks, through uncovering the bandit connection, to stopping the greater
+    conspiracy.'
   devName: TheGoblinThreat
   questLineId: f1e2d3c4-b5a6-4789-8012-345678abcdef
   displayName:
@@ -20,7 +22,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -29,7 +31,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -41,7 +43,9 @@ MonoBehaviour:
   requireSequentialCompletion: 1
   prerequisiteLine: {fileID: 0}
   failOnAnyQuestFailed: 0
-  completionRewards: []
+  completionRewards:
+  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
+    Amount: 1000
   references:
     version: 2
     RefIds: []

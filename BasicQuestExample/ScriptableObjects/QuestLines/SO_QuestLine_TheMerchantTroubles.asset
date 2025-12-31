@@ -11,25 +11,27 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9d640fb551b0b34cbebe3937f33484c, type: 3}
   m_Name: SO_QuestLine_TheMerchantTroubles
-  m_EditorClassIdentifier:
-  _description: 'Side storyline: The Merchant Troubles. Help the merchant deal with bandits through combat, diplomacy, or lawful means. Player choices affect reputation and world state.'
+  m_EditorClassIdentifier: 
+  _description: 'Side storyline: The Merchant Troubles. Help the merchant deal with
+    bandits through combat, diplomacy, or lawful means. Player choices affect reputation
+    and world state.'
   devName: TheMerchantTroubles
   questLineId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
   displayName:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: 
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   description:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: 
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -40,8 +42,8 @@ MonoBehaviour:
   prerequisiteLine: {fileID: 0}
   failOnAnyQuestFailed: 0
   completionRewards:
-  - rewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
-    amount: 250
+  - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
+    Amount: 10000
   references:
     version: 2
     RefIds: []

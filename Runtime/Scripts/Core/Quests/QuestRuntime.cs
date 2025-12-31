@@ -301,6 +301,67 @@ namespace HelloDev.QuestSystem.Quests
             OnQuestRestarted.SafeInvoke(this);
         }
 
+        #region Save/Load Restoration
+
+        /// <summary>
+        /// Directly sets the quest state and current stage without triggering events or side effects.
+        /// Used during save/load restoration.
+        /// </summary>
+        /// <param name="state">The state to set.</param>
+        /// <param name="stageIndex">The current stage index to set (-1 for no stage).</param>
+        public void RestoreQuestState(QuestState state, int stageIndex)
+        {
+            CurrentState = state;
+            CurrentStage = stageIndex >= 0 ? GetStageByIndex(stageIndex) : null;
+        }
+
+        /// <summary>
+        /// Resumes a quest that was restored to InProgress state.
+        /// Subscribes to events so the quest can respond to game events.
+        /// Call this AFTER all task and stage states have been restored.
+        /// </summary>
+        public void ResumeQuest()
+        {
+            if (CurrentState == QuestState.InProgress)
+            {
+                // Unsubscribe from start conditions (quest already started)
+                UnsubscribeFromStartConditions();
+
+                // Subscribe to stage events
+                SubscribeToAllEvents();
+
+                // Resume the current stage
+                CurrentStage?.ResumeStage();
+
+                // Resume all InProgress groups and tasks
+                foreach (var stage in Stages)
+                {
+                    foreach (var group in stage.TaskGroups)
+                    {
+                        if (group.CurrentState == TaskGroupState.InProgress)
+                        {
+                            group.ResumeGroup();
+                        }
+
+                        foreach (var task in group.Tasks)
+                        {
+                            task.ResumeTask();
+                        }
+                    }
+                }
+
+                // If the current stage has player choices, set up choice handling
+                if (CurrentStage?.Data.HasPlayerChoices == true)
+                {
+                    SubscribeToPlayerChoiceConditions();
+                }
+
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"Quest '{QuestData.DevName}' resumed from save");
+            }
+        }
+
+        #endregion
+
         #region Stage Management
 
         /// <summary>

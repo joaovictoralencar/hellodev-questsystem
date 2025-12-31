@@ -530,54 +530,54 @@ All patterns work together - a single quest can:
 
 ### Save/Load System
 
-The quest system includes a flexible save/load system that allows you to persist quest progress. The system uses an interface-based design so you can integrate with any save system (JSON files, cloud saves, Easy Save 3, etc.).
+The quest system includes a flexible save/load system that allows you to persist quest progress. The system uses `SaveService` from `com.hellodev.utils` for storage, so you can integrate with any save system (JSON files, cloud saves, Easy Save 3, etc.).
 
 **Quick Start:**
 ```csharp
 using HelloDev.QuestSystem.SaveLoad;
+using HelloDev.Saving;
 
-// Setup (typically in game initialization)
-QuestSaveManager.Instance.SetProvider(new JsonFileSaveProvider());
+// Setup at application startup (typically in a bootstrap script)
+SaveService.SetProvider(new JsonSaveProvider("saves", ".sav", true));
 
-// Save quest progress
-await QuestSaveManager.Instance.SaveAsync("save_slot_1");
+// Save quest progress via locator
+await questSaveLocator.SaveAsync("save_slot_1");
 
 // Load quest progress
-await QuestSaveManager.Instance.LoadAsync("save_slot_1");
+await questSaveLocator.LoadAsync("save_slot_1");
 
 // Check if save exists
-bool exists = await QuestSaveManager.Instance.SaveExistsAsync("save_slot_1");
+bool exists = await questSaveLocator.SaveExistsAsync("save_slot_1");
 
 // Delete a save
-await QuestSaveManager.Instance.DeleteSaveAsync("save_slot_1");
+await questSaveLocator.DeleteSaveAsync("save_slot_1");
 
 // List all saves
-string[] slots = await QuestSaveManager.Instance.GetAllSaveSlotsAsync();
+string[] slots = await questSaveLocator.GetAllSaveSlotsAsync();
 ```
 
 **Per-Slot Autosave:**
 
 The save system supports slot-based autosave, where each save slot gets its own autosave file. When playing on slot 1, autosaves go to "autosave-1"; when playing on slot 2, autosaves go to "autosave-2".
 
-1. Create > HelloDev > Services > Save Slot Service
-2. Assign to SaveSystemSetup's `Slot Service` field
-3. Set `Default Slot Index` (0 = first slot)
+1. Create > HelloDev > Quest System > Save Slot Config
+2. Reference the config in your save management code
 
 ```csharp
 // Programmatic slot management
-slotService.SetActiveSlot(0);  // Autosaves now go to "autosave-0"
-slotService.SetActiveSlot(2);  // Autosaves now go to "autosave-2"
+slotConfig.SetActiveSlot(0);  // Autosaves now go to "autosave-0"
+slotConfig.SetActiveSlot(2);  // Autosaves now go to "autosave-2"
 
 // Get slot keys
-string autoKey = slotService.CurrentAutosaveSlotKey;  // "autosave-2"
-string saveKey = slotService.CurrentManualSlotKey;    // "save-2"
+string autoKey = slotConfig.CurrentAutosaveSlotKey;  // "autosave-2"
+string saveKey = slotConfig.CurrentManualSlotKey;    // "save-2"
 
 // When loading a different save
-await saveService.LoadAsync("save-1");
-slotService.SetActiveSlot(1);  // Future autosaves go to "autosave-1"
+await questSaveLocator.LoadAsync("save-1");
+slotConfig.SetActiveSlot(1);  // Future autosaves go to "autosave-1"
 ```
 
-**SaveSlotService_SO Properties:**
+**SaveSlotConfig_SO Properties:**
 | Property | Description |
 |----------|-------------|
 | `MaxSlots` | Maximum number of save slots (configurable) |
@@ -587,34 +587,34 @@ slotService.SetActiveSlot(1);  // Future autosaves go to "autosave-1"
 | `CurrentManualSlotKey` | Returns "save-X" for current slot |
 
 **Custom Save Provider:**
-Implement `ISaveDataProvider` to integrate with your preferred save system:
+Implement `ISaveProvider` from `HelloDev.Saving` to integrate with your preferred save system:
 
 ```csharp
-using HelloDev.QuestSystem.SaveLoad;
+using HelloDev.Saving;
+using System.Threading.Tasks;
 
 // Example: Easy Save 3 integration
-public class ES3SaveProvider : ISaveDataProvider
+public class ES3SaveProvider : ISaveProvider
 {
-    public Task<bool> SaveAsync(string slotKey, QuestSystemSnapshot snapshot)
+    public Task<bool> SaveAsync<T>(string key, T data)
     {
-        ES3.Save(slotKey, snapshot);
+        ES3.Save(key, data);
         return Task.FromResult(true);
     }
 
-    public Task<QuestSystemSnapshot> LoadAsync(string slotKey)
+    public Task<T> LoadAsync<T>(string key)
     {
-        if (!ES3.KeyExists(slotKey)) return Task.FromResult<QuestSystemSnapshot>(null);
-        return Task.FromResult(ES3.Load<QuestSystemSnapshot>(slotKey));
+        if (!ES3.KeyExists(key)) return Task.FromResult(default(T));
+        return Task.FromResult(ES3.Load<T>(key));
     }
 
-    public Task<bool> ExistsAsync(string slotKey) => Task.FromResult(ES3.KeyExists(slotKey));
-    public Task<bool> DeleteAsync(string slotKey) { ES3.DeleteKey(slotKey); return Task.FromResult(true); }
-    public Task<SaveSlotMetadata> GetMetadataAsync(string slotKey) => Task.FromResult<SaveSlotMetadata>(null);
-    public Task<string[]> GetAllSlotsAsync() => Task.FromResult(Array.Empty<string>());
+    public Task<bool> ExistsAsync(string key) => Task.FromResult(ES3.KeyExists(key));
+    public Task<bool> DeleteAsync(string key) { ES3.DeleteKey(key); return Task.FromResult(true); }
+    public Task<string[]> GetKeysAsync(string prefix = null) => Task.FromResult(Array.Empty<string>());
 }
 
-// Use custom provider
-QuestSaveManager.Instance.SetProvider(new ES3SaveProvider());
+// Set provider at application startup
+SaveService.SetProvider(new ES3SaveProvider());
 ```
 
 **What Gets Saved:**
@@ -932,12 +932,29 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 
 ## Changelog
 
+### v3.3.0 (2025-12-30)
+**SaveService Integration:**
+- Migrated to use `SaveService` from `com.hellodev.utils` for storage
+- Removed `ISaveDataProvider` (use `ISaveProvider` from utils instead)
+- Removed `JsonFileSaveProvider` (use `JsonSaveProvider` from utils instead)
+- `QuestSaveManager` now uses `SaveService.Provider` directly
+- Configure provider at startup via `SaveService.SetProvider()`
+- Simplified architecture - one less abstraction layer
+
+**Renamed Classes:**
+- `SaveSlotService_SO` -> `SaveSlotConfig_SO` (simpler config, not a service)
+
+**Breaking Changes:**
+- Remove calls to `QuestSaveManager.SetProvider()` or `QuestSaveLocator.SetProvider()`
+- Instead call `SaveService.SetProvider(new JsonSaveProvider(...))` at startup
+- Update `SaveSlotService_SO` references to `SaveSlotConfig_SO`
+
 ### v3.2.0 (2025-12-29)
 **Per-Slot Autosave:**
-- Added `SaveSlotService_SO` for managing save slot selection
+- Added `SaveSlotConfig_SO` for managing save slot naming conventions
 - Each save slot now gets its own autosave file (autosave-0, autosave-1, etc.)
 - Configurable `maxSlots`, `manualSavePrefix`, and `autosavePrefix`
-- `SaveSystemSetup` now supports optional slot service reference
+- `SaveSystemSetup` now supports optional slot config reference
 - Added `defaultSlotIndex` to auto-activate a slot on start
 - Slot changes fire `OnSlotChanged` event
 
@@ -948,9 +965,8 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 
 ### v3.1.0 (2025-12-29)
 **Save/Load System:**
-- Added `QuestSaveManager` singleton for managing save/load operations
-- Added `ISaveDataProvider` interface for custom save system integration
-- Added `JsonFileSaveProvider` default implementation using JSON files
+- Added `QuestSaveManager` for managing save/load operations
+- Added `QuestSaveLocator_SO` for decoupled access
 - Added `QuestSystemSnapshot` for capturing complete system state
 - Captures quest states, task progress, stage positions, branch decisions
 - Captures QuestLine progress
@@ -961,8 +977,7 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 
 **New Classes:**
 - `QuestSaveManager` - Main save/load manager
-- `ISaveDataProvider` - Interface for custom save systems
-- `JsonFileSaveProvider` - Default JSON file implementation
+- `QuestSaveLocator_SO` - Locator for decoupled access
 - `QuestSystemSnapshot` - Complete state snapshot
 - `QuestSnapshot` - Individual quest state
 - `TaskSnapshot` - Individual task state

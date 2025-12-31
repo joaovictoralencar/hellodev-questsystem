@@ -25,6 +25,7 @@ namespace HelloDev.QuestSystem.Utils
         Manager,    // Core QuestManager operations
         Quest,      // Quest lifecycle (start, complete, fail)
         Task,       // Task progress and state changes
+        TaskGroup,  // Task group execution
         Stage,      // Stage transitions and progress
         Group,      // Task group execution
         QuestLine,  // QuestLine progress
@@ -96,6 +97,7 @@ namespace HelloDev.QuestSystem.Utils
                 LogSubsystem.Manager => "Manager",
                 LogSubsystem.Quest => "Quest",
                 LogSubsystem.Task => "Task",
+                LogSubsystem.TaskGroup => "TaskGroup",
                 LogSubsystem.Stage => "Stage",
                 LogSubsystem.Group => "Group",
                 LogSubsystem.QuestLine => "QuestLine",

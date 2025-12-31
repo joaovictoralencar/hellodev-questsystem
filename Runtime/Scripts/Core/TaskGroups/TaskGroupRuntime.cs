@@ -283,6 +283,34 @@ namespace HelloDev.QuestSystem.TaskGroups
 
         #endregion
 
+        #region Save/Load Restoration
+
+        /// <summary>
+        /// Directly sets the group state without triggering events or side effects.
+        /// Used during save/load restoration.
+        /// </summary>
+        /// <param name="state">The state to set.</param>
+        public void RestoreGroupState(TaskGroupState state)
+        {
+            CurrentState = state;
+        }
+
+        /// <summary>
+        /// Resumes a group that was restored to InProgress state.
+        /// Subscribes to task events so the group can respond to task completion.
+        /// Call this AFTER all task states have been restored.
+        /// </summary>
+        public void ResumeGroup()
+        {
+            if (CurrentState == TaskGroupState.InProgress)
+            {
+                SubscribeToTaskEvents();
+                QuestLogger.LogVerbose(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' resumed from save");
+            }
+        }
+
+        #endregion
+
         #region Private Methods
 
         private void SubscribeToTaskEvents()

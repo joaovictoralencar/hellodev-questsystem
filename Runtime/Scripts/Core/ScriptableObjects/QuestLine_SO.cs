@@ -160,7 +160,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         public string DevName => devName;
 
         /// <summary>Gets the unique, permanent identifier for this questline.</summary>
-        public Guid QuestLineId => Guid.Parse(questLineId);
+        public Guid QuestLineId => string.IsNullOrEmpty(questLineId) ? Guid.Empty : Guid.Parse(questLineId);
 
         /// <summary>Gets the localized display name of the questline.</summary>
         public LocalizedString DisplayName => displayName;

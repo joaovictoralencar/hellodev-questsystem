@@ -148,9 +148,34 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Restores task-specific progress data after loading.
         /// Each task type implements this to deserialize its own state.
+        /// IMPORTANT: This method should NOT fire events to avoid triggering auto-completion.
         /// </summary>
         /// <param name="progressData">The progress data object to restore from.</param>
         public abstract void RestoreProgress(TaskProgressData progressData);
+
+        /// <summary>
+        /// Directly sets the task state without triggering events or side effects.
+        /// Used during save/load restoration.
+        /// </summary>
+        /// <param name="state">The state to set.</param>
+        public void RestoreState(TaskState state)
+        {
+            CurrentState = state;
+        }
+
+        /// <summary>
+        /// Resumes a task that was restored to InProgress state.
+        /// Subscribes to events so the task can respond to game events.
+        /// Call this AFTER RestoreProgress and RestoreState.
+        /// </summary>
+        public void ResumeTask()
+        {
+            if (CurrentState == TaskState.InProgress)
+            {
+                SubscribeToEvents();
+                QuestLogger.LogVerbose(LogSubsystem.Task, $"Task '{DevName}' resumed from save");
+            }
+        }
 
         #endregion
         

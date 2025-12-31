@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using HelloDev.Saving;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Events;
@@ -52,9 +53,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         public QuestSaveManager Manager => _manager;
 
         /// <summary>
-        /// Gets whether a save provider has been set.
+        /// Gets whether a save provider has been configured via SaveService.SetProvider().
         /// </summary>
-        public bool HasProvider => _manager != null && _manager.HasProvider;
+        public bool HasProvider => SaveService.IsConfigured;
 
         /// <summary>
         /// Gets the number of registered world flags.
@@ -137,19 +138,6 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         #endregion
 
-        #region Provider
-
-        /// <summary>
-        /// Sets the save data provider.
-        /// </summary>
-        /// <param name="provider">The save data provider to use.</param>
-        public void SetProvider(ISaveDataProvider provider)
-        {
-            _manager?.SetProvider(provider);
-        }
-
-        #endregion
-
         #region Save/Load Operations
 
         /// <summary>
@@ -227,6 +215,98 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         #endregion
 
+        #region Slot Management
+
+        /// <summary>
+        /// Gets the slot config from the registered manager, if available.
+        /// </summary>
+        public SaveSlotConfig_SO SlotConfig => _manager?.SlotConfig;
+
+        /// <summary>
+        /// Gets whether slot management is available (manager registered and has slot config).
+        /// </summary>
+        public bool HasSlotConfig => _manager?.HasSlotConfig ?? false;
+
+        /// <summary>
+        /// Gets whether a slot is currently active.
+        /// </summary>
+        public bool HasActiveSlot => _manager?.HasActiveSlot ?? false;
+
+        /// <summary>
+        /// Gets the current slot index, or -1 if no active slot.
+        /// </summary>
+        public int CurrentSlotIndex => _manager?.CurrentSlotIndex ?? -1;
+
+        /// <summary>
+        /// Gets the current manual save slot key (e.g., "save-1"), or null if no active slot.
+        /// </summary>
+        public string CurrentManualSlotKey => _manager?.CurrentManualSlotKey;
+
+        /// <summary>
+        /// Gets the current autosave slot key (e.g., "autosave-1"), or null if no active slot.
+        /// </summary>
+        public string CurrentAutosaveSlotKey => _manager?.CurrentAutosaveSlotKey;
+
+        /// <summary>
+        /// Sets the active slot index.
+        /// </summary>
+        /// <param name="slotIndex">The slot index (0-based). Use -1 to clear active slot.</param>
+        /// <returns>True if the slot was set successfully.</returns>
+        public bool SetActiveSlot(int slotIndex)
+        {
+            return _manager?.SetActiveSlot(slotIndex) ?? false;
+        }
+
+        /// <summary>
+        /// Clears the active slot (sets to -1).
+        /// </summary>
+        public void ClearActiveSlot()
+        {
+            _manager?.ClearActiveSlot();
+        }
+
+        /// <summary>
+        /// Saves to the current manual save slot (e.g., "save-1").
+        /// </summary>
+        /// <returns>True if save was successful.</returns>
+        public async Task<bool> SaveToCurrentSlotAsync()
+        {
+            if (_manager == null) return false;
+            return await _manager.SaveToCurrentSlotAsync();
+        }
+
+        /// <summary>
+        /// Loads from the current manual save slot (e.g., "save-1").
+        /// </summary>
+        /// <returns>True if load was successful.</returns>
+        public async Task<bool> LoadFromCurrentSlotAsync()
+        {
+            if (_manager == null) return false;
+            return await _manager.LoadFromCurrentSlotAsync();
+        }
+
+        /// <summary>
+        /// Saves to the current autosave slot (e.g., "autosave-1").
+        /// </summary>
+        /// <returns>True if save was successful.</returns>
+        public async Task<bool> AutoSaveAsync()
+        {
+            if (_manager == null) return false;
+            return await _manager.AutoSaveAsync();
+        }
+
+        /// <summary>
+        /// Loads from the current autosave slot (e.g., "autosave-1").
+        /// </summary>
+        /// <returns>True if load was successful.</returns>
+        public async Task<bool> LoadFromAutosaveAsync()
+        {
+            if (_manager == null) return false;
+            return await _manager.LoadFromAutosaveAsync();
+        }
+
+        #endregion
+
         #region Snapshot Operations
 
         /// <summary>
@@ -274,7 +354,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         [ShowInInspector, ReadOnly]
         [PropertyOrder(102)]
-        private bool ProviderSet => HasProvider;
+        private bool ProviderConfigured => SaveService.IsConfigured;
 
         [ShowInInspector, ReadOnly]
         [PropertyOrder(103)]

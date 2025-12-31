@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HelloDev.Conditions;
 using HelloDev.Conditions.WorldFlags;
-using HelloDev.QuestSystem.QuestLines;
-using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
-using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Saving;
+using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 #if ODIN_INSPECTOR
@@ -19,11 +17,12 @@ namespace HelloDev.QuestSystem.SaveLoad
 {
     /// <summary>
     /// Manages saving and loading of quest system state.
-    /// Uses the ISaveDataProvider interface for storage, allowing integration
-    /// with any save system (JSON files, cloud saves, etc.).
+    /// Uses SaveService.Provider for storage, allowing integration with any save system.
+    /// Configure the provider at startup via SaveService.SetProvider().
     /// Registers itself with a QuestSaveLocator_SO for decoupled access.
+    /// Implements IBootstrapInitializable for proper initialization ordering (priority 200 - Persistence phase).
     /// </summary>
-    public class QuestSaveManager : MonoBehaviour
+    public class QuestSaveManager : MonoBehaviour, IBootstrapInitializable
     {
         #region Serialized Fields
 
@@ -52,18 +51,36 @@ namespace HelloDev.QuestSystem.SaveLoad
         private WorldFlagLocator_SO worldFlagLocator;
 
 #if ODIN_INSPECTOR
+        [Title("Slot Management")]
+#endif
+        [SerializeField]
+        [Tooltip("Optional slot config for slot-based saving. Provides slot naming conventions and current slot tracking.")]
+        private SaveSlotConfig_SO slotConfig;
+
+#if ODIN_INSPECTOR
         [Title("Options")]
 #endif
         [SerializeField]
         [Tooltip("If true, this manager persists across scene loads.")]
         private bool persistent = true;
 
+#if ODIN_INSPECTOR
+        [Title("Initialization Mode")]
+        [ToggleLeft]
+        [InfoBox("Disable when using GameBootstrap for coordinated initialization.")]
+#else
+        [Header("Initialization Mode")]
+#endif
+        [SerializeField]
+        [Tooltip("If true, self-initializes in OnEnable. Disable when using GameBootstrap.")]
+        private bool selfInitialize = true;
+
         #endregion
 
         #region Private Fields
 
-        private ISaveDataProvider _provider;
         private WorldFlagRegistry_SO _worldFlagRegistrySO;
+        private bool _isInitialized;
 
         #endregion
 
@@ -99,19 +116,85 @@ namespace HelloDev.QuestSystem.SaveLoad
         public QuestSaveLocator_SO Locator => locator;
 
         /// <summary>
-        /// Gets whether a save provider has been set.
+        /// Gets whether a save provider has been configured via SaveService.SetProvider().
         /// </summary>
-        public bool HasProvider => _provider != null;
-
-        /// <summary>
-        /// Gets the current save provider.
-        /// </summary>
-        public ISaveDataProvider Provider => _provider;
+        public bool HasProvider => SaveService.IsConfigured;
 
         /// <summary>
         /// Gets the number of registered world flags.
         /// </summary>
         public int WorldFlagCount => GetAllWorldFlags().Count;
+
+        /// <summary>
+        /// Gets the slot config, if assigned.
+        /// </summary>
+        public SaveSlotConfig_SO SlotConfig => slotConfig;
+
+        /// <summary>
+        /// Gets whether slot management is available (slot config assigned).
+        /// </summary>
+        public bool HasSlotConfig => slotConfig != null;
+
+        /// <summary>
+        /// Gets whether a slot is currently active.
+        /// </summary>
+        public bool HasActiveSlot => slotConfig != null && slotConfig.HasActiveSlot;
+
+        /// <summary>
+        /// Gets the current slot index, or -1 if no slot config or no active slot.
+        /// </summary>
+        public int CurrentSlotIndex => slotConfig?.CurrentSlotIndex ?? -1;
+
+        /// <summary>
+        /// Gets the current manual save slot key (e.g., "save-1"), or null if no active slot.
+        /// </summary>
+        public string CurrentManualSlotKey => slotConfig?.CurrentManualSlotKey;
+
+        /// <summary>
+        /// Gets the current autosave slot key (e.g., "autosave-1"), or null if no active slot.
+        /// </summary>
+        public string CurrentAutosaveSlotKey => slotConfig?.CurrentAutosaveSlotKey;
+
+        #endregion
+
+        #region IBootstrapInitializable
+
+        /// <summary>
+        /// Whether this manager should self-initialize.
+        /// </summary>
+        public bool SelfInitialize => selfInitialize;
+
+        /// <summary>
+        /// Priority 200 - Persistence phase. Runs after QuestManager (150) and before SaveSystemSetup (250).
+        /// </summary>
+        public int InitializationPriority => 200;
+
+        /// <summary>
+        /// Whether this manager has completed initialization.
+        /// </summary>
+        bool IBootstrapInitializable.IsInitialized => _isInitialized;
+
+        /// <summary>
+        /// Initializes the save manager and registers with the locator.
+        /// </summary>
+        public Task InitializeAsync()
+        {
+            if (_isInitialized) return Task.CompletedTask;
+
+            RegisterWithLocator();
+            _isInitialized = true;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Cleans up the save manager.
+        /// </summary>
+        public void Shutdown()
+        {
+            UnregisterFromLocator();
+            _isInitialized = false;
+        }
 
         #endregion
 
@@ -127,7 +210,20 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         private void OnEnable()
         {
-            // Register with locator
+            // Self-initialize if not using bootstrap
+            if (selfInitialize && !_isInitialized)
+            {
+                _ = InitializeAsync();
+            }
+        }
+
+        private void OnDisable()
+        {
+            UnregisterFromLocator();
+        }
+
+        private void RegisterWithLocator()
+        {
             if (locator != null)
             {
                 locator.Register(this);
@@ -146,9 +242,8 @@ namespace HelloDev.QuestSystem.SaveLoad
             }
         }
 
-        private void OnDisable()
+        private void UnregisterFromLocator()
         {
-            // Unregister from locator
             if (locator != null)
             {
                 OnBeforeSave.RemoveAllListeners();
@@ -163,16 +258,6 @@ namespace HelloDev.QuestSystem.SaveLoad
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// Sets the save data provider. Must be called before save/load operations.
-        /// </summary>
-        /// <param name="provider">The save data provider to use.</param>
-        public void SetProvider(ISaveDataProvider provider)
-        {
-            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            QuestLogger.LogVerbose(LogSubsystem.Save, $"Provider: {provider.GetType().Name}");
-        }
 
         /// <summary>
         /// Registers a world flag for save/load. Call this for dynamically created flags.
@@ -314,20 +399,40 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <returns>True if save was successful.</returns>
         public async Task<bool> SaveAsync(string slotKey)
         {
-            if (_provider == null)
+            if (!SaveService.IsConfigured)
             {
-                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider configured. Call SaveService.SetProvider() at startup.");
                 return false;
             }
 
             OnBeforeSave?.Invoke(slotKey);
 
             var snapshot = CaptureSnapshot();
-            bool success = await _provider.SaveAsync(slotKey, snapshot);
+
+            // Save snapshot
+            bool success = await SaveService.Provider.SaveAsync(slotKey, snapshot);
+
+            // Save metadata separately for quick access
+            if (success)
+            {
+                var metadata = CreateMetadata(slotKey, snapshot);
+                await SaveService.Provider.SaveAsync($"{slotKey}.meta", metadata);
+            }
 
             OnAfterSave?.Invoke(slotKey, success);
 
             return success;
+        }
+
+        private SaveSlotMetadata CreateMetadata(string slotKey, QuestSystemSnapshot snapshot)
+        {
+            return new SaveSlotMetadata
+            {
+                SlotKey = slotKey,
+                Timestamp = snapshot.Timestamp,
+                ActiveQuestCount = snapshot.ActiveQuests?.Count ?? 0,
+                CompletedQuestCount = snapshot.CompletedQuests?.Count ?? 0
+            };
         }
 
         /// <summary>
@@ -337,15 +442,15 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <returns>True if load was successful.</returns>
         public async Task<bool> LoadAsync(string slotKey)
         {
-            if (_provider == null)
+            if (!SaveService.IsConfigured)
             {
-                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider configured. Call SaveService.SetProvider() at startup.");
                 return false;
             }
 
             OnBeforeLoad?.Invoke(slotKey);
 
-            var snapshot = await _provider.LoadAsync(slotKey);
+            var snapshot = await SaveService.Provider.LoadAsync<QuestSystemSnapshot>(slotKey);
             if (snapshot == null)
             {
                 OnAfterLoad?.Invoke(slotKey, false);
@@ -366,19 +471,24 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <returns>True if the slot exists.</returns>
         public async Task<bool> SaveExistsAsync(string slotKey)
         {
-            if (_provider == null) return false;
-            return await _provider.ExistsAsync(slotKey);
+            if (!SaveService.IsConfigured) return false;
+            return await SaveService.Provider.ExistsAsync(slotKey);
         }
 
         /// <summary>
-        /// Deletes a save slot.
+        /// Deletes a save slot and its metadata.
         /// </summary>
         /// <param name="slotKey">The save slot identifier.</param>
         /// <returns>True if deletion was successful.</returns>
         public async Task<bool> DeleteSaveAsync(string slotKey)
         {
-            if (_provider == null) return false;
-            return await _provider.DeleteAsync(slotKey);
+            if (!SaveService.IsConfigured) return false;
+
+            // Delete both the snapshot and metadata
+            bool snapshotDeleted = await SaveService.Provider.DeleteAsync(slotKey);
+            await SaveService.Provider.DeleteAsync($"{slotKey}.meta");
+
+            return snapshotDeleted;
         }
 
         /// <summary>
@@ -388,18 +498,117 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <returns>Metadata for the save slot, or null if not found.</returns>
         public async Task<SaveSlotMetadata> GetSaveMetadataAsync(string slotKey)
         {
-            if (_provider == null) return null;
-            return await _provider.GetMetadataAsync(slotKey);
+            if (!SaveService.IsConfigured) return null;
+            return await SaveService.Provider.LoadAsync<SaveSlotMetadata>($"{slotKey}.meta");
         }
 
         /// <summary>
-        /// Lists all available save slots.
+        /// Lists all available save slots (excludes .meta files).
         /// </summary>
         /// <returns>Array of save slot identifiers.</returns>
         public async Task<string[]> GetAllSaveSlotsAsync()
         {
-            if (_provider == null) return Array.Empty<string>();
-            return await _provider.GetAllSlotsAsync();
+            if (!SaveService.IsConfigured) return Array.Empty<string>();
+
+            var allKeys = await SaveService.Provider.GetKeysAsync();
+
+            // Filter out .meta files
+            return allKeys
+                .Where(key => !key.EndsWith(".meta"))
+                .ToArray();
+        }
+
+        #endregion
+
+        #region Slot Management
+
+        /// <summary>
+        /// Sets the active slot index. Requires SlotConfig to be assigned.
+        /// </summary>
+        /// <param name="slotIndex">The slot index (0-based). Use -1 to clear active slot.</param>
+        /// <returns>True if the slot was set successfully.</returns>
+        public bool SetActiveSlot(int slotIndex)
+        {
+            if (slotConfig == null)
+            {
+                QuestLogger.LogWarning(LogSubsystem.Save, "Cannot set active slot: no SlotConfig assigned");
+                return false;
+            }
+
+            slotConfig.SetActiveSlot(slotIndex);
+            return true;
+        }
+
+        /// <summary>
+        /// Clears the active slot (sets to -1). Requires SlotConfig to be assigned.
+        /// </summary>
+        public void ClearActiveSlot()
+        {
+            slotConfig?.ClearActiveSlot();
+        }
+
+        /// <summary>
+        /// Saves to the current manual save slot (e.g., "save-1").
+        /// Requires SlotConfig to be assigned and an active slot.
+        /// </summary>
+        /// <returns>True if save was successful, false if no active slot or save failed.</returns>
+        public async Task<bool> SaveToCurrentSlotAsync()
+        {
+            if (!HasActiveSlot)
+            {
+                QuestLogger.LogWarning(LogSubsystem.Save, "Cannot save to current slot: no active slot");
+                return false;
+            }
+
+            return await SaveAsync(CurrentManualSlotKey);
+        }
+
+        /// <summary>
+        /// Loads from the current manual save slot (e.g., "save-1").
+        /// Requires SlotConfig to be assigned and an active slot.
+        /// </summary>
+        /// <returns>True if load was successful, false if no active slot or load failed.</returns>
+        public async Task<bool> LoadFromCurrentSlotAsync()
+        {
+            if (!HasActiveSlot)
+            {
+                QuestLogger.LogWarning(LogSubsystem.Save, "Cannot load from current slot: no active slot");
+                return false;
+            }
+
+            return await LoadAsync(CurrentManualSlotKey);
+        }
+
+        /// <summary>
+        /// Saves to the current autosave slot (e.g., "autosave-1").
+        /// Requires SlotConfig to be assigned and an active slot.
+        /// </summary>
+        /// <returns>True if save was successful, false if no active slot or save failed.</returns>
+        public async Task<bool> AutoSaveAsync()
+        {
+            if (!HasActiveSlot)
+            {
+                QuestLogger.LogWarning(LogSubsystem.Save, "Cannot autosave: no active slot");
+                return false;
+            }
+
+            return await SaveAsync(CurrentAutosaveSlotKey);
+        }
+
+        /// <summary>
+        /// Loads from the current autosave slot (e.g., "autosave-1").
+        /// Requires SlotConfig to be assigned and an active slot.
+        /// </summary>
+        /// <returns>True if load was successful, false if no active slot or load failed.</returns>
+        public async Task<bool> LoadFromAutosaveAsync()
+        {
+            if (!HasActiveSlot)
+            {
+                QuestLogger.LogWarning(LogSubsystem.Save, "Cannot load autosave: no active slot");
+                return false;
+            }
+
+            return await LoadAsync(CurrentAutosaveSlotKey);
         }
 
         #endregion
@@ -458,16 +667,20 @@ namespace HelloDev.QuestSystem.SaveLoad
 
         [Title("Debug - Save/Load")]
         [ShowInInspector, ReadOnly]
+        [PropertyOrder(199)]
+        private bool IsInitialized => _isInitialized;
+
+        [ShowInInspector, ReadOnly]
         [PropertyOrder(200)]
         private bool LocatorRegistered => locator != null && locator.IsAvailable;
 
         [ShowInInspector, ReadOnly]
         [PropertyOrder(201)]
-        private bool ProviderSet => _provider != null;
+        private bool ProviderConfigured => SaveService.IsConfigured;
 
         [ShowInInspector, ReadOnly]
         [PropertyOrder(202)]
-        private string ProviderType => _provider?.GetType().Name ?? "(none)";
+        private string ProviderType => SaveService.IsConfigured ? SaveService.Provider.GetType().Name : "(none)";
 
         [ShowInInspector, ReadOnly]
         [PropertyOrder(203)]
@@ -478,9 +691,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         [GUIColor(0.4f, 0.8f, 0.4f)]
         private async void DebugQuickSave()
         {
-            if (_provider == null)
+            if (!SaveService.IsConfigured)
             {
-                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider configured");
                 return;
             }
 
@@ -493,9 +706,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         [GUIColor(0.4f, 0.6f, 0.9f)]
         private async void DebugQuickLoad()
         {
-            if (_provider == null)
+            if (!SaveService.IsConfigured)
             {
-                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider configured");
                 return;
             }
 
@@ -536,9 +749,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         [GUIColor(0.9f, 0.4f, 0.4f)]
         private async void DebugDeleteSave()
         {
-            if (_provider == null)
+            if (!SaveService.IsConfigured)
             {
-                QuestLogger.LogError(LogSubsystem.Save, "No provider set");
+                QuestLogger.LogError(LogSubsystem.Save, "No provider configured");
                 return;
             }
 
