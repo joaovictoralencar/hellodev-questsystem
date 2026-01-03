@@ -36,6 +36,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <summary>A questline failed.</summary>
         QuestLineFailed,
 
+        /// <summary>Questline progress updated (quest in line completed, etc.).</summary>
+        QuestLineUpdated,
+
         /// <summary>A world flag value changed.</summary>
         WorldFlagChanged,
 

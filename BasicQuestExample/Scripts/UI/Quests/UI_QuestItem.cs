@@ -8,6 +8,7 @@ using HelloDev.UI.Default;
 using HelloDev.Utils;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
@@ -96,8 +97,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         public void Setup(QuestRuntime newQuest, Action<QuestRuntime> onQuestSelectedCallback)
         {
             if (newQuest?.QuestData == null) return;
-
-            Debug.Log($"[UI_QuestItem] Setup called for '{newQuest.QuestData.DevName}': State={newQuest.CurrentState}\nStack Trace:\n{UnityEngine.StackTraceUtility.ExtractStackTrace()}");
 
             if (_isInitialized)
                 UnsubscribeFromQuestEvents();
@@ -241,13 +240,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void SetupQuestStateVisuals()
         {
-            Debug.Log($"[UI_QuestItem] SetupQuestStateVisuals for '{_quest.QuestData.DevName}': CurrentState={_quest.CurrentState}");
-
             switch (_quest.CurrentState)
             {
                 case QuestState.NotStarted:
-                    Debug.Log($"[UI_QuestItem] Quest '{_quest.QuestData.DevName}' is NotStarted - no visuals applied");
-                    // NotStarted quests don't show next task or status indicators
                     break;
                 case QuestState.InProgress:
                     HandleQuestInProgress(_quest);
@@ -280,11 +275,21 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
         private void DisplayNextTask(TaskRuntime task)
         {
-            if (nextTaskTextPrefab == null || questStatusHolder == null) return;
+            if (nextTaskTextPrefab == null || questStatusHolder == null || task?.DisplayName == null) return;
 
+            // Create a new LocalizedString with the same table/entry reference
+            // This avoids modifying the shared ScriptableObject's DisplayName
+            var localizedString = new LocalizedString(
+                task.DisplayName.TableReference,
+                task.DisplayName.TableEntryReference);
+
+            // Set up variables BEFORE assigning to StringReference
+            // to avoid SmartFormat errors during auto-refresh
+            task.Data.SetupTaskLocalizedVariables(localizedString, task);
+
+            // Now assign - the refresh will have the variables already
             LocalizeStringEvent nextTaskText = Instantiate(nextTaskTextPrefab, questStatusHolder);
-            nextTaskText.StringReference = task.DisplayName;
-            task.Data.SetupTaskLocalizedVariables(nextTaskText, task);
+            nextTaskText.StringReference = localizedString;
         }
 
         private void CreateStatusIndicator(RectTransform prefab)

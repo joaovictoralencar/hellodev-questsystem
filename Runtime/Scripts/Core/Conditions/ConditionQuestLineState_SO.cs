@@ -49,8 +49,20 @@ namespace HelloDev.QuestSystem.Conditions
 
         #region Private Fields
 
+        /// <summary>
+        /// Multicast delegate for all registered callbacks.
+        /// </summary>
         private Action _onConditionMet;
-        private bool _isSubscribed;
+
+        /// <summary>
+        /// Number of active subscribers.
+        /// </summary>
+        private int _subscriberCount;
+
+        /// <summary>
+        /// Whether we're subscribed to QuestManager events.
+        /// </summary>
+        private bool _isSubscribedToEvents;
 
         #endregion
 
@@ -105,47 +117,60 @@ namespace HelloDev.QuestSystem.Conditions
 
         /// <summary>
         /// Subscribes to QuestManager events to be notified when questline states change.
+        /// Multiple subscribers can register callbacks.
         /// </summary>
         /// <param name="onConditionMet">Callback to invoke when the condition becomes true.</param>
         public void SubscribeToEvent(Action onConditionMet)
         {
-            if (_isSubscribed) return;
+            if (onConditionMet == null) return;
 
-            _onConditionMet = onConditionMet;
+            // Add callback to multicast delegate
+            _onConditionMet += onConditionMet;
+            _subscriberCount++;
 
-            if (QuestManager.Instance != null)
+            // Subscribe to QuestManager events on first subscriber
+            if (!_isSubscribedToEvents)
             {
-                QuestManager.Instance.QuestLineStarted.AddListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineCompleted.AddListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineUpdated.AddListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineFailed.AddListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineAdded.AddListener(OnQuestLineStateChanged);
-                _isSubscribed = true;
-            }
-            else
-            {
-                Debug.LogWarning($"[ConditionQuestLineState_SO] Cannot subscribe - QuestManager.Instance is null.");
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.QuestLineStarted.AddListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineCompleted.AddListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineUpdated.AddListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineFailed.AddListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineAdded.AddListener(OnQuestLineStateChanged);
+                    _isSubscribedToEvents = true;
+                }
+                else
+                {
+                    Debug.LogWarning($"[ConditionQuestLineState_SO] Cannot subscribe - QuestManager.Instance is null.");
+                }
             }
         }
 
         /// <summary>
-        /// Unsubscribes from QuestManager events.
+        /// Unsubscribes a specific callback from QuestManager events.
         /// </summary>
-        public void UnsubscribeFromEvent()
+        public void UnsubscribeFromEvent(Action callback)
         {
-            if (!_isSubscribed) return;
+            if (callback == null) return;
 
-            if (QuestManager.Instance != null)
+            // Remove callback from multicast delegate
+            _onConditionMet -= callback;
+            _subscriberCount = Math.Max(0, _subscriberCount - 1);
+
+            // Unsubscribe from QuestManager events when no subscribers remain
+            if (_subscriberCount == 0 && _isSubscribedToEvents)
             {
-                QuestManager.Instance.QuestLineStarted.RemoveListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineCompleted.RemoveListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineUpdated.RemoveListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineFailed.RemoveListener(OnQuestLineStateChanged);
-                QuestManager.Instance.QuestLineAdded.RemoveListener(OnQuestLineStateChanged);
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.QuestLineStarted.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineCompleted.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineUpdated.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineFailed.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineAdded.RemoveListener(OnQuestLineStateChanged);
+                }
+                _isSubscribedToEvents = false;
             }
-
-            _onConditionMet = null;
-            _isSubscribed = false;
         }
 
         /// <summary>
@@ -232,12 +257,34 @@ namespace HelloDev.QuestSystem.Conditions
 
         protected override void OnScriptableObjectReset()
         {
-            UnsubscribeFromEvent();
+            ClearAllSubscriptions();
         }
 
         private void OnDestroy()
         {
-            UnsubscribeFromEvent();
+            ClearAllSubscriptions();
+        }
+
+        /// <summary>
+        /// Clears all subscriptions. Used during reset and destroy.
+        /// </summary>
+        private void ClearAllSubscriptions()
+        {
+            if (_isSubscribedToEvents)
+            {
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.QuestLineStarted.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineCompleted.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineUpdated.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineFailed.RemoveListener(OnQuestLineStateChanged);
+                    QuestManager.Instance.QuestLineAdded.RemoveListener(OnQuestLineStateChanged);
+                }
+                _isSubscribedToEvents = false;
+            }
+
+            _onConditionMet = null;
+            _subscriberCount = 0;
         }
 
         #endregion

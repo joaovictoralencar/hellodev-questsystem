@@ -26,11 +26,10 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (flagLocator == null || !flagLocator.IsAvailable)
             {
-                QuestLogger.LogWarning("[SnapshotRestorer] WorldFlagLocator not available. Cannot restore world flags.");
+                QuestLogger.LogWarning(LogSubsystem.Save, "WorldFlagLocator not available. Cannot restore world flags.");
                 return;
             }
 
-            QuestLogger.Log($"[SnapshotRestorer] Restoring {flagSnapshots.Count} world flags...");
             int restored = 0;
             int notFound = 0;
 
@@ -39,7 +38,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 var flag = allFlags.Find(f => f != null && f.FlagId == snapshot.FlagGuid);
                 if (flag == null)
                 {
-                    QuestLogger.LogWarning($"[SnapshotRestorer] World flag not found: {snapshot.FlagGuid}");
+                    QuestLogger.LogVerbose(LogSubsystem.Save, $"World flag not found: {snapshot.FlagGuid}");
                     notFound++;
                     continue;
                 }
@@ -52,18 +51,26 @@ namespace HelloDev.QuestSystem.SaveLoad
                 {
                     case WorldFlagBool_SO boolFlag:
                         flagLocator.SetBoolValue(boolFlag, snapshot.BoolValue);
-                        QuestLogger.Log($"[SnapshotRestorer] Restored bool flag '{boolFlag.FlagName}' = {snapshot.BoolValue}");
+                        QuestLogger.LogVerbose(LogSubsystem.Save, $"Restored bool flag '{boolFlag.FlagName}' = {snapshot.BoolValue}");
                         break;
 
                     case WorldFlagInt_SO intFlag:
                         flagLocator.SetIntValue(intFlag, snapshot.IntValue);
-                        QuestLogger.Log($"[SnapshotRestorer] Restored int flag '{intFlag.FlagName}' = {snapshot.IntValue}");
+                        QuestLogger.LogVerbose(LogSubsystem.Save, $"Restored int flag '{intFlag.FlagName}' = {snapshot.IntValue}");
                         break;
                 }
                 restored++;
             }
 
-            QuestLogger.Log($"[SnapshotRestorer] World flags restore complete: {restored} restored, {notFound} not found.");
+            // Summary log only
+            if (notFound > 0)
+            {
+                QuestLogger.Log(LogSubsystem.Save, $"Restored {restored} world flags ({notFound} not found)");
+            }
+            else
+            {
+                QuestLogger.Log(LogSubsystem.Save, $"Restored {restored} world flags");
+            }
         }
 
         /// <summary>
@@ -80,7 +87,9 @@ namespace HelloDev.QuestSystem.SaveLoad
             QuestManager questManager,
             System.Func<string, Quest_SO> findQuestByGuid)
         {
-            QuestLogger.Log($"[SnapshotRestorer] RestoreQuests called with {questSnapshots.Count} snapshots, targetState={targetState}");
+            int restored = 0;
+            int notFound = 0;
+            int totalTasks = 0;
 
             foreach (var snapshot in questSnapshots)
             {
@@ -88,22 +97,23 @@ namespace HelloDev.QuestSystem.SaveLoad
                 var questData = findQuestByGuid(snapshot.QuestGuid);
                 if (questData == null)
                 {
-                    QuestLogger.LogWarning($"[SnapshotRestorer] Quest not found: {snapshot.QuestGuid}");
+                    QuestLogger.LogVerbose(LogSubsystem.Save, $"Quest not found: {snapshot.QuestGuid}");
+                    notFound++;
                     continue;
                 }
 
                 // Get the captured state from the snapshot
                 var capturedState = (QuestState)snapshot.State;
 
-                // Add quest (will be NotStarted initially, no events subscribed)
-                // skipAutoStart and skipEventSubscription prevent any automatic behavior
-                questManager.AddQuest(questData, forceStart: false, skipAutoStart: true, skipEventSubscription: true);
+                // Add quest for restore (will be NotStarted initially, no events subscribed)
+                // skipAutoStart and skipEventSubscription prevent any automatic behavior during restore
+                questManager.AddQuestForRestore(questData, skipAutoStart: true, skipEventSubscription: true);
 
                 // Get the runtime quest
                 var quest = questManager.GetActiveQuest(questData);
                 if (quest == null) continue;
 
-                QuestLogger.Log($"[SnapshotRestorer] Restoring quest '{questData.DevName}': capturedState={capturedState}, targetState={targetState}");
+                QuestLogger.LogVerbose(LogSubsystem.Save, $"Restoring quest '{questData.DevName}': capturedState={capturedState}");
 
                 // STEP 1: Restore branch decisions first (needed for any state)
                 foreach (var decision in snapshot.BranchDecisions)
@@ -139,12 +149,32 @@ namespace HelloDev.QuestSystem.SaveLoad
                                 task.RestoreState(TaskState.Completed);
                             }
                         }
+                        // Move quest from active registry to completed registry
+                        questManager.QuestRegistry.MoveToCompleted(quest.QuestId);
                         break;
 
                     case QuestState.Failed:
                         // Quest is already failed, no need to subscribe to events
+                        // Move quest from active registry to failed registry
+                        questManager.QuestRegistry.MoveToFailed(quest.QuestId);
                         break;
                 }
+
+                restored++;
+                totalTasks += snapshot.Tasks.Count;
+            }
+
+            // Summary log based on target state
+            if (restored > 0)
+            {
+                string stateLabel = targetState switch
+                {
+                    QuestState.InProgress => "in-progress",
+                    QuestState.Completed => "completed",
+                    QuestState.Failed => "failed",
+                    _ => targetState.ToString().ToLower()
+                };
+                QuestLogger.Log(LogSubsystem.Save, $"Restored {restored} {stateLabel} quests ({totalTasks} tasks)");
             }
         }
 
@@ -252,30 +282,28 @@ namespace HelloDev.QuestSystem.SaveLoad
                 taskGuidCounts[guid].Add(task.DevName);
             }
 
-            // Warn about duplicates
+            // Warn about duplicates (this is a real error, keep as warning)
             foreach (var kvp in taskGuidCounts)
             {
                 if (kvp.Value.Count > 1)
                 {
-                    QuestLogger.LogWarning($"[SnapshotRestorer] DUPLICATE TASK GUID DETECTED! GUID '{kvp.Key}' is shared by tasks: {string.Join(", ", kvp.Value)}. This will cause incorrect save/load behavior!");
+                    QuestLogger.LogWarning(LogSubsystem.Save, $"DUPLICATE TASK GUID! '{kvp.Key}' shared by: {string.Join(", ", kvp.Value)}");
                 }
             }
-
-            QuestLogger.Log($"[SnapshotRestorer] RestoreTaskStates: {taskSnapshots.Count} snapshots, {allTasks.Count} tasks in quest");
 
             foreach (var taskSnapshot in taskSnapshots)
             {
                 var task = allTasks.Find(t => t.Data.TaskId.ToString() == taskSnapshot.TaskGuid);
                 if (task == null)
                 {
-                    QuestLogger.LogWarning($"[SnapshotRestorer] Task not found for GUID '{taskSnapshot.TaskGuid}'");
+                    QuestLogger.LogVerbose(LogSubsystem.Save, $"Task not found: {taskSnapshot.TaskGuid}");
                     continue;
                 }
 
                 var targetState = (TaskState)taskSnapshot.State;
 
-                QuestLogger.Log($"[SnapshotRestorer] Restoring task '{task.DevName}' (GUID: {taskSnapshot.TaskGuid.Substring(0, 8)}...): " +
-                               $"targetState={targetState}, intProgress={taskSnapshot.ProgressData.IntValue}");
+                // Individual task logs are verbose only
+                QuestLogger.LogVerbose(LogSubsystem.Save, $"Task '{task.DevName}': {targetState}, progress={taskSnapshot.ProgressData.IntValue}");
 
                 // Restore type-specific progress using polymorphism (no events fired)
                 task.RestoreProgress(taskSnapshot.ProgressData);
@@ -297,12 +325,14 @@ namespace HelloDev.QuestSystem.SaveLoad
             QuestManager questManager,
             System.Func<string, QuestLine_SO> findQuestLineByGuid)
         {
+            int restored = 0;
+
             foreach (var snapshot in lineSnapshots)
             {
                 var questLineData = findQuestLineByGuid(snapshot.QuestLineGuid);
                 if (questLineData == null)
                 {
-                    QuestLogger.LogWarning($"[SnapshotRestorer] QuestLine not found: {snapshot.QuestLineGuid}");
+                    QuestLogger.LogVerbose(LogSubsystem.Save, $"QuestLine not found: {snapshot.QuestLineGuid}");
                     continue;
                 }
 
@@ -316,6 +346,12 @@ namespace HelloDev.QuestSystem.SaveLoad
                 // Restore state
                 var state = (QuestLines.QuestLineState)snapshot.State;
                 questLine.RestoreState(state, snapshot.HasStarted);
+                restored++;
+            }
+
+            if (restored > 0)
+            {
+                QuestLogger.Log(LogSubsystem.Save, $"Restored {restored} questlines");
             }
         }
     }

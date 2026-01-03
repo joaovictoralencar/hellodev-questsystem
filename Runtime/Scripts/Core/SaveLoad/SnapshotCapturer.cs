@@ -81,7 +81,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 
             if (flagsCaptured > 0)
             {
-                QuestLogger.Log($"[SnapshotCapturer] Captured {flagsCaptured} world flags.");
+                QuestLogger.LogVerbose(LogSubsystem.Save, $"Captured {flagsCaptured} world flags");
             }
 
             return snapshot;

@@ -111,6 +111,20 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 1502424919329210480
+  - m_Id: 49838819338403840
+    m_Localized: O Dilema do Mercador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49838819355181056
+    m_Localized: "O mercador enfrenta uma escolha moral: confrontar os bandidos diretamente,
+      negociar pela paz, ou denunci\xE1-los \xE0s autoridades. Sua decis\xE3o moldar\xE1
+      o resultado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49838819359375360
+    m_Localized: Distrito do Mercado
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:

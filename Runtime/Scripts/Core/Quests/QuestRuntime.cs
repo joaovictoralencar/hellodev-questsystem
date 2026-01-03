@@ -178,6 +178,35 @@ namespace HelloDev.QuestSystem.Quests
         /// </summary>
         public Dictionary<string, string> BranchDecisions { get; } = new();
 
+        /// <summary>
+        /// When true, TryStartQuestIfConditionsMet will not start the quest.
+        /// Used during restore to prevent events from triggering auto-start.
+        /// </summary>
+        private bool _blockAutoStart;
+
+        /// <summary>
+        /// Tracks tasks that have been subscribed to, preventing double-subscription
+        /// when groups are started multiple times (e.g., after reset).
+        /// </summary>
+        private readonly HashSet<TaskRuntime> _subscribedTasks = new();
+
+        /// <summary>
+        /// True while transitioning between stages. Used to prevent saving during
+        /// stage transitions which could capture inconsistent state.
+        /// </summary>
+        private bool _isTransitioningStage;
+
+        /// <summary>
+        /// Returns true if the quest is currently transitioning between stages.
+        /// Save operations should check this and defer if true.
+        /// </summary>
+        public bool IsTransitioningStage => _isTransitioningStage;
+
+        /// <summary>
+        /// Stores player choice condition subscriptions for proper cleanup.
+        /// </summary>
+        private readonly List<(IConditionEventDriven Condition, System.Action Callback)> _playerChoiceSubscriptions = new();
+
         #endregion
 
         /// <summary>
@@ -228,15 +257,18 @@ namespace HelloDev.QuestSystem.Quests
             var firstStage = GetStageByIndex(GetFirstStageIndex());
             if (firstStage != null)
             {
-                TransitionToStage(firstStage);
+                // Log quest start BEFORE starting the stage (correct chronological order)
                 QuestLogger.LogStart(LogSubsystem.Quest, "Quest", QuestData.DevName);
+                OnQuestStarted.SafeInvoke(this);
+                TransitionToStage(firstStage);
             }
             else
             {
-                QuestLogger.LogStart(LogSubsystem.Quest, "Quest", $"{QuestData.DevName} (no stages)");
+                // Quest has no stages - auto-complete immediately
+                QuestLogger.LogWarning(LogSubsystem.Quest, $"Quest '{QuestData.DevName}' has no stages, auto-completing");
+                OnQuestStarted.SafeInvoke(this);
+                CompleteQuest();
             }
-
-            OnQuestStarted.SafeInvoke(this);
         }
 
         /// <summary>
@@ -264,6 +296,7 @@ namespace HelloDev.QuestSystem.Quests
 
                 OnQuestUpdated.SafeInvoke(this);
                 UpdateQuestState(QuestState.Completed);
+                QuestLogger.LogComplete(LogSubsystem.Quest, "Quest", QuestData.DevName);
                 OnQuestCompleted.SafeInvoke(this);
             }
         }
@@ -277,6 +310,7 @@ namespace HelloDev.QuestSystem.Quests
             {
                 UpdateQuestState(QuestState.Failed);
                 UnsubscribeFromAllEvents();
+                QuestLogger.LogFail(LogSubsystem.Quest, "Quest", QuestData.DevName);
                 OnQuestFailed.SafeInvoke(this);
             }
         }
@@ -287,6 +321,9 @@ namespace HelloDev.QuestSystem.Quests
         public void ResetQuest()
         {
             UnsubscribeFromAllEvents();
+
+            // Clear subscribed tasks tracking so fresh subscriptions happen on restart
+            _subscribedTasks.Clear();
 
             // Reset all stages
             foreach (var stage in Stages)
@@ -415,26 +452,35 @@ namespace HelloDev.QuestSystem.Quests
         /// </summary>
         private void TransitionToStage(QuestStageRuntime targetStage)
         {
-            // Unsubscribe from previous stage's choice conditions
-            UnsubscribeFromPlayerChoiceConditions();
-
-            // Complete current stage if it's still in progress
-            if (CurrentStage?.CurrentState == StageState.InProgress)
+            // Mark transition in progress to prevent save during this critical section
+            _isTransitioningStage = true;
+            try
             {
-                CurrentStage.Complete();
-                OnStageCompleted.SafeInvoke(this, CurrentStage);
+                // Unsubscribe from previous stage's choice conditions
+                UnsubscribeFromPlayerChoiceConditions();
+
+                // Complete current stage if it's still in progress
+                if (CurrentStage?.CurrentState == StageState.InProgress)
+                {
+                    CurrentStage.Complete();
+                    OnStageCompleted.SafeInvoke(this, CurrentStage);
+                }
+
+                CurrentStage = targetStage;
+                targetStage.Enter();
+                OnStageEntered.SafeInvoke(this, targetStage);
+                NotifyQuestUpdated();
+
+                // If the new stage has player choices, set up choice handling
+                if (targetStage.Data.HasPlayerChoices)
+                {
+                    SubscribeToPlayerChoiceConditions();
+                    NotifyChoicesAvailable();
+                }
             }
-
-            CurrentStage = targetStage;
-            targetStage.Enter();
-            OnStageEntered.SafeInvoke(this, targetStage);
-            NotifyQuestUpdated();
-
-            // If the new stage has player choices, set up choice handling
-            if (targetStage.Data.HasPlayerChoices)
+            finally
             {
-                SubscribeToPlayerChoiceConditions();
-                NotifyChoicesAvailable();
+                _isTransitioningStage = false;
             }
         }
 
@@ -478,8 +524,10 @@ namespace HelloDev.QuestSystem.Quests
         /// Selects a player choice, triggering the associated transition.
         /// </summary>
         /// <param name="choice">The choice transition to select.</param>
+        /// <param name="bypassConditions">If true, skips condition evaluation. Used for UI-based choices (Option B)
+        /// where conditions are for gameplay triggers (Option C), not for gating UI availability.</param>
         /// <returns>True if the choice was valid and executed.</returns>
-        public bool SelectChoice(StageTransition choice)
+        public bool SelectChoice(StageTransition choice, bool bypassConditions = false)
         {
             if (choice == null)
             {
@@ -505,7 +553,7 @@ namespace HelloDev.QuestSystem.Quests
                 return false;
             }
 
-            if (!choice.EvaluateConditions())
+            if (!bypassConditions && !choice.EvaluateConditions())
             {
                 QuestLogger.LogWarning(LogSubsystem.Choice, $"Choice '{choice.ChoiceId}' conditions not met");
                 return false;
@@ -515,6 +563,16 @@ namespace HelloDev.QuestSystem.Quests
             string stageKey = $"stage_{CurrentStageIndex}";
             BranchDecisions[stageKey] = choice.ChoiceId;
             QuestLogger.LogChoice(QuestData.DevName, choice.ChoiceId);
+
+            // Complete any in-progress tasks in the current stage (decision tasks)
+            foreach (var task in CurrentTasks)
+            {
+                if (task.CurrentState == TaskState.InProgress)
+                {
+                    QuestLogger.Log(LogSubsystem.Task, $"Completing decision task '{task.DevName}' due to player choice");
+                    task.CompleteTask();
+                }
+            }
 
             // Apply world flag modifications (consequences of the choice)
             choice.ApplyWorldFlagModifications();
@@ -613,7 +671,10 @@ namespace HelloDev.QuestSystem.Quests
                 {
                     if (condition is IConditionEventDriven eventDriven)
                     {
-                        eventDriven.SubscribeToEvent(() => HandleImplicitChoiceConditionMet(choice));
+                        // Store callback for proper unsubscription
+                        System.Action callback = () => HandleImplicitChoiceConditionMet(choice);
+                        eventDriven.SubscribeToEvent(callback);
+                        _playerChoiceSubscriptions.Add((eventDriven, callback));
                     }
                 }
             }
@@ -624,21 +685,11 @@ namespace HelloDev.QuestSystem.Quests
         /// </summary>
         private void UnsubscribeFromPlayerChoiceConditions()
         {
-            if (CurrentStage == null) return;
-
-            var choices = CurrentStage.Data.GetAllPlayerChoices();
-            foreach (var choice in choices)
+            foreach (var (condition, callback) in _playerChoiceSubscriptions)
             {
-                if (choice.Conditions == null) continue;
-
-                foreach (var condition in choice.Conditions)
-                {
-                    if (condition is IConditionEventDriven eventDriven)
-                    {
-                        eventDriven.UnsubscribeFromEvent();
-                    }
-                }
+                condition.UnsubscribeFromEvent(callback);
             }
+            _playerChoiceSubscriptions.Clear();
         }
 
         /// <summary>
@@ -721,7 +772,7 @@ namespace HelloDev.QuestSystem.Quests
                 {
                     if (condition is IConditionEventDriven conditionEventDriven)
                     {
-                        conditionEventDriven.UnsubscribeFromEvent();
+                        conditionEventDriven.UnsubscribeFromEvent(HandleGlobalTaskFailure);
                     }
                 }
             }
@@ -737,19 +788,48 @@ namespace HelloDev.QuestSystem.Quests
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
                 if (condition is IConditionEventDriven conditionEventDriven)
-                    conditionEventDriven.UnsubscribeFromEvent();
+                    conditionEventDriven.UnsubscribeFromEvent(TryStartQuestIfConditionsMet);
             }
         }
 
-        public void SubscribeToStartQuestEvents()
+        /// <summary>
+        /// Subscribes to start condition events so the quest can auto-start when conditions are met.
+        /// </summary>
+        /// <param name="blockAutoStart">If true, prevents auto-start even if conditions are met during subscription.
+        /// Used during restore to prevent events from triggering auto-start before restore completes.</param>
+        public void SubscribeToStartQuestEvents(bool blockAutoStart = false)
         {
-            if (QuestData.StartConditions == null) return;
+            _blockAutoStart = blockAutoStart;
+
+            if (QuestData.StartConditions == null)
+            {
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': No start conditions to subscribe to");
+                return;
+            }
+
+            QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Subscribing to {QuestData.StartConditions.Count} start conditions");
 
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
                 if (condition is IConditionEventDriven conditionEventDriven)
+                {
+                    QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Subscribing to condition '{condition.name}'");
                     conditionEventDriven.SubscribeToEvent(TryStartQuestIfConditionsMet);
+                }
+                else
+                {
+                    QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Condition '{condition?.name ?? "null"}' is not event-driven");
+                }
             }
+        }
+
+        /// <summary>
+        /// Clears the auto-start block, allowing future events to trigger quest start.
+        /// Call this after restore is complete.
+        /// </summary>
+        public void UnblockAutoStart()
+        {
+            _blockAutoStart = false;
         }
 
         #endregion
@@ -800,11 +880,18 @@ namespace HelloDev.QuestSystem.Quests
         private void HandleGroupInStageStarted(QuestStageRuntime stage, TaskGroupRuntime group)
         {
             // Subscribe to task events for this group
+            // Track subscribed tasks to prevent double-subscription on group restart
             foreach (var task in group.Tasks)
             {
+                if (_subscribedTasks.Contains(task))
+                {
+                    continue; // Already subscribed
+                }
+
                 task.OnTaskStarted.SafeSubscribe(t => OnAnyTaskStarted.SafeInvoke(this, t));
                 task.OnTaskCompleted.SafeSubscribe(t => OnAnyTaskCompleted.SafeInvoke(this, t));
                 task.OnTaskFailed.SafeSubscribe(t => OnAnyTaskFailed.SafeInvoke(this, t));
+                _subscribedTasks.Add(task);
             }
         }
 
@@ -836,10 +923,26 @@ namespace HelloDev.QuestSystem.Quests
 
         private void TryStartQuestIfConditionsMet()
         {
-            if (CurrentState != QuestState.NotStarted) return;
+            QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': TryStartQuestIfConditionsMet called, CurrentState={CurrentState}, blockAutoStart={_blockAutoStart}");
 
-            if (CheckStartConditions())
+            if (_blockAutoStart)
             {
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Skipping - auto-start blocked (restore in progress)");
+                return;
+            }
+
+            if (CurrentState != QuestState.NotStarted)
+            {
+                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Skipping - not in NotStarted state");
+                return;
+            }
+
+            bool conditionsMet = CheckStartConditions();
+            QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': CheckStartConditions returned {conditionsMet}");
+
+            if (conditionsMet)
+            {
+                QuestLogger.Log(LogSubsystem.Quest, $"Chain trigger starting quest <b>'{QuestData.DevName}'</b>");
                 StartQuest();
             }
         }
@@ -869,9 +972,29 @@ namespace HelloDev.QuestSystem.Quests
         public bool CheckStartConditions()
         {
             if (QuestData.StartConditions == null || QuestData.StartConditions.Count == 0)
+            {
+                QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG] CheckStartConditions '{QuestData.DevName}': No conditions (null={QuestData.StartConditions == null}, count={(QuestData.StartConditions?.Count ?? 0)}) → returning TRUE");
                 return true;
+            }
 
-            return QuestData.StartConditions.All(c => c != null && c.Evaluate());
+            QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG] CheckStartConditions '{QuestData.DevName}': Evaluating {QuestData.StartConditions.Count} conditions:");
+            bool allMet = true;
+            foreach (var condition in QuestData.StartConditions)
+            {
+                if (condition == null)
+                {
+                    QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG]   - NULL condition → treating as false");
+                    allMet = false;
+                }
+                else
+                {
+                    bool result = condition.Evaluate();
+                    QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG]   - '{condition.name}' (type: {condition.GetType().Name}) → {result}");
+                    if (!result) allMet = false;
+                }
+            }
+            QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG] CheckStartConditions '{QuestData.DevName}': Final result → {allMet}");
+            return allMet;
         }
 
         #endregion

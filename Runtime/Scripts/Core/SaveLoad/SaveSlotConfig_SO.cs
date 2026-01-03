@@ -106,7 +106,6 @@ namespace HelloDev.QuestSystem.SaveLoad
 
             if (previousIndex != slotIndex)
             {
-                Debug.Log($"[SaveSlotConfig] Active slot changed: {previousIndex} -> {slotIndex}");
                 OnSlotChanged?.Invoke(previousIndex, slotIndex);
             }
         }

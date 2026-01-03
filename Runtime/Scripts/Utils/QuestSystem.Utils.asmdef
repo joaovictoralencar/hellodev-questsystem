@@ -1,7 +1,9 @@
 {
     "name": "QuestSystem.Utils",
     "rootNamespace": "QuestSystem.Utils",
-    "references": [],
+    "references": [
+        "GUID:e5b4c3e4ab8f025469eb50f7f4489925"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

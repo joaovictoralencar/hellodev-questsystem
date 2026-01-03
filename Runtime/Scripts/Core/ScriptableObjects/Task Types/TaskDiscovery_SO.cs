@@ -2,7 +2,6 @@ using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -46,11 +45,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             base.OnScriptableObjectReset();
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
+        public override void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task)
         {
-            if (taskNameText == null)
+            if (localizedString == null)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: taskNameText is null.");
+                QuestLogger.LogError("SetupTaskLocalizedVariables: localizedString is null.");
                 return;
             }
 
@@ -60,17 +59,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            LocalizedString stringReference = taskNameText.StringReference;
-            if (stringReference == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
-                return;
-            }
-
             // Add or update "current" variable for discovered count
-            if (!stringReference.TryGetValue("current", out IVariable currentVariable))
+            if (!localizedString.TryGetValue("current", out IVariable currentVariable))
             {
-                stringReference.Add("current", new IntVariable { Value = discoveryTask.DiscoveredCount });
+                localizedString.Add("current", new IntVariable { Value = discoveryTask.DiscoveredCount });
             }
             else
             {
@@ -79,18 +71,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             // Add or update "required" variable for required discoveries
-            if (!stringReference.TryGetValue("required", out IVariable requiredVariable))
+            if (!localizedString.TryGetValue("required", out IVariable requiredVariable))
             {
-                stringReference.Add("required", new IntVariable { Value = discoveryTask.RequiredDiscoveries });
+                localizedString.Add("required", new IntVariable { Value = discoveryTask.RequiredDiscoveries });
             }
             else
             {
                 if (requiredVariable is IntVariable existingRequired)
                     existingRequired.Value = discoveryTask.RequiredDiscoveries;
             }
-
-            // Refresh the localized string so UI updates immediately
-            taskNameText.RefreshString();
         }
     }
 }

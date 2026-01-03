@@ -53,7 +53,6 @@ namespace HelloDev.QuestSystem.Internal
                 }
             }
 
-            QuestLogger.Log($"QuestRegistry: Initialized with {_availableQuestsData.Count} quests.");
         }
 
         public void ClearRuntimeState()

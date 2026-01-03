@@ -1,8 +1,6 @@
 using UnityEngine;
 using HelloDev.QuestSystem.Tasks;
-using HelloDev.QuestSystem.Utils;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Components;
 
 namespace HelloDev.QuestSystem.ScriptableObjects
 {
@@ -22,29 +20,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             base.OnScriptableObjectReset();
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
+        public override void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task)
         {
-            if (taskNameText == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: taskNameText is null.");
-                return;
-            }
-
-            if (task is not BoolTaskRuntime boolTask)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not an BoolTask.");
-                return;
-            }
-
-            LocalizedString stringReference = taskNameText.StringReference;
-            if (stringReference == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
-                return;
-            }
-
-            // Refresh the localized string so UI updates immediately
-            taskNameText.RefreshString();
+            // Bool tasks don't require any localized variables
         }
     }
 }

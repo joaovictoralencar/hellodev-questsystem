@@ -174,25 +174,25 @@ namespace HelloDev.QuestSystem.TaskGroups
             switch (ExecutionMode)
             {
                 case TaskExecutionMode.Sequential:
-                    // Start only the first task
+                    // Log group start BEFORE starting the task (correct chronological order)
                     var firstTask = Tasks.FirstOrDefault();
-                    firstTask.StartTask();
-                    QuestLogger.Log($"TaskGroup '{GroupName}' started (Sequential). First task: {firstTask.DevName}");
+                    QuestLogger.Log($"TaskGroup '{GroupName}' started (Sequential). First task: {firstTask?.DevName ?? "none"}");
+                    OnGroupStarted.SafeInvoke(this);
+                    firstTask?.StartTask();
                     break;
 
                 case TaskExecutionMode.Parallel:
                 case TaskExecutionMode.AnyOrder:
                 case TaskExecutionMode.OptionalXofY:
-                    // Start all tasks immediately
+                    // Log group start BEFORE starting tasks (correct chronological order)
+                    QuestLogger.Log($"TaskGroup '{GroupName}' started ({ExecutionMode}). {Tasks.Count} tasks active.");
+                    OnGroupStarted.SafeInvoke(this);
                     foreach (var task in Tasks)
                     {
                         task.StartTask();
                     }
-                    QuestLogger.Log($"TaskGroup '{GroupName}' started ({ExecutionMode}). {Tasks.Count} tasks active.");
                     break;
             }
-
-            OnGroupStarted.SafeInvoke(this);
         }
 
         /// <summary>
@@ -337,13 +337,11 @@ namespace HelloDev.QuestSystem.TaskGroups
 
         private void HandleTaskStarted(TaskRuntime task)
         {
-            QuestLogger.Log($"Task '{task.DevName}' started in group '{GroupName}'.");
             OnTaskInGroupStarted.SafeInvoke(this, task);
         }
 
         private void HandleTaskCompleted(TaskRuntime task)
         {
-            QuestLogger.Log($"Task '{task.DevName}' completed in group '{GroupName}'.");
             OnTaskInGroupCompleted.SafeInvoke(this, task);
 
             if (CheckCompletion())

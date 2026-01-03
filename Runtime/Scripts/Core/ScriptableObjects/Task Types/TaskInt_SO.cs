@@ -2,7 +2,6 @@ using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -66,51 +65,51 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             currentCount = 0;
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
+        public override void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task)
         {
-            if (taskNameText == null)
+            if (localizedString == null)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: taskNameText is null.");
+                QuestLogger.LogError(LogSubsystem.UI, $"[TaskInt_SO] SetupTaskLocalizedVariables: localizedString is null for task '{task?.DevName}'");
                 return;
             }
 
             if (task is not IntTaskRuntime intTask)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not an IntTaskRuntime.");
+                QuestLogger.LogError(LogSubsystem.UI, $"[TaskInt_SO] SetupTaskLocalizedVariables: task '{task?.DevName}' is not an IntTaskRuntime (type: {task?.GetType().Name})");
                 return;
             }
 
-            LocalizedString stringReference = taskNameText.StringReference;
-            if (stringReference == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
-                return;
-            }
+            QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Setting up variables for '{task.DevName}': current={intTask.CurrentCount}, required={intTask.RequiredCount}");
 
             // Ensure "current" variable exists
-            if (!stringReference.TryGetValue("current", out IVariable currentVariable))
+            if (!localizedString.TryGetValue("current", out IVariable currentVariable))
             {
-                stringReference.Add("current", new IntVariable { Value = intTask.CurrentCount });
+                localizedString.Add("current", new IntVariable { Value = intTask.CurrentCount });
+                QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Added 'current' variable = {intTask.CurrentCount}");
             }
             else
             {
                 if (currentVariable is IntVariable existingCurrent)
+                {
                     existingCurrent.Value = intTask.CurrentCount;
+                    QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Updated 'current' variable = {intTask.CurrentCount}");
+                }
             }
 
-            // Ensure "target" variable exists
-            if (!stringReference.TryGetValue("required", out IVariable requiredVariable))
+            // Ensure "required" variable exists
+            if (!localizedString.TryGetValue("required", out IVariable requiredVariable))
             {
-                stringReference.Add("required", new IntVariable { Value = intTask.RequiredCount });
+                localizedString.Add("required", new IntVariable { Value = intTask.RequiredCount });
+                QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Added 'required' variable = {intTask.RequiredCount}");
             }
             else
             {
                 if (requiredVariable is IntVariable existingTarget)
+                {
                     existingTarget.Value = intTask.RequiredCount;
+                    QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Updated 'required' variable = {intTask.RequiredCount}");
+                }
             }
-
-            // Refresh the localized string so UI updates immediately
-            taskNameText.RefreshString();
         }
     }
 }

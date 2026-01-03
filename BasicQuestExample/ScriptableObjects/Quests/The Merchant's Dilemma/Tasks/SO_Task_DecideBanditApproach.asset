@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 816565eeb74b83f46afd5a1992ad8c3e, type: 3}
-  m_Name: SO_Task_TalkToMerchant
+  m_Name: SO_Task_DecideBanditApproach
   m_EditorClassIdentifier:
-  _description: Talk to the merchant to learn about the stolen goods.
-  devName: TalkToMerchant
+  _description: Decision task - player chooses how to handle the bandit situation.
+  devName: DecideBanditApproach
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 269231374343
+      m_KeyId: 2134290023366656
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
@@ -27,12 +27,14 @@ MonoBehaviour:
     m_TableReference:
       m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 269231374344
+      m_KeyId: 2134290061115392
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   taskSprite: {fileID: 0}
   conditions:
-  - {fileID: 11400000, guid: 70b6ed2597c1d4144bf12cc8bb459d47, type: 2}
+  - {fileID: 11400000, guid: cb2178a4910a0b54f87c46f9c2e2918a, type: 2}
+  - {fileID: 11400000, guid: 8d17665bc98f77041a38ebc4d0f4f43c, type: 2}
+  - {fileID: 11400000, guid: 243ecc7bb23fa8a438ea3ed7a1c53bf3, type: 2}
   failureConditions: []

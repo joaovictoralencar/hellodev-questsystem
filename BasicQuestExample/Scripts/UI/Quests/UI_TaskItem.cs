@@ -1,12 +1,15 @@
 using System;
 using PrimeTween;
 using HelloDev.QuestSystem.Tasks;
+using HelloDev.QuestSystem.Utils;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
+using static HelloDev.QuestSystem.Utils.QuestLogger;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
@@ -64,6 +67,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void OnDestroy()
         {
+            if (_task != null)
+                LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] Destroyed: {_task.DevName}");
+
             UnsubscribeFromTaskEvents();
             if (selectedBackground != null)
                 Tween.StopAll(selectedBackground);
@@ -79,6 +85,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         public void Setup(TaskRuntime task, Action<TaskRuntime> onTaskSelected)
         {
             if (task == null) return;
+
+            LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] Setup: {task.DevName} ({task.CurrentState})");
 
             if (_isInitialized)
                 UnsubscribeFromTaskEvents();
@@ -154,12 +162,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void HandleTaskUpdated(TaskRuntime task)
         {
-            if (task?.Data != null && taskNameText != null)
-                task.Data.SetupTaskLocalizedVariables(taskNameText, task);
+            if (task?.Data == null || taskNameText?.StringReference == null) return;
+
+            // Update variables on the existing StringReference and refresh
+            task.Data.SetupTaskLocalizedVariables(taskNameText.StringReference, task);
+            taskNameText.RefreshString();
         }
 
         private void HandleTaskCompleted(TaskRuntime task)
         {
+            LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] State changed to Completed: {task.DevName}");
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(true);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = completedColour;
@@ -168,6 +180,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void HandleTaskFailed(TaskRuntime task)
         {
+            LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] State changed to Failed: {task.DevName}");
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(false);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = failedColour;
@@ -176,6 +189,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void HandleTaskInProgress()
         {
+            LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] State changed to InProgress: {_task?.DevName}");
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(false);
             if (textStyleUpdater != null) textStyleUpdater.TextColourSO = inProgressColour;
@@ -202,13 +216,47 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void SetupLocalizedText()
         {
-            if (taskNameText == null || _task?.Data == null) return;
+            if (taskNameText == null || _task?.Data?.DisplayName == null) return;
 
-            taskNameText.enabled = false;
+            // Set up variables on the original DisplayName BEFORE assigning
+            // The variables persist on the LocalizedString instance
+            _task.Data.SetupTaskLocalizedVariables(_task.Data.DisplayName, _task);
+
+            // Now assign - the refresh will have the variables already
             taskNameText.StringReference = _task.Data.DisplayName;
-            _task.Data.SetupTaskLocalizedVariables(taskNameText, _task);
-            taskNameText.enabled = true;
-            taskNameText.RefreshString();
+
+            // Log variables for debugging
+            LogLocalizedVariables();
+        }
+
+        private void LogLocalizedVariables()
+        {
+            if (taskNameText?.StringReference == null) return;
+
+            var stringRef = taskNameText.StringReference;
+            var varNames = new System.Text.StringBuilder();
+            int count = 0;
+
+            // Check common variable names
+            string[] commonVars = { "current", "required", "target", "time", "remaining", "object", "location" };
+            foreach (var varName in commonVars)
+            {
+                if (stringRef.TryGetValue(varName, out var variable))
+                {
+                    if (varNames.Length > 0) varNames.Append(", ");
+                    varNames.Append($"{varName}={variable}");
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] No localized variables set for: {_task?.DevName}");
+            }
+            else
+            {
+                LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] Localized variables for '{_task?.DevName}': {varNames}");
+            }
         }
 
         private void ApplyStateVisuals(TaskState state)
@@ -234,6 +282,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_task == null) return;
 
+            LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] Subscribed to: {_task.DevName}");
             _task.OnTaskUpdated.SafeSubscribe(HandleTaskUpdated);
             _task.OnTaskCompleted.SafeSubscribe(HandleTaskCompleted);
             _task.OnTaskFailed.SafeSubscribe(HandleTaskFailed);
@@ -243,6 +292,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_task == null) return;
 
+            LogVerbose(LogSubsystem.UI, $"[UI_TaskItem] Unsubscribed from: {_task.DevName}");
             _task.OnTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
             _task.OnTaskCompleted.SafeUnsubscribe(HandleTaskCompleted);
             _task.OnTaskFailed.SafeUnsubscribe(HandleTaskFailed);

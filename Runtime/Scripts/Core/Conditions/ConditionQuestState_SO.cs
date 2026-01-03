@@ -49,8 +49,20 @@ namespace HelloDev.QuestSystem.Conditions
 
         #region Private Fields
 
+        /// <summary>
+        /// Multicast delegate for all registered callbacks.
+        /// </summary>
         private Action _onConditionMet;
-        private bool _isSubscribed;
+
+        /// <summary>
+        /// Number of active subscribers.
+        /// </summary>
+        private int _subscriberCount;
+
+        /// <summary>
+        /// Whether we're subscribed to QuestManager events.
+        /// </summary>
+        private bool _isSubscribedToEvents;
 
         #endregion
 
@@ -83,20 +95,21 @@ namespace HelloDev.QuestSystem.Conditions
         {
             if (questToCheck == null)
             {
-                Debug.LogWarning($"[ConditionQuestState_SO] Quest reference is null on '{name}'.");
+                Debug.LogWarning($"[ConditionQuestState_SO] Quest reference is null on '{name}'. Returning IsInverted={IsInverted}");
                 return IsInverted;
             }
 
             if (QuestManager.Instance == null)
             {
-                Debug.LogWarning($"[ConditionQuestState_SO] QuestManager.Instance is null.");
+                Debug.LogWarning($"[ConditionQuestState_SO] QuestManager.Instance is null. Returning IsInverted={IsInverted}");
                 return IsInverted;
             }
 
             QuestState currentState = GetQuestCurrentState();
             bool result = EvaluateComparison(currentState, targetState);
+            bool finalResult = IsInverted ? !result : result;
 
-            return IsInverted ? !result : result;
+            return finalResult;
         }
 
         #endregion
@@ -105,47 +118,60 @@ namespace HelloDev.QuestSystem.Conditions
 
         /// <summary>
         /// Subscribes to QuestManager events to be notified when quest states change.
+        /// Multiple subscribers can register callbacks.
         /// </summary>
         /// <param name="onConditionMet">Callback to invoke when the condition becomes true.</param>
         public void SubscribeToEvent(Action onConditionMet)
         {
-            if (_isSubscribed) return;
+            if (onConditionMet == null) return;
 
-            _onConditionMet = onConditionMet;
+            // Add callback to multicast delegate
+            _onConditionMet += onConditionMet;
+            _subscriberCount++;
 
-            if (QuestManager.Instance != null)
+            // Subscribe to QuestManager events on first subscriber
+            if (!_isSubscribedToEvents)
             {
-                QuestManager.Instance.QuestStarted.AddListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestCompleted.AddListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestFailed.AddListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestRestarted.AddListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestAdded.AddListener(OnQuestStateChanged);
-                _isSubscribed = true;
-            }
-            else
-            {
-                Debug.LogWarning($"[ConditionQuestState_SO] Cannot subscribe - QuestManager.Instance is null.");
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.QuestStarted.AddListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestCompleted.AddListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestFailed.AddListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestRestarted.AddListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestAdded.AddListener(OnQuestStateChanged);
+                    _isSubscribedToEvents = true;
+                }
+                else
+                {
+                    Debug.LogWarning($"[ConditionQuestState_SO] Cannot subscribe - QuestManager.Instance is null.");
+                }
             }
         }
 
         /// <summary>
-        /// Unsubscribes from QuestManager events.
+        /// Unsubscribes a specific callback from QuestManager events.
         /// </summary>
-        public void UnsubscribeFromEvent()
+        public void UnsubscribeFromEvent(Action callback)
         {
-            if (!_isSubscribed) return;
+            if (callback == null) return;
 
-            if (QuestManager.Instance != null)
+            // Remove callback from multicast delegate
+            _onConditionMet -= callback;
+            _subscriberCount = Math.Max(0, _subscriberCount - 1);
+
+            // Unsubscribe from QuestManager events when no subscribers remain
+            if (_subscriberCount == 0 && _isSubscribedToEvents)
             {
-                QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
-                QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
+                }
+                _isSubscribedToEvents = false;
             }
-
-            _onConditionMet = null;
-            _isSubscribed = false;
         }
 
         /// <summary>
@@ -167,24 +193,16 @@ namespace HelloDev.QuestSystem.Conditions
         private QuestState GetQuestCurrentState()
         {
             if (QuestManager.Instance == null || questToCheck == null)
-            {
                 return QuestState.NotStarted;
-            }
 
             if (QuestManager.Instance.IsQuestCompleted(questToCheck))
-            {
                 return QuestState.Completed;
-            }
 
             if (QuestManager.Instance.IsQuestFailed(questToCheck))
-            {
                 return QuestState.Failed;
-            }
 
             if (QuestManager.Instance.IsQuestActive(questToCheck))
-            {
                 return QuestState.InProgress;
-            }
 
             return QuestState.NotStarted;
         }
@@ -225,12 +243,34 @@ namespace HelloDev.QuestSystem.Conditions
 
         protected override void OnScriptableObjectReset()
         {
-            UnsubscribeFromEvent();
+            ClearAllSubscriptions();
         }
 
         private void OnDestroy()
         {
-            UnsubscribeFromEvent();
+            ClearAllSubscriptions();
+        }
+
+        /// <summary>
+        /// Clears all subscriptions. Used during reset and destroy.
+        /// </summary>
+        private void ClearAllSubscriptions()
+        {
+            if (_isSubscribedToEvents)
+            {
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
+                    QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
+                }
+                _isSubscribedToEvents = false;
+            }
+
+            _onConditionMet = null;
+            _subscriberCount = 0;
         }
 
         #endregion

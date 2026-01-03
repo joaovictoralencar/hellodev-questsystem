@@ -111,6 +111,62 @@ MonoBehaviour:
     m_Key: Transition_SkipToResolution_Leader
     m_Metadata:
       m_Items: []
+  - m_Id: 2097639532314624
+    m_Key: Stage_TheChoice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091840
+    m_Key: Stage_CombatPath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091841
+    m_Key: Stage_DiplomacyPath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091842
+    m_Key: Stage_LawfulPath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091843
+    m_Key: Stage_Journal_TheChoice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091844
+    m_Key: Stage_Journal_CombatPath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091845
+    m_Key: Stage_Journal_DiplomacyPath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091846
+    m_Key: Stage_Journal_LawfulPath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091847
+    m_Key: Choice_ConfrontBandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091848
+    m_Key: Choice_ConfrontBandits_Tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091849
+    m_Key: Choice_NegotiateBandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091850
+    m_Key: Choice_NegotiateBandits_Tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091851
+    m_Key: Choice_ReportToGuards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091852
+    m_Key: Choice_ReportToGuards_Tooltip
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

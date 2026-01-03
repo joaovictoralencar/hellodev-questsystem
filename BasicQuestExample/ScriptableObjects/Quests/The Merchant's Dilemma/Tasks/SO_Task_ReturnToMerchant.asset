@@ -17,19 +17,19 @@ MonoBehaviour:
   taskId: f12d24b8-b5af-4a42-894e-f01cf59c160c
   displayName:
     m_TableReference:
-      m_TableCollectionName: 
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: 
+      m_KeyId: 2097648461987844
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   taskDescription:
     m_TableReference:
-      m_TableCollectionName: 
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: 
+      m_KeyId: 2097648461987845
+      m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []

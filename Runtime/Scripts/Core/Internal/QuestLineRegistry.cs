@@ -18,6 +18,7 @@ namespace HelloDev.QuestSystem.Internal
         private readonly Dictionary<Guid, QuestLine_SO> _availableQuestLinesData = new();
         private readonly Dictionary<Guid, QuestLineRuntime> _activeQuestLines = new();
         private readonly Dictionary<Guid, QuestLineRuntime> _completedQuestLines = new();
+        private readonly Dictionary<Guid, QuestLineRuntime> _failedQuestLines = new();
 
         #endregion
 
@@ -25,6 +26,7 @@ namespace HelloDev.QuestSystem.Internal
 
         public int ActiveCount => _activeQuestLines.Count;
         public int CompletedCount => _completedQuestLines.Count;
+        public int FailedCount => _failedQuestLines.Count;
         public int DatabaseCount => _availableQuestLinesData.Count;
 
         #endregion
@@ -51,13 +53,13 @@ namespace HelloDev.QuestSystem.Internal
                 }
             }
 
-            QuestLogger.Log($"QuestLineRegistry: Initialized with {_availableQuestLinesData.Count} questlines.");
         }
 
         public void ClearRuntimeState()
         {
             _activeQuestLines.Clear();
             _completedQuestLines.Clear();
+            _failedQuestLines.Clear();
         }
 
         public bool IsInDatabase(Guid questLineId)
@@ -124,6 +126,32 @@ namespace HelloDev.QuestSystem.Internal
 
         #endregion
 
+        #region Failed QuestLines
+
+        public bool AddFailed(QuestLineRuntime questLine)
+        {
+            if (questLine == null) return false;
+            return _failedQuestLines.TryAdd(questLine.QuestLineId, questLine);
+        }
+
+        public QuestLineRuntime GetFailed(Guid questLineId)
+        {
+            _failedQuestLines.TryGetValue(questLineId, out QuestLineRuntime questLine);
+            return questLine;
+        }
+
+        public bool IsFailed(Guid questLineId)
+        {
+            return _failedQuestLines.ContainsKey(questLineId);
+        }
+
+        public IReadOnlyCollection<QuestLineRuntime> GetAllFailed()
+        {
+            return _failedQuestLines.Values.ToList().AsReadOnly();
+        }
+
+        #endregion
+
         #region Movement Between States
 
         public bool MoveToCompleted(Guid questLineId)
@@ -133,6 +161,15 @@ namespace HelloDev.QuestSystem.Internal
 
             _activeQuestLines.Remove(questLineId);
             return _completedQuestLines.TryAdd(questLineId, questLine);
+        }
+
+        public bool MoveToFailed(Guid questLineId)
+        {
+            if (!_activeQuestLines.TryGetValue(questLineId, out QuestLineRuntime questLine))
+                return false;
+
+            _activeQuestLines.Remove(questLineId);
+            return _failedQuestLines.TryAdd(questLineId, questLine);
         }
 
         #endregion
@@ -148,6 +185,11 @@ namespace HelloDev.QuestSystem.Internal
         /// Gets all completed questlines as enumerable. Used internally for editor display.
         /// </summary>
         internal IEnumerable<QuestLineRuntime> CompletedQuestLinesEnumerable => _completedQuestLines.Values;
+
+        /// <summary>
+        /// Gets all failed questlines as enumerable. Used internally for editor display.
+        /// </summary>
+        internal IEnumerable<QuestLineRuntime> FailedQuestLinesEnumerable => _failedQuestLines.Values;
 
         #endregion
     }

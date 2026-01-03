@@ -2,7 +2,6 @@ using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -61,11 +60,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             base.OnScriptableObjectReset();
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
+        public override void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task)
         {
-            if (taskNameText == null)
+            if (localizedString == null)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: taskNameText is null.");
+                QuestLogger.LogError("SetupTaskLocalizedVariables: localizedString is null.");
                 return;
             }
 
@@ -75,22 +74,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            LocalizedString stringReference = taskNameText.StringReference;
-            if (stringReference == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
-                return;
-            }
-
             // Format remaining time as minutes:seconds
             int minutes = (int)(timedTask.RemainingTime / 60);
             int seconds = (int)(timedTask.RemainingTime % 60);
             string timeString = $"{minutes}:{seconds:D2}";
 
             // Add or update "remaining" variable for remaining time
-            if (!stringReference.TryGetValue("remaining", out IVariable remainingVariable))
+            if (!localizedString.TryGetValue("remaining", out IVariable remainingVariable))
             {
-                stringReference.Add("remaining", new StringVariable { Value = timeString });
+                localizedString.Add("remaining", new StringVariable { Value = timeString });
             }
             else
             {
@@ -99,9 +91,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             // Add or update "time" variable (alias for remaining time - used in some localization strings)
-            if (!stringReference.TryGetValue("time", out IVariable timeVariable))
+            if (!localizedString.TryGetValue("time", out IVariable timeVariable))
             {
-                stringReference.Add("time", new StringVariable { Value = timeString });
+                localizedString.Add("time", new StringVariable { Value = timeString });
             }
             else
             {
@@ -114,9 +106,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             int limitSeconds = (int)(timeLimit % 60);
             string limitString = $"{limitMinutes}:{limitSeconds:D2}";
 
-            if (!stringReference.TryGetValue("limit", out IVariable limitVariable))
+            if (!localizedString.TryGetValue("limit", out IVariable limitVariable))
             {
-                stringReference.Add("limit", new StringVariable { Value = limitString });
+                localizedString.Add("limit", new StringVariable { Value = limitString });
             }
             else
             {
@@ -126,9 +118,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
             // Add "current" and "required" for compatibility with common localization patterns
             // For timed tasks: current = remaining time, required = time limit
-            if (!stringReference.TryGetValue("current", out IVariable currentVariable))
+            if (!localizedString.TryGetValue("current", out IVariable currentVariable))
             {
-                stringReference.Add("current", new StringVariable { Value = timeString });
+                localizedString.Add("current", new StringVariable { Value = timeString });
             }
             else
             {
@@ -136,18 +128,15 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     existingCurrent.Value = timeString;
             }
 
-            if (!stringReference.TryGetValue("required", out IVariable requiredVariable))
+            if (!localizedString.TryGetValue("required", out IVariable requiredVariable))
             {
-                stringReference.Add("required", new StringVariable { Value = limitString });
+                localizedString.Add("required", new StringVariable { Value = limitString });
             }
             else
             {
                 if (requiredVariable is StringVariable existingRequired)
                     existingRequired.Value = limitString;
             }
-
-            // Refresh the localized string so UI updates immediately
-            taskNameText.RefreshString();
         }
     }
 }

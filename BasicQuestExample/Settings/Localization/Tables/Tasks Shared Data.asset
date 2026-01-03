@@ -191,6 +191,54 @@ MonoBehaviour:
     m_Key: Task_Description_ReturnWithEvidence
     m_Metadata:
       m_Items: []
+  - m_Id: 2097648420044800
+    m_Key: Task_Name_MeetTheMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648457793536
+    m_Key: Task_Description_MeetTheMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648457793537
+    m_Key: Task_Name_DefeatBandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648457793538
+    m_Key: Task_Description_DefeatBandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648461987840
+    m_Key: Task_Name_NegotiateWithBandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648461987841
+    m_Key: Task_Description_NegotiateWithBandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648461987842
+    m_Key: Task_Name_ReportToGuards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648461987843
+    m_Key: Task_Description_ReportToGuards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648461987844
+    m_Key: Task_Name_ReturnToMerchantDilemma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097648461987845
+    m_Key: Task_Description_ReturnToMerchantDilemma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2134290023366656
+    m_Key: Task_Name_DecideBanditApproach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2134290061115392
+    m_Key: Task_Description_DecideBanditApproach
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

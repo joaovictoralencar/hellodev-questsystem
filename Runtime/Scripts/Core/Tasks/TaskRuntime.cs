@@ -255,16 +255,16 @@ namespace HelloDev.QuestSystem.Tasks
         {
             foreach (Condition_SO condition in Data.Conditions)
             {
-                if (condition is IConditionEventDriven conditionEventDriven) 
-                    conditionEventDriven.UnsubscribeFromEvent();
+                if (condition is IConditionEventDriven conditionEventDriven)
+                    conditionEventDriven.UnsubscribeFromEvent(CompleteTask);
             }
-            
+
             foreach (Condition_SO condition in Data.FailureConditions)
             {
-                if (condition is IConditionEventDriven conditionEventDriven) 
-                    conditionEventDriven.UnsubscribeFromEvent();
+                if (condition is IConditionEventDriven conditionEventDriven)
+                    conditionEventDriven.UnsubscribeFromEvent(FailTask);
             }
-            
+
             OnTaskUpdated.SafeUnsubscribe(CheckCompletion);
         }
 

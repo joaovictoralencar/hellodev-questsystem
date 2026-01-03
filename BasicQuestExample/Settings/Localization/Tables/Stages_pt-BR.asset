@@ -115,6 +115,66 @@ MonoBehaviour:
     m_Localized: "Ir \xE0 Resolu\xE7\xE3o (l\xEDder do culto derrotado)"
     m_Metadata:
       m_Items: []
+  - m_Id: 2097639532314624
+    m_Localized: A Escolha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091840
+    m_Localized: Caminho do Combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091841
+    m_Localized: Caminho da Diplomacia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091842
+    m_Localized: Caminho da Lei
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091843
+    m_Localized: "O mercador apresenta uma escolha dif\xEDcil. Como voc\xEA vai lidar
+      com a amea\xE7a dos bandidos?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091844
+    m_Localized: "Voc\xEA escolheu confrontar os bandidos diretamente. Prepare-se
+      para a batalha."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091845
+    m_Localized: "Voc\xEA escolheu negociar com os bandidos. Busque uma resolu\xE7\xE3o
+      pac\xEDfica."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091846
+    m_Localized: "Voc\xEA escolheu denunciar os bandidos \xE0s autoridades. A justi\xE7a
+      ser\xE1 feita."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091847
+    m_Localized: Confrontar os Bandidos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091848
+    m_Localized: "Leve a luta diretamente aos bandidos. Viol\xEAncia pode ser necess\xE1ria."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091849
+    m_Localized: Negociar com os Bandidos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091850
+    m_Localized: "Tente chegar a um acordo pac\xEDfico. Talvez seja poss\xEDvel convenc\xEA-los."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091851
+    m_Localized: Denunciar aos Guardas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091852
+    m_Localized: "Deixe as autoridades lidarem com isso. \xC9 a abordagem legal."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

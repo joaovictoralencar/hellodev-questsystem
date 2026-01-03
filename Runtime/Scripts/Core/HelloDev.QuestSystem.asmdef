@@ -10,7 +10,8 @@
         "QuestSystem.Utils",
         "HelloDev.Conditions.Types",
         "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
-        "HelloDev.Singletons"
+        "HelloDev.Singletons",
+        "HelloDev.Bootstrap"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -114,6 +114,65 @@ MonoBehaviour:
     m_Localized: Skip to Resolution (cult leader defeated)
     m_Metadata:
       m_Items: []
+  - m_Id: 2097639532314624
+    m_Localized: The Choice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091840
+    m_Localized: Combat Path
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091841
+    m_Localized: Diplomacy Path
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091842
+    m_Localized: Lawful Path
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091843
+    m_Localized: The merchant presents you with a difficult choice. How will you
+      handle the bandit threat?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091844
+    m_Localized: You've chosen to confront the bandits directly. Prepare for battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091845
+    m_Localized: You've chosen to negotiate with the bandits. Seek a peaceful resolution.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091846
+    m_Localized: You've chosen to report the bandits to the authorities. Justice
+      will be served.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091847
+    m_Localized: Confront the Bandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091848
+    m_Localized: Take the fight directly to the bandits. Violence may be necessary.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091849
+    m_Localized: Negotiate with Bandits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091850
+    m_Localized: Try to reach a peaceful agreement. Perhaps they can be reasoned
+      with.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091851
+    m_Localized: Report to Guards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2097639549091852
+    m_Localized: Let the authorities handle this. It's the lawful approach.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

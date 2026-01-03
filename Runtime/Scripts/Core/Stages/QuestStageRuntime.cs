@@ -146,9 +146,9 @@ namespace HelloDev.QuestSystem.Stages
         private int _currentGroupIndex = -1;
 
         /// <summary>
-        /// Cached list of event-driven conditions for cleanup.
+        /// Cached list of event-driven conditions and their callbacks for proper cleanup.
         /// </summary>
-        private readonly List<IConditionEventDriven> _activeConditionSubscriptions = new();
+        private readonly List<(IConditionEventDriven Condition, System.Action Callback)> _activeConditionSubscriptions = new();
 
         #endregion
 
@@ -193,17 +193,18 @@ namespace HelloDev.QuestSystem.Stages
             _currentGroupIndex = 0;
             if (TaskGroups.Count > 0)
             {
-                TaskGroups[0].StartGroup();
+                // Log stage start BEFORE starting the group (correct chronological order)
                 QuestLogger.LogStart(LogSubsystem.Stage, "Stage", StageName);
+                OnStageEntered.SafeInvoke(this);
+                TaskGroups[0].StartGroup();
             }
             else
             {
                 QuestLogger.LogStart(LogSubsystem.Stage, "Stage", $"{StageName} (no groups)");
+                OnStageEntered.SafeInvoke(this);
                 // If no task groups, immediately check for transitions
                 CheckAndExecuteTransition();
             }
-
-            OnStageEntered.SafeInvoke(this);
         }
 
         /// <summary>
@@ -363,8 +364,10 @@ namespace HelloDev.QuestSystem.Stages
                 {
                     if (condition is IConditionEventDriven eventDriven)
                     {
-                        eventDriven.SubscribeToEvent(() => CheckConditionTransition(transition));
-                        _activeConditionSubscriptions.Add(eventDriven);
+                        // Store the callback so we can properly unsubscribe later
+                        System.Action callback = () => CheckConditionTransition(transition);
+                        eventDriven.SubscribeToEvent(callback);
+                        _activeConditionSubscriptions.Add((eventDriven, callback));
                     }
                 }
             }
@@ -372,9 +375,9 @@ namespace HelloDev.QuestSystem.Stages
 
         private void UnsubscribeFromConditionTransitions()
         {
-            foreach (var eventDriven in _activeConditionSubscriptions)
+            foreach (var (condition, callback) in _activeConditionSubscriptions)
             {
-                eventDriven.UnsubscribeFromEvent();
+                condition.UnsubscribeFromEvent(callback);
             }
             _activeConditionSubscriptions.Clear();
         }
@@ -387,13 +390,11 @@ namespace HelloDev.QuestSystem.Stages
 
         private void HandleGroupStarted(TaskGroupRuntime group)
         {
-            QuestLogger.LogStart(LogSubsystem.Group, "Group", group.GroupName);
             OnGroupInStageStarted.SafeInvoke(this, group);
         }
 
         private void HandleGroupCompleted(TaskGroupRuntime group)
         {
-            QuestLogger.LogComplete(LogSubsystem.Group, "Group", group.GroupName);
             OnGroupInStageCompleted.SafeInvoke(this, group);
 
             if (AreAllGroupsCompleted())

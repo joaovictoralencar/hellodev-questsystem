@@ -1,8 +1,6 @@
 using HelloDev.QuestSystem.Tasks;
-using HelloDev.QuestSystem.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Components;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -43,29 +41,9 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             base.OnScriptableObjectReset();
         }
 
-        public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
+        public override void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task)
         {
-            if (taskNameText == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: taskNameText is null.");
-                return;
-            }
-
-            if (task is not StringTaskRuntime stringTask)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a StringTask.");
-                return;
-            }
-
-            LocalizedString stringReference = taskNameText.StringReference;
-            if (stringReference == null)
-            {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: StringReference is null.");
-                return;
-            }
-
-            // Refresh the localized string so UI updates immediately
-            taskNameText.RefreshString();
+            // String tasks don't require any localized variables
         }
     }
 }

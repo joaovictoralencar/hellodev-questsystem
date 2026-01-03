@@ -5,7 +5,6 @@ using HelloDev.QuestSystem.Tasks;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Components;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -117,8 +116,10 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
         /// <summary>
         /// Sets up localized variables for the task UI display.
+        /// Must be called BEFORE assigning the LocalizedString to a LocalizeStringEvent
+        /// to avoid SmartFormat errors during auto-refresh.
         /// </summary>
-        public abstract void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task);
+        public abstract void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task);
 
         #endregion
 

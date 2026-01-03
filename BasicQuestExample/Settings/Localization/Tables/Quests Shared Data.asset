@@ -39,6 +39,18 @@ MonoBehaviour:
     m_Key: Quest_Location_SQ001_MerchantsStolenGoods
     m_Metadata:
       m_Items: []
+  - m_Id: 49838819338403840
+    m_Key: Quest_Name_TheMerchantsDilemma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49838819355181056
+    m_Key: Quest_Description_TheMerchantsDilemma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49838819359375360
+    m_Key: Quest_Location_TheMerchantsDilemma
+    m_Metadata:
+      m_Items: []
   - m_Id: 45854794491936768
     m_Key: Quest_Name_TheBanditsEmployer
     m_Metadata:

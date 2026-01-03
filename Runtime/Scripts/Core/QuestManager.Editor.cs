@@ -168,7 +168,7 @@ namespace HelloDev.QuestSystem
 
             foreach (var questData in failedQuestData)
             {
-                RestartQuest(questData, forceStart: true);
+                RestartQuest(questData);
             }
             Debug.Log("[QuestManager] All failed quests restarted.");
         }
@@ -217,7 +217,7 @@ namespace HelloDev.QuestSystem
             [ValueDropdown(nameof(GetAvailableQuests))]
             Quest_SO questData)
         {
-            AddQuest(questData, forceStart: true);
+            AddAndStartQuest(questData);
         }
 
         [TitleGroup("Runtime Actions")]

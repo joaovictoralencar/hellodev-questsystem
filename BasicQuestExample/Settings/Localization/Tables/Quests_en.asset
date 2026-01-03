@@ -111,6 +111,20 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 1502424905934962797
+  - m_Id: 49838819338403840
+    m_Localized: The Merchant's Dilemma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49838819355181056
+    m_Localized: 'The merchant faces a moral choice: confront the bandits directly,
+      negotiate for peace, or report them to the authorities. Your decision will
+      shape the outcome.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49838819359375360
+    m_Localized: Market District
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:

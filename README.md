@@ -61,8 +61,8 @@ public class QuestGiver : MonoBehaviour
 
     public void GiveQuest()
     {
-        // Add and start the quest
-        QuestManager.Instance.AddQuest(goblinsBaneQuest, forceStart: true);
+        // Add and start the quest immediately
+        QuestManager.Instance.AddAndStartQuest(goblinsBaneQuest);
     }
 }
 
@@ -321,10 +321,10 @@ public class TaskTimed_SO : Task_SO
 
     public override TaskRuntime GetRuntimeTask() => new TimedTaskRuntime(this);
 
-    public override void SetupTaskLocalizedVariables(LocalizeStringEvent taskNameText, TaskRuntime task)
+    public override void SetupTaskLocalizedVariables(LocalizedString localizedString, TaskRuntime task)
     {
-        // Configure localization variables
-        taskNameText.RefreshString();
+        // Add localization variables (e.g., {current}, {required})
+        // Called BEFORE assigning to LocalizeStringEvent.StringReference
     }
 }
 ```
@@ -388,7 +388,7 @@ var questStateCondition = ScriptableObject.CreateInstance<ConditionQuestState_SO
 // Configure via inspector, or check programmatically:
 if (QuestManager.Instance.IsQuestCompleted(prerequisiteQuest))
 {
-    QuestManager.Instance.AddQuest(nextQuest, forceStart: true);
+    QuestManager.Instance.AddAndStartQuest(nextQuest);
 }
 ```
 
@@ -756,6 +756,63 @@ bool isActive = QuestManager.Instance.IsQuestLineActive(questLineSO);
 
 Both can be used together: a QuestLine can contain quests that have chain dependencies.
 
+### Chained Questlines
+
+Questlines can be chained together, where completing one questline unlocks another. This is preferred over chaining the last quest of Questline A to the first quest of Questline B, as it provides cleaner narrative structure.
+
+**Method 1: Direct Prerequisite (Simple)**
+Set the `prerequisiteLine` field on the dependent questline:
+1. Open the dependent QuestLine_SO (e.g., "Act 2")
+2. Set "Prerequisite Line" to the required questline (e.g., "Act 1")
+3. The questline remains Locked until the prerequisite is Completed
+
+**Method 2: Condition-Based (Flexible)**
+Use `ConditionQuestLineState_SO` for complex unlock requirements:
+1. Create > HelloDev > Quest System > Conditions > Quest Line State Condition
+2. Set "QuestLine To Check" to the prerequisite questline
+3. Set "Target State" to `Completed`
+4. Add this condition to the first quest's Start Conditions in the dependent questline
+
+**Chaining Patterns:**
+
+| Pattern | Description | Implementation |
+|---------|-------------|----------------|
+| Sequential | Questline B after Questline A | Set `prerequisiteLine` on B |
+| Branching | Questline C requires A OR B | CompositeCondition (OR) with two ConditionQuestLineState_SO |
+| Convergent | Questline D requires A AND B | CompositeCondition (AND) with two ConditionQuestLineState_SO |
+| Exclusive | Questline E only if A NOT failed | ConditionQuestLineState_SO with IsInverted |
+
+**Example: Two-Act Story**
+```
+QuestLine: Act1_TheGoblinThreat
+├── Quest: Goblin's Bane
+├── Quest: The Bandit's Employer
+└── Quest: The Goblin Conspiracy
+
+QuestLine: Act2_TheGreaterEvil (prerequisiteLine = Act1_TheGoblinThreat)
+├── Quest: Shadows Unveiled
+├── Quest: The Dark Council
+└── Quest: Final Confrontation
+```
+
+**Cross-Questline Quest Triggers:**
+For finer control, the last quest of a questline can explicitly trigger the first quest of another:
+```csharp
+// In quest completion handler
+QuestManager.Instance.QuestCompleted.AddListener(quest => {
+    if (quest.QuestData == lastQuestOfAct1)
+    {
+        QuestManager.Instance.AddQuestLine(act2QuestLine);
+    }
+});
+```
+
+**Best Practices:**
+- Use questline chaining for major narrative arcs (acts, chapters)
+- Use quest chaining within a questline for sequential missions
+- Use `prerequisiteLine` for simple sequential arcs
+- Use `ConditionQuestLineState_SO` when you need event-driven unlocking or complex conditions
+
 ## API Reference
 
 ### QuestManager
@@ -780,10 +837,11 @@ The QuestManager is the entry point for all quest operations. It manages quest l
 #### Quest Lifecycle Methods
 | Method | Description |
 |--------|-------------|
-| `AddQuest(Quest_SO, forceStart)` | Add and optionally start a quest |
+| `AddQuest(Quest_SO)` | Add a quest; starts automatically if conditions met |
+| `AddAndStartQuest(Quest_SO)` | Add and immediately start a quest (bypasses conditions) |
 | `FailQuest(Quest_SO)` | Fail a quest |
 | `RemoveQuest(Quest_SO)` | Remove a quest from active quests |
-| `RestartQuest(Quest_SO, forceStart)` | Restart a quest |
+| `RestartQuest(Quest_SO)` | Restart a quest |
 
 #### Query Methods
 | Method | Description |
@@ -980,6 +1038,20 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.5.0 (2026-01-03)
+**Localization Bug Fix:**
+- Fixed FormattingException "Could not evaluate selector 'current'" when selecting quests with localized strings containing `{current}/{required}` placeholders
+- Changed `SetupTaskLocalizedVariables` signature from `LocalizeStringEvent` to `LocalizedString` to properly set up variables before LocalizeStringEvent triggers auto-refresh
+- UI callers now set up variables on the original `DisplayName` LocalizedString before assignment
+
+**Debug UI Fix:**
+- Fixed DebugEventTask not properly tracking fulfilled conditions for DiscoveryTaskRuntime
+- Now checks `discoveryTask.FulfilledConditions.Contains(condition)` instead of `condition.Evaluate()` for discovery tasks
+
+**Breaking Changes:**
+- `Task_SO.SetupTaskLocalizedVariables` signature changed from `(LocalizeStringEvent taskNameText, TaskRuntime task)` to `(LocalizedString localizedString, TaskRuntime task)`
+- All custom Task_SO subclasses must update their override signature
 
 ### v3.4.0 (2025-12-31)
 **Bootstrap Support:**

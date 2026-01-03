@@ -9,29 +9,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 816565eeb74b83f46afd5a1992ad8c3e, type: 3}
+  m_Script: {fileID: 11500000, guid: 6b122bf07d976e74eb0fbbd145996568, type: 3}
   m_Name: SO_Task_DefeatBandits
   m_EditorClassIdentifier:
   _description: Defeat the bandits and recover the stolen goods by force.
   devName: DefeatBandits
+  taskId:
   displayName:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 2097648457793537
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   taskDescription:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 2097648457793538
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  taskSprite: {fileID: 0}
   conditions: []
   failureConditions: []
+  requiredCount: 5
+  currentCount: 0

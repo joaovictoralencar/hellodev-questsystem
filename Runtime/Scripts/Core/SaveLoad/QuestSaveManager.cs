@@ -181,8 +181,12 @@ namespace HelloDev.QuestSystem.SaveLoad
         {
             if (_isInitialized) return Task.CompletedTask;
 
+            QuestLogger.Log(LogSubsystem.SaveManager, "Starting initialization...");
+
             RegisterWithLocator();
             _isInitialized = true;
+
+            QuestLogger.Log(LogSubsystem.SaveManager, $"Initialized (slots: {slotConfig?.MaxSlots ?? 0})");
 
             return Task.CompletedTask;
         }
@@ -312,14 +316,29 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// Captures the current state of the quest system without saving to storage.
         /// Useful for custom save implementations or debugging.
         /// </summary>
-        /// <returns>A snapshot of the current quest system state.</returns>
-        public QuestSystemSnapshot CaptureSnapshot()
+        /// <param name="force">If true, captures even during unsafe operations (may produce inconsistent snapshot).</param>
+        /// <returns>A snapshot of the current quest system state, or null if capture is unsafe and not forced.</returns>
+        public QuestSystemSnapshot CaptureSnapshot(bool force = false)
         {
             var questManager = QuestManager.Instance;
             if (questManager == null)
             {
                 QuestLogger.LogWarning(LogSubsystem.Save, "QuestManager not found, snapshot empty");
                 return new QuestSystemSnapshot { Version = 1, Timestamp = DateTime.UtcNow.ToString("O") };
+            }
+
+            // Check if it's safe to capture
+            if (!force && !questManager.IsSafeForSaveLoad)
+            {
+                if (questManager.IsProcessingEvents)
+                {
+                    QuestLogger.LogWarning(LogSubsystem.Save, "Cannot capture snapshot while processing events. Skipping save.");
+                }
+                else if (questManager.IsAnyQuestTransitioning)
+                {
+                    QuestLogger.LogWarning(LogSubsystem.Save, "Cannot capture snapshot during stage transition. Skipping save.");
+                }
+                return null;
             }
 
             var snapshot = SnapshotCapturer.CaptureFullSnapshot(
@@ -360,11 +379,21 @@ namespace HelloDev.QuestSystem.SaveLoad
                 return false;
             }
 
+            // Prevent loading while events are being processed to avoid invalid state
+            if (questManager.IsProcessingEvents)
+            {
+                QuestLogger.LogError(LogSubsystem.Save, "Cannot restore snapshot while quest events are being processed. " +
+                    "Defer the load until event processing completes.");
+                return false;
+            }
+
+            QuestLogger.Log(LogSubsystem.Save, $"Restoring snapshot from '{snapshot.Timestamp}'...");
+
             try
             {
-                // Clear current state
+                // Clear current state and reinitialize
                 questManager.ShutdownManager();
-                questManager.InitializeManager(questManager.QuestsDatabase.ToList());
+                questManager.InitializeManager(questManager.QuestsDatabase.ToList(), isRestore: true);
 
                 // Restore world flags first (quests may depend on them)
                 SnapshotRestorer.RestoreWorldFlags(snapshot.WorldFlags, GetAllWorldFlags(), worldFlagLocator);
@@ -381,6 +410,10 @@ namespace HelloDev.QuestSystem.SaveLoad
                 // Re-subscribe NotStarted quests to their start condition events
                 // This must happen AFTER all quests are restored to prevent events from triggering auto-start during restore
                 questManager.ResubscribeNotStartedQuestsToEvents();
+
+                // Evaluate database quests not in save data - they may now qualify to start
+                // (e.g., a quest whose start condition depends on a completed quest or world flag)
+                questManager.EvaluateUnstartedDatabaseQuests();
 
                 QuestLogger.LogLoad(snapshot.Timestamp, true);
                 return true;
@@ -408,6 +441,12 @@ namespace HelloDev.QuestSystem.SaveLoad
             OnBeforeSave?.Invoke(slotKey);
 
             var snapshot = CaptureSnapshot();
+            if (snapshot == null)
+            {
+                // Capture was skipped due to unsafe state (event processing or stage transition)
+                // This is expected for autosave - will retry on next trigger
+                return false;
+            }
 
             // Save snapshot
             bool success = await SaveService.Provider.SaveAsync(slotKey, snapshot);
@@ -720,7 +759,13 @@ namespace HelloDev.QuestSystem.SaveLoad
         [PropertyOrder(212)]
         private void DebugLogSnapshot()
         {
-            var snapshot = CaptureSnapshot();
+            // Force capture for debug purposes
+            var snapshot = CaptureSnapshot(force: true);
+            if (snapshot == null)
+            {
+                Debug.Log("<color=#FF6B6B>Cannot capture snapshot</color>");
+                return;
+            }
 
             Debug.Log($"<color=#A8D8EA><b>=== SNAPSHOT ({snapshot.Timestamp}) ===</b></color>");
             Debug.Log($"  Active: {snapshot.ActiveQuests.Count} | Completed: {snapshot.CompletedQuests.Count} | Failed: {snapshot.FailedQuests.Count}");

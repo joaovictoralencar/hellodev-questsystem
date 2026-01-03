@@ -16,18 +16,18 @@ MonoBehaviour:
   devName: NegotiateWithBandits
   displayName:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 2097648461987840
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   taskDescription:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 2097648461987841
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0

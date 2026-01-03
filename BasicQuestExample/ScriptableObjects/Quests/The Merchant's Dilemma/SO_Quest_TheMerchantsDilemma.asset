@@ -22,27 +22,27 @@ MonoBehaviour:
   recommendedLevel: 5
   displayName:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 49838819338403840
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   questDescription:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 49838819355181056
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   questLocation:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:007160a1500c2c4449d3173c3765232f
     m_TableEntryReference:
-      m_KeyId: 0
+      m_KeyId: 273798971392
       m_Key:
     m_FallbackState: 0
     m_WaitForCompletion: 0
@@ -53,9 +53,9 @@ MonoBehaviour:
     stageName: Introduction
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 47952478221
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -80,28 +80,34 @@ MonoBehaviour:
     stageName: The Choice
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 2097639549091843
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
     stageIcon: {fileID: 0}
-    taskGroups: []
+    taskGroups:
+    - groupName: Make Your Choice
+      executionMode: 0
+      requiredCount: 1
+      tasks:
+      - {fileID: 11400000, guid: 442743243284c9e4c95f41dd3295fca9, type: 2}
     transitions:
     - targetStageIndex: 10
       trigger: 3
-      conditions: []
+      conditions:
+      - {fileID: 11400000, guid: cb2178a4910a0b54f87c46f9c2e2918a, type: 2}
       transitionLabel: Confront the Bandits
       priority: 0
       isPlayerChoice: 1
       choiceId: combat_path
       choiceText:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
-          m_KeyId: 0
+          m_KeyId: 2097639549091847
           m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
@@ -109,9 +115,9 @@ MonoBehaviour:
       choiceIcon: {fileID: 0}
       choiceTooltip:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
-          m_KeyId: 0
+          m_KeyId: 2097639549091848
           m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
@@ -125,16 +131,17 @@ MonoBehaviour:
         intValue: 0
     - targetStageIndex: 20
       trigger: 3
-      conditions: []
+      conditions:
+      - {fileID: 11400000, guid: 8d17665bc98f77041a38ebc4d0f4f43c, type: 2}
       transitionLabel: Negotiate with Bandits
       priority: 0
       isPlayerChoice: 1
       choiceId: diplomacy_path
       choiceText:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
-          m_KeyId: 0
+          m_KeyId: 2097639549091849
           m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
@@ -142,9 +149,9 @@ MonoBehaviour:
       choiceIcon: {fileID: 0}
       choiceTooltip:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
-          m_KeyId: 0
+          m_KeyId: 2097639549091850
           m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
@@ -160,15 +167,16 @@ MonoBehaviour:
       trigger: 3
       conditions:
       - {fileID: 11400000, guid: 766a6c7dfd81c22449f3fed8e3260d5f, type: 2}
+      - {fileID: 11400000, guid: 243ecc7bb23fa8a438ea3ed7a1c53bf3, type: 2}
       transitionLabel: Report to Guards
       priority: 0
       isPlayerChoice: 1
       choiceId: lawful_path
       choiceText:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
-          m_KeyId: 0
+          m_KeyId: 2097639549091851
           m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
@@ -176,9 +184,9 @@ MonoBehaviour:
       choiceIcon: {fileID: 0}
       choiceTooltip:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
-          m_KeyId: 0
+          m_KeyId: 2097639549091852
           m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
@@ -197,9 +205,9 @@ MonoBehaviour:
     stageName: Combat Path
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 2097639549091844
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -210,7 +218,7 @@ MonoBehaviour:
       executionMode: 0
       requiredCount: 1
       tasks:
-      - {fileID: 11400000, guid: f6b269eb05c52b24e8eeaa6d10ad6502, type: 2}
+      - {fileID: 11400000, guid: 0814db39d2e53a14c89588956ecc5c00, type: 2}
     transitions:
     - targetStageIndex: 100
       trigger: 0
@@ -224,9 +232,9 @@ MonoBehaviour:
     stageName: Diplomacy Path
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 2097639549091845
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -251,9 +259,9 @@ MonoBehaviour:
     stageName: Lawful Path
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 2097639549091846
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
@@ -278,9 +286,9 @@ MonoBehaviour:
     stageName: Resolution
     journalEntry:
       m_TableReference:
-        m_TableCollectionName:
+        m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
-        m_KeyId: 0
+        m_KeyId: 47952478220
         m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0

@@ -247,7 +247,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void CreateActiveSections()
         {
             var groupedQuests = QuestManager.Instance.GetActiveQuests()
-                .Where(q => q.QuestData?.QuestType != null && q.QuestData.QuestType != completedQuestType)
+                .Where(q => q.QuestData?.QuestType != null
+                         && q.QuestData.QuestType != completedQuestType
+                         && q.CurrentState == QuestState.InProgress)
                 .GroupBy(q => q.QuestData.QuestType);
 
             foreach (var group in groupedQuests)
@@ -514,7 +516,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private List<QuestRuntime> GetActiveQuestsOfType(QuestType_SO questType)
         {
             return QuestManager.Instance.GetActiveQuests()
-                .Where(q => q.QuestData?.QuestType == questType)
+                .Where(q => q.QuestData?.QuestType == questType
+                         && q.CurrentState == QuestState.InProgress)
                 .ToList();
         }
 

@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
+using HelloDev.Logging;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.Saving;
 using HelloDev.Utils;
 using UnityEngine;
+using Logger = HelloDev.Logging.Logger;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -128,19 +130,17 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (_isInitialized) return;
 
-            Debug.Log("[SaveSystemSetup] InitializeAsync() called.");
+            Logger.Log(LogSystems.SaveSetup, "Starting initialization...");
 
             if (saveLocator == null)
             {
-                Debug.LogWarning("[SaveSystemSetup] No QuestSaveLocator_SO assigned. Save system will not be initialized.");
+                Logger.LogWarning(LogSystems.SaveSetup, "No QuestSaveLocator_SO assigned. Save system will not be initialized.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Locator available: {saveLocator.IsAvailable}");
-
             if (!saveLocator.IsAvailable)
             {
-                Debug.LogWarning("[SaveSystemSetup] QuestSaveManager not registered with locator. Ensure QuestSaveManager is in the scene.");
+                Logger.LogWarning(LogSystems.SaveSetup, "QuestSaveManager not registered with locator. Ensure QuestSaveManager is in the scene.");
                 return;
             }
 
@@ -148,13 +148,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             var provider = new JsonSaveProvider(saveSubdirectory, fileExtension, prettyPrint);
             SaveService.SetProvider(provider);
 
-            Debug.Log($"[SaveSystemSetup] Provider set. HasProvider: {saveLocator.HasProvider}");
-
             // Set default active slot via the locator
             if (defaultSlotIndex >= 0 && saveLocator.HasSlotConfig)
             {
                 saveLocator.SetActiveSlot(defaultSlotIndex);
-                Debug.Log($"[SaveSystemSetup] Active slot set to {defaultSlotIndex}. Autosave target: {saveLocator.CurrentAutosaveSlotKey}");
             }
 
             _isInitialized = true;
@@ -164,6 +161,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             {
                 await AutoLoadAsync();
             }
+
+            Logger.Log(LogSystems.SaveSetup, "Initialization complete.");
         }
 
         /// <summary>
@@ -172,7 +171,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         public void Shutdown()
         {
             _isInitialized = false;
-            Debug.Log("[SaveSystemSetup] Shutdown.");
+            Logger.Log(LogSystems.SaveSetup, "Shutdown.");
         }
 
         #endregion
@@ -185,7 +184,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             if (_isInitialized || !selfInitialize) return;
 
             // Standalone mode - initialize ourselves
-            Debug.Log("[SaveSystemSetup] Start() - standalone initialization.");
+            Logger.Log(LogSystems.SaveSetup, "Start() - standalone initialization.");
             await InitializeAsync();
         }
 
@@ -227,27 +226,22 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             string targetSlot = CurrentAutoSlot;
             if (string.IsNullOrEmpty(targetSlot))
             {
-                Debug.LogWarning("[SaveSystemSetup] Auto-load enabled but no slot specified.");
+                Logger.LogWarning(LogSystems.SaveSetup, "Auto-load enabled but no slot specified.");
                 return;
             }
 
             bool exists = await saveLocator.SaveExistsAsync(targetSlot);
             if (!exists)
             {
-                Debug.Log($"[SaveSystemSetup] Auto-load slot '{targetSlot}' does not exist. Skipping.");
+                Logger.Log(LogSystems.SaveSetup, $"No save file found for slot '{targetSlot}', skipping auto-load.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Auto-loading from slot '{targetSlot}'...");
+            Logger.Log(LogSystems.SaveSetup, $"Auto-loading from slot '{targetSlot}'...");
             bool success = await saveLocator.LoadAsync(targetSlot);
-
-            if (success)
+            if (!success)
             {
-                Debug.Log($"[SaveSystemSetup] Auto-load from '{targetSlot}' successful.");
-            }
-            else
-            {
-                Debug.LogWarning($"[SaveSystemSetup] Auto-load from '{targetSlot}' failed.");
+                Logger.LogWarning(LogSystems.SaveSetup, $"Auto-load from '{targetSlot}' failed.");
             }
         }
 
@@ -256,20 +250,20 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             string targetSlot = CurrentAutoSlot;
             if (string.IsNullOrEmpty(targetSlot))
             {
-                Debug.LogWarning("[SaveSystemSetup] Auto-save triggered but no slot specified.");
+                Logger.LogWarning(LogSystems.SaveSetup, "Auto-save triggered but no slot specified.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
+            Logger.Log(LogSystems.SaveSetup, $"Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
             bool success = await saveLocator.SaveAsync(targetSlot);
 
             if (success)
             {
-                Debug.Log($"[SaveSystemSetup] Auto-save to '{targetSlot}' successful.");
+                Logger.Log(LogSystems.SaveSetup, $"Auto-save to '{targetSlot}' successful.");
             }
             else
             {
-                Debug.LogWarning($"[SaveSystemSetup] Auto-save to '{targetSlot}' failed.");
+                Logger.LogWarning(LogSystems.SaveSetup, $"Auto-save to '{targetSlot}' failed.");
             }
         }
 
@@ -278,11 +272,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             string targetSlot = CurrentAutoSlot;
             if (string.IsNullOrEmpty(targetSlot))
             {
-                Debug.LogWarning("[SaveSystemSetup] Auto-save triggered but no slot specified.");
+                Logger.LogWarning(LogSystems.SaveSetup, "Auto-save triggered but no slot specified.");
                 return;
             }
 
-            Debug.Log($"[SaveSystemSetup] Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
+            Logger.Log(LogSystems.SaveSetup, $"Auto-saving to slot '{targetSlot}' (trigger: {trigger})...");
 
             // Use synchronous snapshot + save for quit scenarios
             var snapshot = saveLocator.CaptureSnapshot();
@@ -294,11 +288,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample
 
                 if (task.Result)
                 {
-                    Debug.Log($"[SaveSystemSetup] Auto-save to '{targetSlot}' successful.");
+                    Logger.Log(LogSystems.SaveSetup, $"Auto-save to '{targetSlot}' successful.");
                 }
                 else
                 {
-                    Debug.LogWarning($"[SaveSystemSetup] Auto-save to '{targetSlot}' failed.");
+                    Logger.LogWarning(LogSystems.SaveSetup, $"Auto-save to '{targetSlot}' failed.");
                 }
             }
         }
@@ -362,7 +356,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             }
             else
             {
-                Debug.Log($"[SaveSystemSetup] Save folder does not exist yet: {path}");
+                Logger.Log(LogSystems.SaveSetup, $"Save folder does not exist yet: {path}");
             }
         }
 #endif

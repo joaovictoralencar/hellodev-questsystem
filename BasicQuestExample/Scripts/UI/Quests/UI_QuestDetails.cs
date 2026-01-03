@@ -3,6 +3,7 @@ using System.Linq;
 using PrimeTween;
 using HelloDev.Conditions;
 using HelloDev.QuestSystem.Quests;
+using HelloDev.QuestSystem.Stages;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.UI.Default;
@@ -10,6 +11,7 @@ using HelloDev.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 using static HelloDev.QuestSystem.Utils.QuestLogger;
@@ -123,6 +125,27 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 #endif
         [SerializeField] private TextMeshProUGUI taskDescriptionTextMesh;
 
+#if ODIN_INSPECTOR
+        [TitleGroup("Choices")]
+        [PropertyOrder(30)]
+        [InfoBox("Choice buttons are displayed when a stage has player choices and no active tasks.")]
+#else
+        [Header("Choices")]
+#endif
+        [SerializeField] private RectTransform choicesHolder;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Choices")]
+        [PropertyOrder(31)]
+#endif
+        [SerializeField] private UIButton choiceButtonPrefab;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Choices")]
+        [PropertyOrder(32)]
+#endif
+        [SerializeField] private LocalizeStringEvent choiceHeaderText;
+
         #endregion
 
         #region Private Fields
@@ -130,7 +153,10 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private QuestRuntime _currentQuest;
         private TaskRuntime _currentTask;
         private readonly List<UI_TaskItem> _taskItems = new();
+        private readonly List<UIButton> _choiceButtons = new();
         private int _selectedTaskIndex = -1;
+        private bool _isTransitioningStage;
+        private bool _isShowingChoices;
 
         #endregion
 
@@ -359,6 +385,27 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 discoveryTask.IncrementStep();
             }
         }
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Player Choices")]
+        [PropertyOrder(90)]
+        [Button("Select Choice 1", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        private void QuickSelectChoice1() => DebugSelectChoice(0);
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Player Choices")]
+        [PropertyOrder(91)]
+        [Button("Select Choice 2", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        private void QuickSelectChoice2() => DebugSelectChoice(1);
+
+        [FoldoutGroup("Debug")]
+        [TitleGroup("Debug/Player Choices")]
+        [PropertyOrder(92)]
+        [Button("Select Choice 3", ButtonSizes.Medium)]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        private void QuickSelectChoice3() => DebugSelectChoice(2);
 #endif
 #endif
 
@@ -378,6 +425,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void OnDestroy()
         {
             UnsubscribeFromQuestEvents();
+            ClearChoiceButtons();
         }
 
         #endregion
@@ -391,6 +439,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (quest?.QuestData == null) return;
 
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Setup for quest: {quest.QuestData.DevName}");
+
             // Unsubscribe from previous quest
             UnsubscribeFromQuestEvents();
 
@@ -399,8 +449,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             // Setup quest info
             SetupQuestInfo(quest);
 
-            // Clear and rebuild task list
+            // Clear task list and choice buttons
             ClearTaskItems();
+            ClearChoiceButtons();
             CreateTaskItems(quest);
 
             // Setup rewards
@@ -409,8 +460,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             // Subscribe to quest events
             SubscribeToQuestEvents(quest);
 
-            // Select initial task
+            // Select initial task or show choices if no tasks
             SelectInitialTask(quest);
+            CheckForPendingChoices();
 
 #if UNITY_EDITOR
             SetupDebugButtons();
@@ -510,6 +562,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void CreateTaskItems(QuestRuntime quest)
         {
+            int createdCount = 0;
             foreach (TaskRuntime task in quest.Tasks)
             {
                 // Skip not-started tasks
@@ -520,11 +573,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 taskItem.Setup(task, HandleTaskSelected);
                 taskItem.SetToggleGroup(taskToggleGroup);
                 _taskItems.Add(taskItem);
+                createdCount++;
             }
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Created {createdCount} task item(s) for quest: {quest.QuestData.DevName}");
         }
 
         private void ClearTaskItems()
         {
+            if (_taskItems.Count > 0)
+                Log(LogSubsystem.UI, $"[UI_QuestDetails] Clearing {_taskItems.Count} task item(s)");
+
             tasksHolder?.DestroyAllChildren();
             _taskItems.Clear();
             _selectedTaskIndex = -1;
@@ -535,11 +593,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             // Find first valid task based on quest state
             TaskRuntime targetTask = quest.Tasks.FirstOrDefault(t => IsValidInitialTask(quest, t));
 
-            if (targetTask == null) return;
+            if (targetTask == null)
+            {
+                LogVerbose(LogSubsystem.UI, "[UI_QuestDetails] No valid initial task found");
+                return;
+            }
 
             var taskItem = _taskItems.FirstOrDefault(item => item.Task == targetTask);
             if (taskItem != null)
             {
+                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Selected initial task: {targetTask.DevName}");
                 taskItem.SelectTask();
                 _selectedTaskIndex = _taskItems.IndexOf(taskItem);
             }
@@ -584,18 +647,57 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void UpdateTaskDescription(TaskRuntime task)
         {
-            if (taskDescriptionText == null || task?.Data == null) return;
+            if (taskDescriptionText == null || task?.Data == null || task.Description == null) return;
 
-            // Disable to prevent format errors
-            taskDescriptionText.enabled = false;
-            taskDescriptionText.StringReference = task.Description;
-            task.Data.SetupTaskLocalizedVariables(taskDescriptionText, task);
-            taskDescriptionText.enabled = true;
-            taskDescriptionText.RefreshString();
+            // Create a new LocalizedString with the same table/entry reference
+            // This avoids modifying the shared ScriptableObject's TaskDescription
+            var localizedString = new LocalizedString(
+                task.Description.TableReference,
+                task.Description.TableEntryReference);
+
+            // Set up variables BEFORE assigning to StringReference
+            // to avoid SmartFormat errors during auto-refresh
+            task.Data.SetupTaskLocalizedVariables(localizedString, task);
+
+            // Now assign - the refresh will have the variables already
+            taskDescriptionText.StringReference = localizedString;
+
+            // Log variables for debugging
+            LogLocalizedVariables(taskDescriptionText, task.DevName);
 
             // Animate text appearance
             if (taskDescriptionTextMesh != null)
                 Tween.Alpha(taskDescriptionTextMesh, 0f, 1f, 0.25f, Ease.OutQuad);
+        }
+
+        private void LogLocalizedVariables(LocalizeStringEvent localizeEvent, string context)
+        {
+            if (localizeEvent?.StringReference == null) return;
+
+            var stringRef = localizeEvent.StringReference;
+            var varNames = new System.Text.StringBuilder();
+            int count = 0;
+
+            // Check common variable names
+            string[] commonVars = { "current", "required", "target", "time", "remaining", "object", "location" };
+            foreach (var varName in commonVars)
+            {
+                if (stringRef.TryGetValue(varName, out var variable))
+                {
+                    if (varNames.Length > 0) varNames.Append(", ");
+                    varNames.Append($"{varName}={variable}");
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] No localized variables set for: {context}");
+            }
+            else
+            {
+                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Localized variables for '{context}': {varNames}");
+            }
         }
 
         #endregion
@@ -604,39 +706,67 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void SubscribeToQuestEvents(QuestRuntime quest)
         {
+            LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Subscribing to quest events: {quest.QuestData.DevName}");
             quest.OnAnyTaskStarted.SafeSubscribe(HandleTaskUpdated);
             quest.OnAnyTaskUpdated.SafeSubscribe(HandleTaskUpdated);
             quest.OnAnyTaskCompleted.SafeSubscribe(HandleTaskUpdated);
             quest.OnStageTransition.SafeSubscribe(HandleStageTransition);
+            quest.OnChoicesAvailable.SafeSubscribe(HandleChoicesAvailable);
+            quest.OnChoiceMade.SafeSubscribe(HandleChoiceMade);
         }
 
         private void UnsubscribeFromQuestEvents()
         {
             if (_currentQuest == null) return;
 
+            LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Unsubscribing from quest events: {_currentQuest.QuestData?.DevName}");
             _currentQuest.OnAnyTaskStarted.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnAnyTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnAnyTaskCompleted.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnStageTransition.SafeUnsubscribe(HandleStageTransition);
+            _currentQuest.OnChoicesAvailable.SafeUnsubscribe(HandleChoicesAvailable);
+            _currentQuest.OnChoiceMade.SafeUnsubscribe(HandleChoiceMade);
         }
 
         private void HandleStageTransition(QuestRuntime quest, StageTransitionInfo info)
         {
-            // Update stage display
-            UpdateStageInfo(quest);
+            if (quest != _currentQuest) return;
 
-            // Rebuild task list to show new stage's tasks
-            ClearTaskItems();
-            CreateTaskItems(quest);
-            SelectInitialTask(quest);
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Stage transition: {info.PreviousStageIndex} → {info.NewStageIndex}");
 
-            // Animate stage transition (optional visual feedback)
-            if (stageNameText != null)
-                Tween.Alpha(stageNameText, 0f, 1f, 0.3f, Ease.OutQuad);
+            _isTransitioningStage = true;
+            try
+            {
+                // Update stage display
+                UpdateStageInfo(quest);
+
+                // Clear previous stage's UI elements
+                ClearTaskItems();
+                ClearChoiceButtons();
+
+                // Rebuild task list to show new stage's tasks
+                CreateTaskItems(quest);
+                SelectInitialTask(quest);
+
+                // Check for choices in new stage (if no active tasks)
+                CheckForPendingChoices();
+
+                // Animate stage transition (optional visual feedback)
+                if (stageNameText != null)
+                    Tween.Alpha(stageNameText, 0f, 1f, 0.3f, Ease.OutQuad);
+            }
+            finally
+            {
+                _isTransitioningStage = false;
+            }
         }
 
         private void HandleTaskUpdated(QuestRuntime quest, TaskRuntime task)
         {
+            if (quest != _currentQuest) return;
+
+            LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Task updated: {task.DevName} ({task.CurrentState})");
+
             // Update progress display
             if (progressionText != null)
                 progressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
@@ -645,7 +775,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             UpdateStageInfo(_currentQuest);
 
             // Handle new in-progress tasks (for parallel groups)
-            AddNewInProgressTasks();
+            // Skip during stage transitions to avoid race conditions
+            if (!_isTransitioningStage)
+                AddNewInProgressTasks();
 
 #if UNITY_EDITOR
             UpdateDebugButtons();
@@ -654,6 +786,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void AddNewInProgressTasks()
         {
+            if (_currentQuest == null) return;
+
             var inProgressTasks = _currentQuest.Tasks
                 .Where(t => t.CurrentState == TaskState.InProgress)
                 .ToList();
@@ -666,6 +800,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                     continue;
 
                 // Create new task item
+                Log(LogSubsystem.UI, $"[UI_QuestDetails] Adding new task item: {task.DevName}");
                 var taskItem = Instantiate(taskItemPrefab, tasksHolder);
                 taskItem.Setup(task, HandleTaskSelected);
                 taskItem.SetToggleGroup(taskToggleGroup);
@@ -679,6 +814,141 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 var firstInProgress = _taskItems.FirstOrDefault(item => item.Task.CurrentState == TaskState.InProgress);
                 firstInProgress?.SelectTask();
             }
+        }
+
+        #endregion
+
+        #region Private Methods - Choices
+
+        private void HandleChoicesAvailable(QuestRuntime quest, List<StageTransition> choices)
+        {
+            if (quest != _currentQuest) return;
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Choices available: {choices.Count} choice(s)");
+            SpawnChoiceButtons(choices);
+        }
+
+        private void HandleChoiceMade(QuestRuntime quest, StageTransition choice)
+        {
+            if (quest != _currentQuest) return;
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Choice made: {choice.ChoiceId}");
+            ClearChoiceButtons();
+        }
+
+        private void SpawnChoiceButtons(List<StageTransition> choices)
+        {
+            if (choicesHolder == null || choiceButtonPrefab == null)
+            {
+                LogVerbose(LogSubsystem.UI, "[UI_QuestDetails] Cannot spawn choices - missing prefab or holder");
+                return;
+            }
+
+            // Clear existing choice buttons
+            ClearChoiceButtons();
+
+            // Show choices holder
+            choicesHolder.gameObject.SetActive(true);
+            _isShowingChoices = true;
+
+            // Update header text if available
+            if (choiceHeaderText != null)
+            {
+                // Could be localized - for now just show generic text
+                choiceHeaderText.gameObject.SetActive(true);
+            }
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Spawning {choices.Count} choice button(s)");
+
+            foreach (var choice in choices)
+            {
+                var button = Instantiate(choiceButtonPrefab, choicesHolder);
+                button.name = $"ChoiceButton_{choice.ChoiceId}";
+
+                // Setup button text - try to get localized text from choice
+                var buttonText = button.GetComponentInChildren<LocalizeStringEvent>();
+                if (buttonText != null && choice.ChoiceText != null && !choice.ChoiceText.IsEmpty)
+                {
+                    buttonText.StringReference = choice.ChoiceText;
+                    buttonText.RefreshString();
+                }
+                else
+                {
+                    // Fallback to choice ID as text
+                    var tmpText = button.GetComponentInChildren<TextMeshProUGUI>();
+                    if (tmpText != null)
+                        tmpText.text = choice.ChoiceId;
+                }
+
+                // Setup button tooltip if available
+                // TODO: Add tooltip support using choice.ChoiceTooltip
+
+                // For UI-based choices (Option B), buttons are always interactable
+                // Conditions on player choice transitions are for gameplay triggers (Option C),
+                // not for gating UI button availability
+                button.SetInteractable(true);
+
+                // Capture choice for lambda
+                var capturedChoice = choice;
+                button.OnClick.AddListener(() => OnChoiceButtonClicked(capturedChoice));
+
+                _choiceButtons.Add(button);
+            }
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Created {_choiceButtons.Count} choice button(s)");
+        }
+
+        private void ClearChoiceButtons()
+        {
+            if (_choiceButtons.Count == 0) return;
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Clearing {_choiceButtons.Count} choice button(s)");
+
+            foreach (var button in _choiceButtons)
+            {
+                if (button != null)
+                    Destroy(button.gameObject);
+            }
+            _choiceButtons.Clear();
+
+            // Hide choices holder
+            if (choicesHolder != null)
+                choicesHolder.gameObject.SetActive(false);
+
+            if (choiceHeaderText != null)
+                choiceHeaderText.gameObject.SetActive(false);
+
+            _isShowingChoices = false;
+        }
+
+        private void OnChoiceButtonClicked(StageTransition choice)
+        {
+            if (_currentQuest == null) return;
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Choice button clicked: {choice.ChoiceId}");
+
+            // Bypass conditions for UI-based choices (Option B)
+            // Conditions are for gameplay triggers (Option C), not UI availability
+            bool success = _currentQuest.SelectChoice(choice, bypassConditions: true);
+            if (!success)
+            {
+                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Failed to select choice: {choice.ChoiceId}");
+            }
+        }
+
+        /// <summary>
+        /// Checks if the current stage has choices and displays them.
+        /// Called after setup and stage transitions.
+        /// </summary>
+        private void CheckForPendingChoices()
+        {
+            if (_currentQuest?.CurrentStage == null) return;
+
+            var choices = _currentQuest.CurrentStage.Data.GetAllPlayerChoices();
+            if (choices.Count == 0) return;
+
+            Log(LogSubsystem.UI, $"[UI_QuestDetails] Stage has {choices.Count} pending choice(s)");
+            SpawnChoiceButtons(choices);
         }
 
         #endregion
@@ -779,14 +1049,111 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugEventTask()
         {
-            if (_currentTask?.Data?.Conditions == null) return;
-
-            foreach (Condition_SO condition in _currentTask.Data.Conditions)
+            if (_currentTask == null || _currentTask.CurrentState != TaskState.InProgress)
             {
-                if (condition is not IConditionEventDriven conditionEventDriven) continue;
-                conditionEventDriven.ForceFulfillCondition();
-                return; // Only trigger one condition per click
+                Log(LogSubsystem.UI, $"[DebugEventTask] Skipped - task is null or not in progress. Task: {_currentTask?.DevName}, State: {_currentTask?.CurrentState}");
+                return;
             }
+
+            Log(LogSubsystem.UI, $"[DebugEventTask] Called for task: {_currentTask.DevName} ({_currentTask.GetType().Name})");
+
+            // Try to find an event-driven condition to fulfill
+            if (_currentTask.Data?.Conditions != null)
+            {
+                int conditionCount = _currentTask.Data.Conditions.Count;
+                Log(LogSubsystem.UI, $"[DebugEventTask] Task has {conditionCount} condition(s)");
+
+                // For discovery tasks, check the task's fulfilled conditions set instead of Evaluate()
+                var discoveryTask = _currentTask as DiscoveryTaskRuntime;
+
+                // First pass: find unfulfilled conditions (for multi-condition tasks)
+                foreach (Condition_SO condition in _currentTask.Data.Conditions)
+                {
+                    if (condition is not IConditionEventDriven conditionEventDriven)
+                    {
+                        Log(LogSubsystem.UI, $"[DebugEventTask] Condition '{condition.name}' is not event-driven, skipping");
+                        continue;
+                    }
+
+                    // For discovery tasks, check if condition is already in the fulfilled set
+                    // For other tasks, use Evaluate()
+                    bool isAlreadyFulfilled = discoveryTask != null
+                        ? discoveryTask.FulfilledConditions.Contains(condition)
+                        : condition.Evaluate();
+
+                    Log(LogSubsystem.UI, $"[DebugEventTask] Condition '{condition.name}' fulfilled={isAlreadyFulfilled}");
+
+                    if (isAlreadyFulfilled) continue; // Skip already fulfilled
+
+                    Log(LogSubsystem.UI, $"[DebugEventTask] Calling ForceFulfillCondition() on '{condition.name}'");
+                    conditionEventDriven.ForceFulfillCondition();
+                    return;
+                }
+
+                // Second pass: if all conditions are fulfilled but task still needs progress,
+                // re-trigger the first event-driven condition (for repeatable tasks like "collect 3 items")
+                // Note: Discovery tasks have duplicate protection, so this won't work for them
+                if (discoveryTask == null)
+                {
+                    Log(LogSubsystem.UI, $"[DebugEventTask] All conditions fulfilled, checking if task needs more progress...");
+                    foreach (Condition_SO condition in _currentTask.Data.Conditions)
+                    {
+                        if (condition is not IConditionEventDriven conditionEventDriven) continue;
+
+                        Log(LogSubsystem.UI, $"[DebugEventTask] Re-triggering condition '{condition.name}' for repeatable task");
+                        conditionEventDriven.ForceFulfillCondition();
+                        return;
+                    }
+                }
+                else
+                {
+                    Log(LogSubsystem.UI, $"[DebugEventTask] All {discoveryTask.DiscoveredCount}/{discoveryTask.RequiredDiscoveries} conditions fulfilled for discovery task");
+                }
+            }
+            else
+            {
+                Log(LogSubsystem.UI, "[DebugEventTask] Task has no conditions");
+            }
+
+            // No event-driven conditions found - fall back to increment step
+            Log(LogSubsystem.UI, "[DebugEventTask] Falling back to IncrementStep()");
+            _currentTask.IncrementStep();
+        }
+
+        private void DebugSelectChoice(int choiceIndex)
+        {
+            if (_currentQuest == null || _currentQuest.CurrentState != QuestState.InProgress)
+            {
+                Log(LogSubsystem.UI, "[DebugSelectChoice] No active quest");
+                return;
+            }
+
+            var currentStage = _currentQuest.CurrentStage;
+            if (currentStage == null)
+            {
+                Log(LogSubsystem.UI, "[DebugSelectChoice] No current stage");
+                return;
+            }
+
+            var choices = currentStage.Data.GetAllPlayerChoices();
+            if (choices == null || choices.Count == 0)
+            {
+                Log(LogSubsystem.UI, "[DebugSelectChoice] No choices available in current stage");
+                return;
+            }
+
+            if (choiceIndex < 0 || choiceIndex >= choices.Count)
+            {
+                Log(LogSubsystem.UI, $"[DebugSelectChoice] Choice index {choiceIndex} out of range (0-{choices.Count - 1})");
+                return;
+            }
+
+            var choice = choices[choiceIndex];
+            Log(LogSubsystem.UI, $"[DebugSelectChoice] Selecting choice '{choice.ChoiceId}' (index {choiceIndex})");
+
+            // Bypass conditions for debug/UI-based choices
+            bool success = _currentQuest.SelectChoice(choice, bypassConditions: true);
+            Log(LogSubsystem.UI, $"[DebugSelectChoice] SelectChoice result: {success}");
         }
 #endif
 
