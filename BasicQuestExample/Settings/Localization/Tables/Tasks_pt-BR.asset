@@ -246,53 +246,65 @@ MonoBehaviour:
   - m_Id: 2097648420044800
     m_Localized: Encontrar o Mercador
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648457793536
     m_Localized: "Fale com o mercador para saber sobre a situa\xE7\xE3o"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648457793537
     m_Localized: Derrotar os Bandidos ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648457793538
     m_Localized: "Elimine a amea\xE7a dos bandidos de uma vez por todas ({current}/{required})"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648461987840
     m_Localized: Negociar com os Bandidos
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648461987841
     m_Localized: "Conven\xE7a os bandidos a partirem pacificamente"
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648461987842
     m_Localized: Denunciar aos Guardas
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648461987843
     m_Localized: Informe a guarda da cidade sobre a atividade dos bandidos
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648461987844
     m_Localized: Retornar ao Mercador
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2097648461987845
     m_Localized: Relate o resultado da sua escolha ao mercador
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2134290023366656
     m_Localized: Decidir Como Lidar com os Bandidos
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   - m_Id: 2134290061115392
     m_Localized: "Voc\xEA rastreou os bandidos at\xE9 seu esconderijo. Confronte-os
       em seu acampamento, negocie com o l\xEDder deles, ou denuncie ao capit\xE3o
       da guarda."
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349235
   references:
     version: 2
     RefIds:
@@ -345,3 +357,15 @@ MonoBehaviour:
         - id: 269231374371
         - id: 269231374373
         - id: 269231374374
+        - id: 2134290061115392
+        - id: 2134290023366656
+        - id: 2097648461987845
+        - id: 2097648461987844
+        - id: 2097648461987843
+        - id: 2097648461987842
+        - id: 2097648461987841
+        - id: 2097648461987840
+        - id: 2097648457793538
+        - id: 2097648457793537
+        - id: 2097648457793536
+        - id: 2097648420044800

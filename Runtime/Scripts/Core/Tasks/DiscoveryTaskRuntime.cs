@@ -85,7 +85,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (_fulfilledConditions.Contains(condition)) return; // Duplicate protection
 
             _fulfilledConditions.Add(condition);
-            QuestLogger.Log($"Task '{DevName}' - Condition fulfilled. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
+            QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Condition fulfilled. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
             OnTaskUpdated?.SafeInvoke(this);
         }
 
@@ -111,7 +111,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (nextUnfulfilled != null)
             {
                 _fulfilledConditions.Add(nextUnfulfilled);
-                QuestLogger.Log($"Task '{DevName}' - Manually fulfilled condition. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
+                QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Manually fulfilled condition. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
                 return true;
             }
 
@@ -128,7 +128,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (lastFulfilled != null)
             {
                 _fulfilledConditions.Remove(lastFulfilled);
-                QuestLogger.Log($"Task '{DevName}' - Removed fulfillment. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
+                QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Removed fulfillment. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
                 return true;
             }
 

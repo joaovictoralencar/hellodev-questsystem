@@ -1039,6 +1039,14 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 
 ## Changelog
 
+### v3.5.1 (2026-01-03)
+**Logging Cleanup:**
+- Updated `QuestLogger` to work with new `LoggerSettings_SO` configuration system
+- Removed `EnsureRegistered()` pattern - systems are now registered via LoggerSettings_SO
+- Removed legacy API methods (Log/LogWarning/LogError without subsystem parameter)
+- Removed overly verbose UI logs (subscribed/unsubscribed/destroyed events)
+- Updated all task types and registries to use LogSubsystem parameter
+
 ### v3.5.0 (2026-01-03)
 **Localization Bug Fix:**
 - Fixed FormattingException "Could not evaluate selector 'current'" when selecting quests with localized strings containing `{current}/{required}` placeholders

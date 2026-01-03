@@ -49,13 +49,13 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         {
             if (localizedString == null)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: localizedString is null.");
+                QuestLogger.LogError(LogSubsystem.Task, "SetupTaskLocalizedVariables: localizedString is null.");
                 return;
             }
 
             if (task is not DiscoveryTaskRuntime discoveryTask)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a DiscoveryTask.");
+                QuestLogger.LogError(LogSubsystem.Task, "SetupTaskLocalizedVariables: task is not a DiscoveryTask.");
                 return;
             }
 

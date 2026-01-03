@@ -64,13 +64,13 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         {
             if (localizedString == null)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: localizedString is null.");
+                QuestLogger.LogError(LogSubsystem.Task, "SetupTaskLocalizedVariables: localizedString is null.");
                 return;
             }
 
             if (task is not TimedTaskRuntime timedTask)
             {
-                QuestLogger.LogError("SetupTaskLocalizedVariables: task is not a TimedTask.");
+                QuestLogger.LogError(LogSubsystem.Task, "SetupTaskLocalizedVariables: task is not a TimedTask.");
                 return;
             }
 

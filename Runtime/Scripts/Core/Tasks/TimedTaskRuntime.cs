@@ -64,7 +64,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (_remainingTime <= 0f)
             {
                 _remainingTime = 0f;
-                QuestLogger.Log($"Task '{DevName}' - Timer expired!");
+                QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Timer expired!");
                 FailTask();
             }
         }
@@ -78,7 +78,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (CurrentState != TaskState.InProgress) return;
 
             _remainingTime += seconds;
-            QuestLogger.Log($"Task '{DevName}' - Added {seconds}s to timer. New remaining: {_remainingTime}s");
+            QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Added {seconds}s to timer. New remaining: {_remainingTime}s");
             OnTaskUpdated.SafeInvoke(this);
         }
 
@@ -100,7 +100,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (CurrentState != TaskState.InProgress || _isCompleted) return;
 
             _isCompleted = true;
-            QuestLogger.Log($"Task '{DevName}' - Objective completed with {_remainingTime}s remaining!");
+            QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Objective completed with {_remainingTime}s remaining!");
             OnTaskUpdated.SafeInvoke(this);
         }
 
@@ -115,7 +115,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (CurrentState != TaskState.InProgress || _isCompleted) return false;
 
             _isCompleted = true;
-            QuestLogger.Log($"Task '{DevName}' manually marked as completed.");
+            QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' manually marked as completed.");
             return true;
         }
 

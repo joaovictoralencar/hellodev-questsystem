@@ -1,6 +1,6 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "displayName": "Quest System",
   "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, and save/load persistence.",
   "unity": "6000.1",

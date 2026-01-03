@@ -593,16 +593,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             // Find first valid task based on quest state
             TaskRuntime targetTask = quest.Tasks.FirstOrDefault(t => IsValidInitialTask(quest, t));
 
-            if (targetTask == null)
-            {
-                LogVerbose(LogSubsystem.UI, "[UI_QuestDetails] No valid initial task found");
-                return;
-            }
+            if (targetTask == null) return;
 
             var taskItem = _taskItems.FirstOrDefault(item => item.Task == targetTask);
             if (taskItem != null)
             {
-                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Selected initial task: {targetTask.DevName}");
                 taskItem.SelectTask();
                 _selectedTaskIndex = _taskItems.IndexOf(taskItem);
             }
@@ -662,42 +657,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             // Now assign - the refresh will have the variables already
             taskDescriptionText.StringReference = localizedString;
 
-            // Log variables for debugging
-            LogLocalizedVariables(taskDescriptionText, task.DevName);
-
             // Animate text appearance
             if (taskDescriptionTextMesh != null)
                 Tween.Alpha(taskDescriptionTextMesh, 0f, 1f, 0.25f, Ease.OutQuad);
-        }
-
-        private void LogLocalizedVariables(LocalizeStringEvent localizeEvent, string context)
-        {
-            if (localizeEvent?.StringReference == null) return;
-
-            var stringRef = localizeEvent.StringReference;
-            var varNames = new System.Text.StringBuilder();
-            int count = 0;
-
-            // Check common variable names
-            string[] commonVars = { "current", "required", "target", "time", "remaining", "object", "location" };
-            foreach (var varName in commonVars)
-            {
-                if (stringRef.TryGetValue(varName, out var variable))
-                {
-                    if (varNames.Length > 0) varNames.Append(", ");
-                    varNames.Append($"{varName}={variable}");
-                    count++;
-                }
-            }
-
-            if (count == 0)
-            {
-                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] No localized variables set for: {context}");
-            }
-            else
-            {
-                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Localized variables for '{context}': {varNames}");
-            }
         }
 
         #endregion
@@ -706,7 +668,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void SubscribeToQuestEvents(QuestRuntime quest)
         {
-            LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Subscribing to quest events: {quest.QuestData.DevName}");
             quest.OnAnyTaskStarted.SafeSubscribe(HandleTaskUpdated);
             quest.OnAnyTaskUpdated.SafeSubscribe(HandleTaskUpdated);
             quest.OnAnyTaskCompleted.SafeSubscribe(HandleTaskUpdated);
@@ -719,7 +680,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_currentQuest == null) return;
 
-            LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Unsubscribing from quest events: {_currentQuest.QuestData?.DevName}");
             _currentQuest.OnAnyTaskStarted.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnAnyTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
             _currentQuest.OnAnyTaskCompleted.SafeUnsubscribe(HandleTaskUpdated);
@@ -764,8 +724,6 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         private void HandleTaskUpdated(QuestRuntime quest, TaskRuntime task)
         {
             if (quest != _currentQuest) return;
-
-            LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Task updated: {task.DevName} ({task.CurrentState})");
 
             // Update progress display
             if (progressionText != null)
@@ -838,11 +796,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void SpawnChoiceButtons(List<StageTransition> choices)
         {
-            if (choicesHolder == null || choiceButtonPrefab == null)
-            {
-                LogVerbose(LogSubsystem.UI, "[UI_QuestDetails] Cannot spawn choices - missing prefab or holder");
-                return;
-            }
+            if (choicesHolder == null || choiceButtonPrefab == null) return;
 
             // Clear existing choice buttons
             ClearChoiceButtons();
@@ -929,11 +883,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             // Bypass conditions for UI-based choices (Option B)
             // Conditions are for gameplay triggers (Option C), not UI availability
-            bool success = _currentQuest.SelectChoice(choice, bypassConditions: true);
-            if (!success)
-            {
-                LogVerbose(LogSubsystem.UI, $"[UI_QuestDetails] Failed to select choice: {choice.ChoiceId}");
-            }
+            _currentQuest.SelectChoice(choice, bypassConditions: true);
         }
 
         /// <summary>

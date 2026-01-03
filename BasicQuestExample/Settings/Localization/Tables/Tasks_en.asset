@@ -245,52 +245,64 @@ MonoBehaviour:
   - m_Id: 2097648420044800
     m_Localized: Meet the Merchant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648457793536
     m_Localized: Speak with the merchant to learn about the situation
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648457793537
     m_Localized: Defeat the Bandits ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648457793538
     m_Localized: Eliminate the bandit threat once and for all ({current}/{required})
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648461987840
     m_Localized: Negotiate with the Bandits
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648461987841
     m_Localized: Convince the bandits to leave peacefully
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648461987842
     m_Localized: Report to the Guards
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648461987843
     m_Localized: Inform the town guard about the bandit activity
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648461987844
     m_Localized: Return to the Merchant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2097648461987845
     m_Localized: Report the outcome of your choice to the merchant
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2134290023366656
     m_Localized: Decide How to Handle the Bandits
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   - m_Id: 2134290061115392
     m_Localized: You've tracked the bandits to their hideout. Confront them at their
       camp, negotiate with their leader, or report to the guard captain.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8674111653083349234
   references:
     version: 2
     RefIds:
@@ -343,3 +355,15 @@ MonoBehaviour:
         - id: 269231374371
         - id: 269231374373
         - id: 269231374374
+        - id: 2134290061115392
+        - id: 2134290023366656
+        - id: 2097648461987845
+        - id: 2097648461987844
+        - id: 2097648461987843
+        - id: 2097648461987842
+        - id: 2097648461987841
+        - id: 2097648461987840
+        - id: 2097648457793538
+        - id: 2097648457793537
+        - id: 2097648457793536
+        - id: 2097648420044800

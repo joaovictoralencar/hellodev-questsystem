@@ -43,13 +43,13 @@ namespace HelloDev.QuestSystem.Internal
             {
                 if (data == null)
                 {
-                    QuestLogger.LogWarning("QuestLineRegistry: Null questline found in database, skipping.");
+                    QuestLogger.LogWarning(LogSubsystem.Manager, "QuestLineRegistry: Null questline found in database, skipping.");
                     continue;
                 }
 
                 if (!_availableQuestLinesData.TryAdd(data.QuestLineId, data))
                 {
-                    QuestLogger.LogWarning($"QuestLineRegistry: Duplicate questline ID found for '{data.DevName}', skipping.");
+                    QuestLogger.LogWarning(LogSubsystem.Manager, $"QuestLineRegistry: Duplicate questline ID found for '{data.DevName}', skipping.");
                 }
             }
 

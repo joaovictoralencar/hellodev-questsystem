@@ -41,7 +41,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (CurrentState != TaskState.InProgress || _hasReached) return false;
 
             _hasReached = true;
-            QuestLogger.Log($"Task '{DevName}' manually marked as reached.");
+            QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' manually marked as reached.");
             return true;
         }
 

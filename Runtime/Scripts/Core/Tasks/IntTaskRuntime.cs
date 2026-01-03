@@ -91,7 +91,7 @@ namespace HelloDev.QuestSystem.Tasks
             }
 
             _currentCount++;
-            QuestLogger.Log($"Task '{DevName}' progress updated: {_currentCount}/{RequiredCount}.");
+            QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' progress updated: {_currentCount}/{RequiredCount}.");
             return true;
         }
 

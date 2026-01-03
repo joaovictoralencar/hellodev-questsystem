@@ -79,36 +79,24 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 return;
             }
 
-            QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Setting up variables for '{task.DevName}': current={intTask.CurrentCount}, required={intTask.RequiredCount}");
-
             // Ensure "current" variable exists
             if (!localizedString.TryGetValue("current", out IVariable currentVariable))
             {
                 localizedString.Add("current", new IntVariable { Value = intTask.CurrentCount });
-                QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Added 'current' variable = {intTask.CurrentCount}");
             }
-            else
+            else if (currentVariable is IntVariable existingCurrent)
             {
-                if (currentVariable is IntVariable existingCurrent)
-                {
-                    existingCurrent.Value = intTask.CurrentCount;
-                    QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Updated 'current' variable = {intTask.CurrentCount}");
-                }
+                existingCurrent.Value = intTask.CurrentCount;
             }
 
             // Ensure "required" variable exists
             if (!localizedString.TryGetValue("required", out IVariable requiredVariable))
             {
                 localizedString.Add("required", new IntVariable { Value = intTask.RequiredCount });
-                QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Added 'required' variable = {intTask.RequiredCount}");
             }
-            else
+            else if (requiredVariable is IntVariable existingTarget)
             {
-                if (requiredVariable is IntVariable existingTarget)
-                {
-                    existingTarget.Value = intTask.RequiredCount;
-                    QuestLogger.LogVerbose(LogSubsystem.UI, $"[TaskInt_SO] Updated 'required' variable = {intTask.RequiredCount}");
-                }
+                existingTarget.Value = intTask.RequiredCount;
             }
         }
     }

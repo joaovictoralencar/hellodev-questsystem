@@ -164,7 +164,7 @@ namespace HelloDev.QuestSystem.TaskGroups
         {
             if (CurrentState != TaskGroupState.NotStarted)
             {
-                QuestLogger.Log($"TaskGroup '{GroupName}' is already started or completed.");
+                QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' is already started or completed.");
                 return;
             }
 
@@ -176,7 +176,7 @@ namespace HelloDev.QuestSystem.TaskGroups
                 case TaskExecutionMode.Sequential:
                     // Log group start BEFORE starting the task (correct chronological order)
                     var firstTask = Tasks.FirstOrDefault();
-                    QuestLogger.Log($"TaskGroup '{GroupName}' started (Sequential). First task: {firstTask?.DevName ?? "none"}");
+                    QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' started (Sequential). First task: {firstTask?.DevName ?? "none"}");
                     OnGroupStarted.SafeInvoke(this);
                     firstTask?.StartTask();
                     break;
@@ -185,7 +185,7 @@ namespace HelloDev.QuestSystem.TaskGroups
                 case TaskExecutionMode.AnyOrder:
                 case TaskExecutionMode.OptionalXofY:
                     // Log group start BEFORE starting tasks (correct chronological order)
-                    QuestLogger.Log($"TaskGroup '{GroupName}' started ({ExecutionMode}). {Tasks.Count} tasks active.");
+                    QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' started ({ExecutionMode}). {Tasks.Count} tasks active.");
                     OnGroupStarted.SafeInvoke(this);
                     foreach (var task in Tasks)
                     {
@@ -237,7 +237,7 @@ namespace HelloDev.QuestSystem.TaskGroups
             CurrentState = TaskGroupState.Completed;
             UnsubscribeFromTaskEvents();
 
-            QuestLogger.Log($"TaskGroup '{GroupName}' completed. {CompletedTaskCount}/{Tasks.Count} tasks done.");
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' completed. {CompletedTaskCount}/{Tasks.Count} tasks done.");
             OnGroupCompleted.SafeInvoke(this);
         }
 
@@ -251,7 +251,7 @@ namespace HelloDev.QuestSystem.TaskGroups
             CurrentState = TaskGroupState.Failed;
             UnsubscribeFromTaskEvents();
 
-            QuestLogger.Log($"TaskGroup '{GroupName}' failed. {FailedTaskCount} tasks failed.");
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' failed. {FailedTaskCount} tasks failed.");
             OnGroupFailed.SafeInvoke(this);
         }
 
@@ -268,7 +268,7 @@ namespace HelloDev.QuestSystem.TaskGroups
             }
 
             CurrentState = TaskGroupState.NotStarted;
-            QuestLogger.Log($"TaskGroup '{GroupName}' reset.");
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' reset.");
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace HelloDev.QuestSystem.TaskGroups
                 if (nextTask != null)
                 {
                     nextTask.StartTask();
-                    QuestLogger.Log($"Starting next task '{nextTask.DevName}' in group '{GroupName}'.");
+                    QuestLogger.Log(LogSubsystem.TaskGroup, $"Starting next task '{nextTask.DevName}' in group '{GroupName}'.");
                 }
             }
         }
@@ -367,7 +367,7 @@ namespace HelloDev.QuestSystem.TaskGroups
 
         private void HandleTaskFailed(TaskRuntime task)
         {
-            QuestLogger.Log($"Task '{task.DevName}' failed in group '{GroupName}'.");
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"Task '{task.DevName}' failed in group '{GroupName}'.");
             OnTaskInGroupFailed.SafeInvoke(this, task);
 
             // Check if completion has become impossible
