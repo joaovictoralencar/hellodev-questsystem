@@ -1,8 +1,8 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "displayName": "Quest System",
-  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, and save/load persistence.",
+  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, save/load persistence, and a visual Quest Graph Editor using Unity Graph Toolkit.",
   "unity": "6000.1",
   "unityRelease": "1f1",
   "documentationUrl": "https://github.com/joaovictoralencar/unity-quest-system#readme",
@@ -22,7 +22,11 @@
     "narrative",
     "save",
     "load",
-    "persistence"
+    "persistence",
+    "graph",
+    "visual editor",
+    "node editor",
+    "graph toolkit"
   ],
   "author": {
     "name": "João Victor de Alencar Pascoal",

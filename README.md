@@ -105,6 +105,38 @@ See `BasicQuestExample/README.md` for instructions on setting up the example wit
 
 ## Features
 
+### Quest Graph Editor (Unity 6.2+)
+A visual node-based editor for designing quests using Unity's Graph Toolkit.
+
+**Features:**
+- Visual design of quests, stages, task groups, and questlines
+- Drag-and-drop node creation
+- Subgraph support for reusable stage and task group templates
+- Export graphs to ScriptableObject assets
+- Validation with reachability analysis
+
+**Graph Types:**
+| Graph | Extension | Purpose |
+|-------|-----------|---------|
+| Quest Graph | `.quest` | Design individual quests with stages and tasks |
+| Stage Graph | `.stage` | Reusable stage templates (subgraphs) |
+| Task Group Graph | `.taskgroup` | Reusable task group templates |
+| QuestLine Graph | `.questline` | Design questlines with quest references |
+
+**Node Types:**
+- `QuestStartNode` - Entry point with quest metadata
+- `StageNode` - Quest stages with task groups
+- `TaskNode` - Individual tasks (int, bool, string, etc.)
+- `TaskGroupNode` - Groups of tasks with completion mode
+- `ChoiceNode` - Player choice branches
+- `ConditionGateNode` - Conditional flow control
+- `RewardNode` - Quest rewards
+- `WorldFlagSetNode` - Set world flags on completion
+
+**Requirements:**
+- Unity 6.2 or later
+- Graph Toolkit package (`com.unity.graph-toolkit`)
+
 ### Core System
 - **QuestManager** - Singleton managing quest and questline lifecycle, events, and state
 - **QuestRuntime / Quest_SO** - Runtime quest instances with ScriptableObject data
@@ -1038,6 +1070,29 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.6.0 (2026-01-05)
+**Quest Graph Editor:**
+- Added visual node-based editor for designing quests using Unity Graph Toolkit
+- Implemented graph types: QuestGraph, StageGraph, TaskGroupGraph, QuestLineGraph
+- Added node types: QuestStartNode, StageNode, TaskNode, TaskGroupNode, ChoiceNode, ConditionGateNode, RewardNode, WorldFlagSetNode
+- Added subgraph support for StageSubgraphNode and TaskGroupSubgraphNode
+- Added graph-to-ScriptableObject converters for exporting quest assets
+- Added validation system with reachability analysis
+- Added custom importers for .quest, .stage, .taskgroup, .questline file extensions
+
+**Runtime Interfaces:**
+- Added `IQuest` interface for quest abstraction
+- Added `ITask` interface for task abstraction
+- Added `ITaskGroup` interface for task group abstraction
+
+**Rewards Refactor:**
+- `QuestRewardType_SO` now has abstract `Apply(int amount)` method
+- Added `CurrencyRewardType_SO` example implementation
+- Renamed `ExperienceQuestRewardType_SO` to `ExperienceRewardType_SO`
+
+**Requirements:**
+- Quest Graph Editor requires Unity 6.2+ and Graph Toolkit package
 
 ### v3.5.1 (2026-01-03)
 **Logging Cleanup:**
