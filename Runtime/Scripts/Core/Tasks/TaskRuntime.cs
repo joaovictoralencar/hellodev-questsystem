@@ -1,5 +1,6 @@
 using System;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -12,8 +13,9 @@ namespace HelloDev.QuestSystem.Tasks
     /// <summary>
     /// Represents a single objective within a quest. This abstract class provides the
     /// core functionality for all task types. Specific tasks must inherit from it.
+    /// Implements <see cref="ITask"/> for testability and dependency injection.
     /// </summary>
-    public abstract class TaskRuntime
+    public abstract class TaskRuntime : ITask
     {
         #region Events
 

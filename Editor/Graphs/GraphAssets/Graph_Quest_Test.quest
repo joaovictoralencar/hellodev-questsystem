@@ -1,0 +1,302 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 61
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 790b4d75d92f4b0984310a268dbd952f, type: 3}
+  m_Name: Graph_Quest_Test
+  m_EditorClassIdentifier: Unity.GraphToolkit.Editor::Unity.GraphToolkit.Editor.Implementation.GraphObjectImp
+  m_GraphModel:
+    rid: 2249559113858285858
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2249559113858285858
+      type: {class: GraphModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 1280667860732688565
+          m_Value1: 8677817327304793876
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: b5383b52a2d8c511145fbbd3e1cc6d78
+        m_Name: Graph_Quest_Test
+        m_GraphNodeModels:
+        - rid: 2249559113858285879
+        - rid: 2249559113858285884
+        m_GraphWireModels:
+        - rid: 2249559113858285885
+        m_GraphStickyNoteModels: []
+        m_GraphPlacematModels: []
+        m_GraphVariableModels: []
+        m_GraphPortalModels: []
+        m_SectionModels:
+        - rid: 2249559113858285859
+        m_LocalSubgraphs: []
+        m_LastKnownBounds:
+          serializedVersion: 2
+          x: 244.8
+          y: 41.6
+          width: 597.60004
+          height: 143.19998
+        m_GraphElementMetaData:
+        - m_Guid:
+            m_Value0: 4246822577350167238
+            m_Value1: 7785867707529096068
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: c6ca102ba2beef3a84eb74bf6df50c6c
+          m_Category: 0
+          m_Index: 0
+        - m_Guid:
+            m_Value0: 13505023255026059594
+            m_Value1: 10098034595814834991
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: 4ac93707197b6bbb2f032695f66c238c
+          m_Category: 0
+          m_Index: 1
+        - m_Guid:
+            m_Value0: 18417653541271621213
+            m_Value1: 3600786026648960583
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: 5dceb59b50a698ff47fe993ed08ff831
+          m_Category: 2
+          m_Index: 0
+        m_EntryPoint:
+          rid: 2249559113858285879
+        m_Graph:
+          rid: 2249559113858285860
+    - rid: 2249559113858285859
+      type: {class: SectionModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 8693076322369915084
+          m_Value1: 8291755686989471396
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: ccc83778db02a478a41e559fdd3b1273
+        m_Version: 2
+        m_Items: []
+        m_Title: 
+    - rid: 2249559113858285860
+      type: {class: QuestGraph, ns: HelloDev.QuestSystem.QuestGraph.Editor, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      data:
+        devName: Graph_Quest_Test
+        questId: 00f34116-70db-4fc1-af5e-4e77255f890c
+        questType: {fileID: 0}
+        recommendedLevel: -1
+        displayName:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        questDescription:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        questLocation:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        questSprite: {fileID: 0}
+        startConditions: []
+        failureConditions: []
+        rewards: []
+        targetAsset: {fileID: 0}
+    - rid: 2249559113858285879
+      type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 4246822577350167238
+          m_Value1: 7785867707529096068
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: c6ca102ba2beef3a84eb74bf6df50c6c
+        m_Version: 2
+        m_Position: {x: 244.85019, y: 98.436165}
+        m_Title: 
+        m_Tooltip: 
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - __option_StartConditions
+          m_ValueList:
+          - rid: 2249559113858285975
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0, g: 0, b: 0, a: 0}
+          m_HasUserColor: 0
+        m_Node:
+          rid: 2249559113858285880
+    - rid: 2249559113858285880
+      type: {class: QuestStartNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      data: 
+    - rid: 2249559113858285884
+      type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 13505023255026059594
+          m_Value1: 10098034595814834991
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 4ac93707197b6bbb2f032695f66c238c
+        m_Version: 2
+        m_Position: {x: 635.27594, y: 41.688}
+        m_Title: 
+        m_Tooltip: 
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - In
+          - __option_StageIndex
+          - __option_StageName
+          - __option_JournalEntry
+          - __option_StageIcon
+          - __option_IsTerminal
+          - __option_IsOptional
+          - __option_IsHidden
+          - __option_HasPlayerChoices
+          m_ValueList:
+          - rid: 2249559113858285892
+          - rid: 2249559113858285976
+          - rid: 2249559113858285977
+          - rid: 2249559113858285978
+          - rid: 2249559113858285979
+          - rid: 2249559113858285980
+          - rid: 2249559113858285981
+          - rid: 2249559113858285982
+          - rid: 2249559113858285983
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0, g: 0, b: 0, a: 0}
+          m_HasUserColor: 0
+        m_Node:
+          rid: 2249559113858285893
+    - rid: 2249559113858285885
+      type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 18417653541271621213
+          m_Value1: 3600786026648960583
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 5dceb59b50a698ff47fe993ed08ff831
+        m_Version: 2
+        m_FromPortReference:
+          m_NodeModelGuid:
+            m_Value0: 4246822577350167238
+            m_Value1: 7785867707529096068
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: c6ca102ba2beef3a84eb74bf6df50c6c
+          m_UniqueId: FirstStage
+          m_PortDirection: 2
+          m_PortOrientation: 0
+          m_Title: First Stage
+        m_ToPortReference:
+          m_NodeModelGuid:
+            m_Value0: 13505023255026059594
+            m_Value1: 10098034595814834991
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 4ac93707197b6bbb2f032695f66c238c
+          m_UniqueId: In
+          m_PortDirection: 1
+          m_PortOrientation: 0
+          m_Title: From
+    - rid: 2249559113858285892
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 2249559113858285893
+      type: {class: StageNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      data: 
+    - rid: 2249559113858285975
+      type: {class: 'Constant`1[[System.Collections.Generic.List`1[[HelloDev.Conditions.Condition_SO, HelloDev.Conditions]], mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: []
+    - rid: 2249559113858285976
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559113858285977
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: New Stage
+    - rid: 2249559113858285978
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559113858285979
+      type: {class: 'Constant`1[[UnityEngine.Sprite, UnityEngine.CoreModule]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: {fileID: 0}
+    - rid: 2249559113858285980
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559113858285981
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559113858285982
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559113858285983
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0

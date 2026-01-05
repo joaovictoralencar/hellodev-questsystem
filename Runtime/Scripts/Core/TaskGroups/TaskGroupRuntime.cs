@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Utils;
@@ -11,8 +12,9 @@ namespace HelloDev.QuestSystem.TaskGroups
     /// <summary>
     /// Runtime representation of a task group, managing task state and group completion logic.
     /// Created from a TaskGroup (serialized data) at quest start.
+    /// Implements <see cref="ITaskGroup"/> for testability and dependency injection.
     /// </summary>
-    public class TaskGroupRuntime
+    public class TaskGroupRuntime : ITaskGroup
     {
         #region Events
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Stages;
 using HelloDev.QuestSystem.TaskGroups;
@@ -16,8 +17,9 @@ namespace HelloDev.QuestSystem.Quests
     /// Represents a runtime quest instance. This class provides the core structure and
     /// state management for all quests. Supports both legacy (flat task groups) and
     /// stage-based quests (Skyrim-style multi-phase).
+    /// Implements <see cref="IQuest"/> for testability and dependency injection.
     /// </summary>
-    public class QuestRuntime
+    public class QuestRuntime : IQuest
     {
         #region Events - Quest Lifecycle
 
@@ -207,6 +209,12 @@ namespace HelloDev.QuestSystem.Quests
         /// </summary>
         private readonly List<(IConditionEventDriven Condition, System.Action Callback)> _playerChoiceSubscriptions = new();
 
+        /// <summary>
+        /// Tracks the availability state of each choice to detect changes.
+        /// Key is choice ID, value is whether it was available.
+        /// </summary>
+        private readonly Dictionary<string, bool> _choiceAvailabilityCache = new();
+
         #endregion
 
         /// <summary>
@@ -286,7 +294,7 @@ namespace HelloDev.QuestSystem.Quests
                 {
                     foreach (var reward in QuestData.Rewards)
                     {
-                        if (reward.RewardType != null)
+                        if (reward.RewardType != null && reward.Amount > 0)
                         {
                             reward.RewardType.GiveReward(reward.Amount);
                             QuestLogger.LogVerbose(LogSubsystem.Quest, $"Reward: {reward.RewardType.name} x{reward.Amount}");
@@ -663,6 +671,18 @@ namespace HelloDev.QuestSystem.Quests
             if (CurrentStage == null) return;
 
             var choices = CurrentStage.Data.GetAllPlayerChoices();
+
+            // Capture initial availability state for all choices
+            _choiceAvailabilityCache.Clear();
+            foreach (var choice in choices)
+            {
+                if (!string.IsNullOrEmpty(choice.ChoiceId))
+                {
+                    _choiceAvailabilityCache[choice.ChoiceId] = choice.EvaluateConditions();
+                }
+            }
+
+            // Subscribe to conditions
             foreach (var choice in choices)
             {
                 if (choice.Conditions == null) continue;
@@ -672,7 +692,8 @@ namespace HelloDev.QuestSystem.Quests
                     if (condition is IConditionEventDriven eventDriven)
                     {
                         // Store callback for proper unsubscription
-                        System.Action callback = () => HandleImplicitChoiceConditionMet(choice);
+                        // When any condition fires, re-evaluate ALL choices
+                        System.Action callback = () => HandleChoiceConditionChanged();
                         eventDriven.SubscribeToEvent(callback);
                         _playerChoiceSubscriptions.Add((eventDriven, callback));
                     }
@@ -690,31 +711,54 @@ namespace HelloDev.QuestSystem.Quests
                 condition.UnsubscribeFromEvent(callback);
             }
             _playerChoiceSubscriptions.Clear();
+            _choiceAvailabilityCache.Clear();
         }
 
         /// <summary>
-        /// Called when a player choice's condition is met via event.
-        /// If the choice is now available, it's implicitly selected.
+        /// Called when any player choice condition fires.
+        /// Re-evaluates ALL choices and fires OnChoiceAvailabilityChanged for any that changed.
         /// </summary>
-        private void HandleImplicitChoiceConditionMet(StageTransition choice)
+        private void HandleChoiceConditionChanged()
         {
             if (CurrentState != QuestState.InProgress) return;
             if (CurrentStage == null) return;
 
-            // Check if this choice is now fully available
-            if (choice.EvaluateConditions())
-            {
-                // Fire availability changed event
-                OnChoiceAvailabilityChanged.SafeInvoke(this, choice, true);
+            var choices = CurrentStage.Data.GetAllPlayerChoices();
+            StageTransition newlyAvailableImplicitChoice = null;
 
-                // Auto-select if this is an implicit choice (conditions met = choice made)
-                // Only auto-select if there's no UI presentation expected (i.e., the choice was made through actions)
-                var implicitChoice = CurrentStage.Data.GetImplicitlySelectedChoice();
-                if (implicitChoice == choice)
+            foreach (var choice in choices)
+            {
+                if (string.IsNullOrEmpty(choice.ChoiceId)) continue;
+
+                bool currentlyAvailable = choice.EvaluateConditions();
+                bool wasAvailable = _choiceAvailabilityCache.TryGetValue(choice.ChoiceId, out var cached) && cached;
+
+                // Only fire event if availability actually changed
+                if (currentlyAvailable != wasAvailable)
                 {
-                    QuestLogger.LogVerbose(LogSubsystem.Choice, $"Implicit choice '{choice.ChoiceId}' triggered");
-                    SelectChoice(choice);
+                    _choiceAvailabilityCache[choice.ChoiceId] = currentlyAvailable;
+                    OnChoiceAvailabilityChanged.SafeInvoke(this, choice, currentlyAvailable);
+
+                    QuestLogger.LogVerbose(LogSubsystem.Choice,
+                        $"Choice '{choice.ChoiceId}' availability changed: {wasAvailable} → {currentlyAvailable}");
+
+                    // Track if this newly available choice is an implicit choice
+                    if (currentlyAvailable)
+                    {
+                        var implicitChoice = CurrentStage.Data.GetImplicitlySelectedChoice();
+                        if (implicitChoice == choice)
+                        {
+                            newlyAvailableImplicitChoice = choice;
+                        }
+                    }
                 }
+            }
+
+            // Handle implicit choice selection (after all events fired)
+            if (newlyAvailableImplicitChoice != null)
+            {
+                QuestLogger.LogVerbose(LogSubsystem.Choice, $"Implicit choice '{newlyAvailableImplicitChoice.ChoiceId}' triggered");
+                SelectChoice(newlyAvailableImplicitChoice);
             }
         }
 

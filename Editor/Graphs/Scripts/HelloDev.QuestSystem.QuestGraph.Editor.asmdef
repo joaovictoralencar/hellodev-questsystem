@@ -1,0 +1,31 @@
+{
+  "name": "HelloDev.QuestSystem.QuestGraph.Editor",
+  "rootNamespace": "HelloDev.QuestSystem.QuestGraph.Editor",
+  "references": [
+    "Unity.GraphToolkit.Editor",
+    "Unity.GraphToolkit.Common.Editor",
+    "HelloDev.QuestSystem",
+    "HelloDev.Conditions",
+    "HelloDev.Events",
+    "HelloDev.IDs",
+    "HelloDev.Utils",
+    "Unity.Localization"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.sirenix.odin.inspector",
+      "expression": "",
+      "define": "ODIN_INSPECTOR"
+    }
+  ],
+  "noEngineReferences": false
+}
