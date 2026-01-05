@@ -86,9 +86,9 @@ MonoBehaviour:
         m_LastKnownBounds:
           serializedVersion: 2
           x: -400
-          y: -200
-          width: 2000
-          height: 800
+          y: -149.6
+          width: 1704
+          height: 1186.3999
         m_GraphElementMetaData: []
         m_EntryPoint:
           rid: 2249559135886770300
@@ -420,7 +420,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 05802a4c3244e40d05808ef3e5fac41b
         m_Version: 2
-        m_Position: {x: 150, y: 0}
+        m_Position: {x: 144.40317, y: -29.383282}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -2054,7 +2054,7 @@ MonoBehaviour:
           m_UniqueId: Choices
           m_PortDirection: 2
           m_PortOrientation: 0
-          m_Title: Choices
+          m_Title: Player Choices
         m_ToPortReference:
           m_NodeModelGuid:
             m_Value0: 1001000000000000008
@@ -2086,7 +2086,7 @@ MonoBehaviour:
           m_UniqueId: Choices
           m_PortDirection: 2
           m_PortOrientation: 0
-          m_Title: Choices
+          m_Title: Player Choices
         m_ToPortReference:
           m_NodeModelGuid:
             m_Value0: 1001000000000000009
@@ -2118,7 +2118,7 @@ MonoBehaviour:
           m_UniqueId: Choices
           m_PortDirection: 2
           m_PortOrientation: 0
-          m_Title: Choices
+          m_Title: Player Choices
         m_ToPortReference:
           m_NodeModelGuid:
             m_Value0: 1001000000000000010

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_TheGoblinConspiracy
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   _description: 'CHAIN QUEST 2: Unlocks after completing EITHER The Bandit''s Employer
     OR Goblin''s Bane. Uncover the dark cult manipulating the region''s threats.
     4 stages: Investigation (Parallel), Infiltration, Action (Timed), Resolution.'
@@ -24,7 +24,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713986
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -33,7 +33,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45854794508713987
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -42,7 +42,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:007160a1500c2c4449d3173c3765232f
     m_TableEntryReference:
       m_KeyId: 273798971398
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -55,7 +55,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478217
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -74,11 +74,55 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 8af47fa58a607ab488b3d4971d661637, type: 2}
       transitionLabel: Skip to Action (informant revealed location)
       priority: 1
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     - targetStageIndex: 1
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -89,7 +133,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478225
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -107,11 +151,55 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 514cbdc56229ef04197ad6cb4147274f, type: 2}
       transitionLabel: Skip to Resolution (cult leader defeated)
       priority: 1
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     - targetStageIndex: 2
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -122,7 +210,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478226
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -137,8 +225,30 @@ MonoBehaviour:
     - targetStageIndex: 3
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -149,7 +259,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478220
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -169,9 +279,9 @@ MonoBehaviour:
   failureConditions: []
   globalTaskFailureConditions: []
   rewards:
-  - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
-    Amount: 2000
   - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
+    Amount: 2000
+  - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
     Amount: 1500
   references:
     version: 2

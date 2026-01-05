@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_MerchantsStolenGoods
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   _description: 'Secondary quest: Help a merchant recover stolen goods from bandits.
     Demonstrates BoolTask, DiscoveryTask, LocationTask, IntTask, and StringTask.
     4 stages: Introduction, Investigation (Parallel), Recovery (Parallel), Resolution.'
@@ -24,7 +24,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45247112403795970
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -33,7 +33,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 45247112403795971
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -42,7 +42,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:007160a1500c2c4449d3173c3765232f
     m_TableEntryReference:
       m_KeyId: 273798971392
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -55,7 +55,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478221
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -70,8 +70,30 @@ MonoBehaviour:
     - targetStageIndex: 1
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -82,7 +104,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478217
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -98,8 +120,30 @@ MonoBehaviour:
     - targetStageIndex: 2
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -110,7 +154,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478222
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -126,8 +170,30 @@ MonoBehaviour:
     - targetStageIndex: 3
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -138,7 +204,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478220
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -159,9 +225,9 @@ MonoBehaviour:
   globalTaskFailureConditions:
   - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
   rewards:
-  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
-    Amount: 750
   - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
+    Amount: 750
+  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
     Amount: 500
   references:
     version: 2

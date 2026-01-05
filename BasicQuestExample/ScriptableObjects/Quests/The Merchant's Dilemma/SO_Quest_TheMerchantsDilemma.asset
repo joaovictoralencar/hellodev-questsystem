@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5241a596f9b0b0549bf9b4a51c2a3bb0, type: 3}
   m_Name: SO_Quest_TheMerchantsDilemma
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   _description: 'BRANCHING QUEST EXAMPLE: Demonstrates player choices with world
     state consequences. Stage 0: Introduction - Talk to the merchant. Stage 1: The
     Choice - Player picks a path (3 choices). Stage 10/20/30: Path-specific objectives.
@@ -25,7 +25,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 49838819338403840
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -34,7 +34,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:05b8775364730764ab5bf1891aa1cb86
     m_TableEntryReference:
       m_KeyId: 49838819355181056
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -43,7 +43,7 @@ MonoBehaviour:
       m_TableCollectionName: GUID:007160a1500c2c4449d3173c3765232f
     m_TableEntryReference:
       m_KeyId: 273798971392
-      m_Key:
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -56,7 +56,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478221
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -71,8 +71,30 @@ MonoBehaviour:
     - targetStageIndex: 1
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -83,7 +105,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 2097639549091843
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -108,7 +130,7 @@ MonoBehaviour:
           m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
           m_KeyId: 2097639549091847
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
@@ -118,12 +140,13 @@ MonoBehaviour:
           m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
           m_KeyId: 2097639549091848
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
       worldFlagsOnSelect:
-      - isBoolFlag: 1
+      - flagLocator: {fileID: 0}
+        isBoolFlag: 1
         boolFlag: {fileID: 11400000, guid: 403b20f15c7514244babced236623411, type: 2}
         boolValue: 1
         intFlag: {fileID: 0}
@@ -142,7 +165,7 @@ MonoBehaviour:
           m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
           m_KeyId: 2097639549091849
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
@@ -152,12 +175,13 @@ MonoBehaviour:
           m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
           m_KeyId: 2097639549091850
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
       worldFlagsOnSelect:
-      - isBoolFlag: 1
+      - flagLocator: {fileID: 0}
+        isBoolFlag: 1
         boolFlag: {fileID: 11400000, guid: 6943833d92ae6a647b3245de78020ae0, type: 2}
         boolValue: 1
         intFlag: {fileID: 0}
@@ -177,7 +201,7 @@ MonoBehaviour:
           m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
           m_KeyId: 2097639549091851
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
@@ -187,12 +211,13 @@ MonoBehaviour:
           m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
         m_TableEntryReference:
           m_KeyId: 2097639549091852
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
       worldFlagsOnSelect:
-      - isBoolFlag: 1
+      - flagLocator: {fileID: 0}
+        isBoolFlag: 1
         boolFlag: {fileID: 11400000, guid: 7d93028b9d609d246af7cd4d69e71b5d, type: 2}
         boolValue: 1
         intFlag: {fileID: 0}
@@ -208,7 +233,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 2097639549091844
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -223,8 +248,30 @@ MonoBehaviour:
     - targetStageIndex: 100
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -235,7 +282,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 2097639549091845
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -250,8 +297,30 @@ MonoBehaviour:
     - targetStageIndex: 100
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -262,7 +331,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 2097639549091846
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -277,8 +346,30 @@ MonoBehaviour:
     - targetStageIndex: 100
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
+      isPlayerChoice: 0
+      choiceId: 
+      choiceText:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      choiceIcon: {fileID: 0}
+      choiceTooltip:
+        m_TableReference:
+          m_TableCollectionName: 
+        m_TableEntryReference:
+          m_KeyId: 0
+          m_Key: 
+        m_FallbackState: 0
+        m_WaitForCompletion: 0
+        m_LocalVariables: []
+      worldFlagsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -289,7 +380,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478220
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -310,9 +401,9 @@ MonoBehaviour:
   globalTaskFailureConditions:
   - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
   rewards:
-  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
-    Amount: 500
   - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
+    Amount: 500
+  - RewardType: {fileID: 11400000, guid: 23456789abcd00010203040506070809, type: 2}
     Amount: 750
   references:
     version: 2
