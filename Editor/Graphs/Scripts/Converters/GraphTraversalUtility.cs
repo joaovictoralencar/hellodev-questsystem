@@ -186,7 +186,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             return connectedNode switch
             {
                 Nodes.StageNode stageNode => stageNode.StageIndex,
-                // TODO: Add StageSubgraphNode support when implemented
+                Nodes.StageSubgraphNode subgraphNode => subgraphNode.EffectiveStageIndex,
                 _ => -1
             };
         }
@@ -224,7 +224,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 int? index = node switch
                 {
                     Nodes.StageNode stageNode => stageNode.StageIndex,
-                    // TODO: Add StageSubgraphNode support when implemented
+                    Nodes.StageSubgraphNode subgraphNode => subgraphNode.EffectiveStageIndex,
                     _ => null
                 };
 

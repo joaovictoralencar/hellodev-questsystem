@@ -26,7 +26,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         private QuestGraph _currentGraph;
         private List<INode> _allNodes;
         private Dictionary<int, StageNode> _stageNodeLookup;
+        private Dictionary<int, StageSubgraphNode> _stageSubgraphLookup;
         private Dictionary<StageNode, List<TaskGroupNode>> _stageTaskGroups;
+        private Dictionary<StageSubgraphNode, List<INode>> _stageSubgraphTaskGroups;
         private Dictionary<StageNode, List<ChoiceNode>> _stageChoices;
         private List<RewardNode> _rewardNodes;
 
@@ -133,11 +135,33 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 }
             }
 
+            // Build stage subgraph node lookup by index
+            _stageSubgraphLookup = new Dictionary<int, StageSubgraphNode>();
+            foreach (var node in _allNodes.OfType<StageSubgraphNode>())
+            {
+                var index = node.EffectiveStageIndex;
+                if (!_stageNodeLookup.ContainsKey(index) && !_stageSubgraphLookup.ContainsKey(index))
+                {
+                    _stageSubgraphLookup[index] = node;
+                }
+                else
+                {
+                    _context.AddWarning($"Duplicate stage index {index} (subgraph), using first occurrence");
+                }
+            }
+
             // Build stage → task groups mapping
             _stageTaskGroups = new Dictionary<StageNode, List<TaskGroupNode>>();
             foreach (var stageNode in _stageNodeLookup.Values)
             {
                 _stageTaskGroups[stageNode] = FindConnectedTaskGroups(stageNode);
+            }
+
+            // Build stage subgraph → task groups mapping
+            _stageSubgraphTaskGroups = new Dictionary<StageSubgraphNode, List<INode>>();
+            foreach (var subgraphNode in _stageSubgraphLookup.Values)
+            {
+                _stageSubgraphTaskGroups[subgraphNode] = FindConnectedTaskGroupsForSubgraph(subgraphNode);
             }
 
             // Build stage → choices mapping
@@ -177,6 +201,58 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                     {
                         var connectedNode = inPort.firstConnectedPort?.GetNode();
                         if (connectedNode == stageNode)
+                        {
+                            taskGroups.Add(node);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Port access failed
+                }
+            }
+
+            return taskGroups;
+        }
+
+        /// <summary>
+        /// Finds TaskGroupNodes or TaskGroupSubgraphNodes connected to a StageSubgraphNode.
+        /// </summary>
+        private List<INode> FindConnectedTaskGroupsForSubgraph(StageSubgraphNode subgraphNode)
+        {
+            var taskGroups = new List<INode>();
+
+            // Check all TaskGroupNodes
+            foreach (var node in _allNodes.OfType<TaskGroupNode>())
+            {
+                try
+                {
+                    var inPort = node.GetInputPortByName("In");
+                    if (inPort != null && inPort.isConnected)
+                    {
+                        var connectedNode = inPort.firstConnectedPort?.GetNode();
+                        if (connectedNode == subgraphNode)
+                        {
+                            taskGroups.Add(node);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Port access failed
+                }
+            }
+
+            // Check all TaskGroupSubgraphNodes
+            foreach (var node in _allNodes.OfType<TaskGroupSubgraphNode>())
+            {
+                try
+                {
+                    var inPort = node.GetInputPortByName("In");
+                    if (inPort != null && inPort.isConnected)
+                    {
+                        var connectedNode = inPort.firstConnectedPort?.GetNode();
+                        if (connectedNode == subgraphNode)
                         {
                             taskGroups.Add(node);
                         }
@@ -267,17 +343,27 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             var stagesProperty = questSO.FindProperty("stages");
             stagesProperty.ClearArray();
 
-            // Sort stages by index
-            var sortedStages = _stageNodeLookup.Keys.OrderBy(k => k).ToList();
+            // Combine all stage indices (inline + subgraph)
+            var allStageIndices = _stageNodeLookup.Keys
+                .Concat(_stageSubgraphLookup.Keys)
+                .Distinct()
+                .OrderBy(k => k)
+                .ToList();
 
-            foreach (var stageIndex in sortedStages)
+            foreach (var stageIndex in allStageIndices)
             {
-                var stageNode = _stageNodeLookup[stageIndex];
-
                 stagesProperty.InsertArrayElementAtIndex(stagesProperty.arraySize);
                 var stageProperty = stagesProperty.GetArrayElementAtIndex(stagesProperty.arraySize - 1);
 
-                BuildStage(stageProperty, stageNode);
+                // Check if it's an inline StageNode or a StageSubgraphNode
+                if (_stageNodeLookup.TryGetValue(stageIndex, out var stageNode))
+                {
+                    BuildStage(stageProperty, stageNode);
+                }
+                else if (_stageSubgraphLookup.TryGetValue(stageIndex, out var subgraphNode))
+                {
+                    BuildStageFromSubgraph(stageProperty, subgraphNode);
+                }
             }
         }
 
@@ -301,6 +387,40 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             // Transitions
             BuildTransitions(stageProperty.FindPropertyRelative("transitions"), stageNode);
+        }
+
+        private void BuildStageFromSubgraph(SerializedProperty stageProperty, StageSubgraphNode subgraphNode)
+        {
+            var stageGraph = subgraphNode.StageSubgraph;
+
+            // Identity (use effective values which include overrides)
+            stageProperty.FindPropertyRelative("stageIndex").intValue = subgraphNode.EffectiveStageIndex;
+            stageProperty.FindPropertyRelative("stageName").stringValue = subgraphNode.EffectiveStageName;
+
+            // Display - from the subgraph if available
+            if (stageGraph != null)
+            {
+                CopyLocalizedStringToProperty(stageProperty, "journalEntry", stageGraph.JournalEntry);
+                stageProperty.FindPropertyRelative("stageIcon").objectReferenceValue = stageGraph.StageIcon;
+
+                // Flags
+                stageProperty.FindPropertyRelative("isOptional").boolValue = stageGraph.IsOptional;
+                stageProperty.FindPropertyRelative("isHidden").boolValue = stageGraph.IsHidden;
+                stageProperty.FindPropertyRelative("isTerminal").boolValue = stageGraph.IsTerminal;
+            }
+            else
+            {
+                // No subgraph reference, use defaults
+                stageProperty.FindPropertyRelative("isOptional").boolValue = false;
+                stageProperty.FindPropertyRelative("isHidden").boolValue = false;
+                stageProperty.FindPropertyRelative("isTerminal").boolValue = subgraphNode.IsTerminal;
+            }
+
+            // Task groups - from connected nodes in the main graph
+            BuildTaskGroupsFromSubgraphStage(stageProperty.FindPropertyRelative("taskGroups"), subgraphNode);
+
+            // Transitions
+            BuildTransitionsFromSubgraph(stageProperty.FindPropertyRelative("transitions"), subgraphNode);
         }
 
         private void BuildTaskGroups(SerializedProperty taskGroupsProperty, StageNode stageNode)
@@ -340,8 +460,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             // If the TaskGroupNode references a subgraph, also get tasks from there
             if (tgNode.Subgraph != null)
             {
-                // TODO: Extract tasks from TaskGroupGraph subgraph
-                _context.AddWarning($"TaskGroup '{tgNode.GroupName}' references a subgraph - subgraph tasks not yet extracted");
+                var subgraphTasks = ExtractTasksFromSubgraph(tgNode.Subgraph);
+                foreach (var task in subgraphTasks)
+                {
+                    tasksProperty.InsertArrayElementAtIndex(tasksProperty.arraySize);
+                    tasksProperty.GetArrayElementAtIndex(tasksProperty.arraySize - 1).objectReferenceValue = task;
+                }
             }
         }
 
@@ -445,6 +569,105 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             {
                 AddChoiceTransition(transitionsProperty, choice);
             }
+        }
+
+        private void BuildTaskGroupsFromSubgraphStage(SerializedProperty taskGroupsProperty, StageSubgraphNode subgraphNode)
+        {
+            taskGroupsProperty.ClearArray();
+
+            // Get connected task group nodes (both inline and subgraph)
+            if (!_stageSubgraphTaskGroups.TryGetValue(subgraphNode, out var taskGroupNodes))
+                return;
+
+            foreach (var tgNodeObj in taskGroupNodes)
+            {
+                taskGroupsProperty.InsertArrayElementAtIndex(taskGroupsProperty.arraySize);
+                var tgProperty = taskGroupsProperty.GetArrayElementAtIndex(taskGroupsProperty.arraySize - 1);
+
+                switch (tgNodeObj)
+                {
+                    case TaskGroupNode tgNode:
+                        BuildTaskGroup(tgProperty, tgNode);
+                        break;
+                    case TaskGroupSubgraphNode tgSubgraph:
+                        BuildTaskGroupFromSubgraph(tgProperty, tgSubgraph);
+                        break;
+                }
+            }
+        }
+
+        private void BuildTaskGroupFromSubgraph(SerializedProperty tgProperty, TaskGroupSubgraphNode tgSubgraphNode)
+        {
+            // Use effective values (with overrides applied)
+            tgProperty.FindPropertyRelative("groupName").stringValue = tgSubgraphNode.EffectiveGroupName;
+            tgProperty.FindPropertyRelative("executionMode").enumValueIndex = (int)tgSubgraphNode.EffectiveExecutionMode;
+            tgProperty.FindPropertyRelative("requiredCount").intValue = tgSubgraphNode.EffectiveRequiredCount;
+
+            var tasksProperty = tgProperty.FindPropertyRelative("tasks");
+            tasksProperty.ClearArray();
+
+            // Extract tasks from the referenced TaskGroupGraph subgraph
+            var subgraph = tgSubgraphNode.TaskGroupSubgraph;
+            if (subgraph != null)
+            {
+                var subgraphTasks = ExtractTasksFromSubgraph(subgraph);
+                foreach (var task in subgraphTasks)
+                {
+                    tasksProperty.InsertArrayElementAtIndex(tasksProperty.arraySize);
+                    tasksProperty.GetArrayElementAtIndex(tasksProperty.arraySize - 1).objectReferenceValue = task;
+                }
+            }
+        }
+
+        private void BuildTransitionsFromSubgraph(SerializedProperty transitionsProperty, StageSubgraphNode subgraphNode)
+        {
+            transitionsProperty.ClearArray();
+
+            // Terminal stages have no transitions
+            if (subgraphNode.IsTerminal)
+                return;
+
+            // Then transition (success path)
+            var thenTarget = GraphTraversalUtility.GetConnectedStageIndex(subgraphNode, "Then");
+            if (thenTarget >= 0)
+            {
+                AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
+            }
+
+            // Else transition (failure path)
+            var elseTarget = GraphTraversalUtility.GetConnectedStageIndex(subgraphNode, "Else");
+            if (elseTarget >= 0)
+            {
+                AddTransition(transitionsProperty, elseTarget, TransitionTrigger.OnConditionsMet, "Stage Failed");
+            }
+        }
+
+        /// <summary>
+        /// Extracts Task_SO assets from a TaskGroupGraph subgraph.
+        /// </summary>
+        private List<Task_SO> ExtractTasksFromSubgraph(TaskGroupGraph subgraph)
+        {
+            var tasks = new List<Task_SO>();
+
+            if (subgraph == null)
+                return tasks;
+
+            try
+            {
+                foreach (var taskNode in subgraph.GetNodes().OfType<TaskNode>())
+                {
+                    if (taskNode.TaskAsset != null)
+                    {
+                        tasks.Add(taskNode.TaskAsset);
+                    }
+                }
+            }
+            catch
+            {
+                _context.AddWarning($"Failed to extract tasks from subgraph '{subgraph.name}'");
+            }
+
+            return tasks;
         }
 
         private void AddTransition(SerializedProperty transitionsProperty, int targetIndex,

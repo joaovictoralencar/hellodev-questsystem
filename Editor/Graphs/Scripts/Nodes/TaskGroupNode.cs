@@ -44,7 +44,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             context.AddOption<TaskExecutionMode>(OPT_EXECUTION_MODE)
                 .WithDisplayName("Execution Mode")
                 .WithDefaultValue(TaskExecutionMode.Sequential)
-                .WithTooltip("How tasks in this group are executed");
+                .WithTooltip("How tasks are executed:\n" +
+                    "• Sequential: Chain tasks with Then→In (flow)\n" +
+                    "• Parallel/AnyOrder: Connect ALL tasks directly from Tasks port (tree/fork)\n" +
+                    "• OptionalXofY: Same as Parallel, set RequiredCount");
 
             context.AddOption<int>(OPT_REQUIRED_COUNT)
                 .WithDisplayName("Required Count")

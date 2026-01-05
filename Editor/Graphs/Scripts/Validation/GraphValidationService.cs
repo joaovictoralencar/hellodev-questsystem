@@ -141,6 +141,65 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                         node, graph));
                 }
             }
+
+            // Parallel/AnyOrder: Warn if tasks are chained with Then→In instead of forking from Tasks port
+            if (node.ExecutionMode == TaskGroups.TaskExecutionMode.Parallel ||
+                node.ExecutionMode == TaskGroups.TaskExecutionMode.AnyOrder)
+            {
+                ValidateParallelTaskWiring(node, results, graph);
+            }
+        }
+
+        /// <summary>
+        /// Validates that Parallel/AnyOrder TaskGroups have tasks connected as a tree (fork),
+        /// not as a sequential chain (flow).
+        /// </summary>
+        private void ValidateParallelTaskWiring(TaskGroupNode taskGroupNode, List<ValidationResult> results, Graph graph)
+        {
+            try
+            {
+                // Get the Tasks port
+                var tasksPort = taskGroupNode.GetOutputPortByName("Tasks");
+                if (tasksPort == null || !tasksPort.isConnected)
+                    return;
+
+                // Get all TaskNodes connected to this TaskGroup
+                var connectedPorts = new List<IPort>();
+                tasksPort.GetConnectedPorts(connectedPorts);
+
+                foreach (var port in connectedPorts)
+                {
+                    var taskNode = port.GetNode() as TaskNode;
+                    if (taskNode == null)
+                        continue;
+
+                    // Check if this TaskNode has its "Then" port connected to another TaskNode's "In" port
+                    var thenPort = taskNode.GetOutputPortByName("Then");
+                    if (thenPort != null && thenPort.isConnected)
+                    {
+                        var thenConnectedPorts = new List<IPort>();
+                        thenPort.GetConnectedPorts(thenConnectedPorts);
+
+                        foreach (var connectedPort in thenConnectedPorts)
+                        {
+                            if (connectedPort.GetNode() is TaskNode chainedTask)
+                            {
+                                // Found a Then→In chain within a Parallel group
+                                results.Add(ValidationResult.Warning(
+                                    $"TaskGroup '{taskGroupNode.GroupName}' is {taskGroupNode.ExecutionMode} but has tasks chained sequentially. " +
+                                    $"For parallel execution, connect ALL tasks directly from the Tasks port (tree/fork pattern), " +
+                                    $"not through Then→In connections (flow pattern).",
+                                    taskGroupNode, graph));
+                                return; // Only warn once per TaskGroup
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Port access failed, skip validation
+            }
         }
 
         #endregion

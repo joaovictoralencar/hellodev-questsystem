@@ -297,7 +297,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 {
                     if (rewards[i].RewardType == null)
                     {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': Reward at index {i} has null RewardType.", this);
+                        Debug.LogWarning($"[Quest_SO] '{devName}': Reward at index {i} has null RewardType.", this); 
                     }
                     else if (rewards[i].Amount <= 0)
                     {
