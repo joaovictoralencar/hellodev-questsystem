@@ -186,7 +186,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             return connectedNode switch
             {
                 Nodes.StageNode stageNode => stageNode.StageIndex,
-                Nodes.StageSubgraphNode subgraphNode => subgraphNode.EffectiveStageIndex,
+                ISubgraphNode subgraphNode when subgraphNode.GetSubgraph() is StageGraph stageGraph => stageGraph.StageIndex,
                 _ => -1
             };
         }
@@ -224,7 +224,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 int? index = node switch
                 {
                     Nodes.StageNode stageNode => stageNode.StageIndex,
-                    Nodes.StageSubgraphNode subgraphNode => subgraphNode.EffectiveStageIndex,
+                    ISubgraphNode subgraphNode when subgraphNode.GetSubgraph() is StageGraph sg => sg.StageIndex,
                     _ => null
                 };
 

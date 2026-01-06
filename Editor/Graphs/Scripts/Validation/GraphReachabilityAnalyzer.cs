@@ -266,7 +266,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 QuestStartNode _ => "QuestStartNode",
                 QuestLineStartNode _ => "QuestLineStartNode",
                 QuestRefNode questRef => $"QuestRef: {questRef.DisplayName}",
-                // TODO: Add StageSubgraphNode and TaskGroupSubgraphNode when implemented
+                ISubgraphNode subgraph when subgraph.GetSubgraph() is StageGraph sg => $"StageSubgraph[{sg.StageIndex}]: {sg.StageName}",
+                ISubgraphNode subgraph when subgraph.GetSubgraph() is TaskGroupGraph tg => $"TaskGroupSubgraph: {tg.GroupName}",
                 _ => node.GetType().Name
             };
         }

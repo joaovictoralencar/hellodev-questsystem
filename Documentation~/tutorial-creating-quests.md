@@ -1118,14 +1118,20 @@ Use this checklist to verify all connections are made:
 
 ## Advanced Example: Creating Reusable Quests with Subgraphs
 
-Subgraphs let you create reusable quest components that can be shared across multiple quests. This is ideal for teams or large projects.
+Subgraphs let you create reusable quest components that can be shared across multiple quests. This is ideal for teams or large projects. The quest system uses Unity Graph Toolkit's native SubgraphNodeModel system for maximum compatibility.
 
 ### Benefits of Subgraphs
 
 - **Reusability**: Define once, use in multiple quests
 - **Team Collaboration**: Designers work on separate files
 - **Maintainability**: Change subgraph once, update everywhere
-- **Override System**: Customize names/settings per usage
+- **Native Unity Integration**: Uses Graph Toolkit's SubgraphNodeModel for automatic port generation
+
+### How Native Subgraphs Work
+
+Subgraph ports are generated automatically from **Graph Variables** defined in the subgraph file:
+- Variables with `ModifierFlags.Read` create **INPUT** ports on the subgraph node
+- Variables with `ModifierFlags.Write` create **OUTPUT** ports on the subgraph node
 
 ### Step 1: Create a TaskGroupGraph Subgraph
 
@@ -1136,69 +1142,72 @@ TaskGroupGraph (.taskgroup) contains reusable task collections.
 3. **Double-click** to open
 
 Inside the subgraph:
-1. Add **TaskGroupStartNode** (automatically present)
+1. The subgraph has an **In** variable (input port) automatically
 2. Add **TaskNode** references to your Task_SO assets
-3. Configure:
-   - **Execution Mode**: `Parallel` (in Inspector)
+3. Configure in Inspector:
+   - **Execution Mode**: `Parallel`
    - **Required Count**: `2`
+   - **Group Name**: `Gather Evidence`
 
 ### Step 2: Create a StageGraph Subgraph
 
-StageGraph (.stage) contains reusable stage definitions.
+StageGraph (.stage) contains reusable stage definitions with their own properties.
 
 1. **Right-click** → **Create** → **HelloDev** → **Quest System** → **Graphs** → **Stage Subgraph**
 2. Name it `Stage_Investigation.stage`
 3. **Double-click** to open
 
 Inside the subgraph:
-1. Add **StageStartNode** (automatically present)
-2. Add **TaskGroupSubgraphNode**:
-   - **TaskGroup Subgraph**: Reference `TaskGroup_GatherEvidence.taskgroup`
-3. Configure stage properties in Inspector:
+1. Configure stage properties in Inspector:
    - **Stage Index**: `10`
    - **Stage Name**: `Investigation`
    - **Is Terminal**: `false`
+2. The stage has an **In** variable (input port) and a **Then** variable (output port)
+3. Add **TaskGroupNode** or reference a TaskGroup subgraph
+
+> **Note:** Each stage file is a complete, self-contained definition. The StageIndex, StageName, and IsTerminal properties are defined directly in the stage file.
 
 ### Step 3: Create QuestGraph Using Subgraphs
 
 1. Create new **Quest Graph**: `Quest_MysteryInvestigation.quest`
 2. Open and add:
    - **QuestStartNode**
-   - **StageSubgraphNode** (not StageNode!)
+   - **Add Subgraph Node** (via right-click menu or drag the .stage file onto canvas)
 
-Configure the StageSubgraphNode:
-- **Stage Subgraph**: Reference `Stage_Investigation.stage`
-- **Override Stage Index**: `-1` (use subgraph value) or custom value
-- **Override Stage Name**: Empty (use subgraph) or custom name
+The native SubgraphNodeModel automatically displays:
+- **In** port - Connect from QuestStartNode.FirstStage or previous stage's Then port
+- **Then** port - Connect to the next stage's In port
 
-### Step 4: Using Overrides for Context-Specific Customization
+### Step 4: Reusing Stages Across Quests
 
-The same subgraph can be reused with different settings:
+Each stage subgraph is a complete definition:
 
-**Quest A - Crime Scene:**
+**Stage_Investigation.stage:**
 ```
-StageSubgraphNode
-├── Stage Subgraph: Stage_Investigation.stage
-├── Override Stage Name: "Search the Crime Scene"
-└── Override Stage Index: 10
-```
-
-**Quest B - Haunted House:**
-```
-StageSubgraphNode
-├── Stage Subgraph: Stage_Investigation.stage
-├── Override Stage Name: "Investigate the Haunting"
-└── Override Stage Index: 20
+Stage Index: 10
+Stage Name: "Investigation"
+Is Terminal: false
+Contains: TaskGroup with search/interview tasks
 ```
 
-Same underlying logic, different display names and positions.
+To use the same investigation pattern with different settings, create a new stage file:
 
-### Subgraph Override Reference
+**Stage_HauntedHouseSearch.stage:**
+```
+Stage Index: 20
+Stage Name: "Search the Haunted House"
+Is Terminal: false
+Contains: Same or similar TaskGroup structure
+```
 
-| Node Type | Override Options |
-|-----------|------------------|
-| **StageSubgraphNode** | Stage Index, Stage Name |
-| **TaskGroupSubgraphNode** | Group Name, Execution Mode, Required Count |
+This approach keeps each stage self-contained while allowing task group reuse.
+
+### Subgraph Port Reference
+
+| Graph Type | Input Ports | Output Ports |
+|------------|-------------|--------------|
+| **StageGraph** | `In` (StageFlow) | `Then` (StageFlow), optionally `Else` |
+| **TaskGroupGraph** | `In` (TaskGroupFlow) | `Then` (TaskGroupFlow), optionally `Else` |
 
 ---
 

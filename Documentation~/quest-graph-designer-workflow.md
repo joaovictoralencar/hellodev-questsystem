@@ -263,8 +263,8 @@ Task groups organize multiple tasks within a stage.
 
 1. Create > HelloDev > Quest System > TaskGroup Graph
 2. Configure tasks visually
-3. In your QuestGraph, add a **TaskGroupSubgraphNode**
-4. Reference the TaskGroup subgraph
+3. In your QuestGraph, drag the .taskgroup file onto the canvas (creates a native SubgraphNode)
+4. The subgraph node automatically displays In/Then ports from the TaskGroup's Graph Variables
 
 ---
 
@@ -645,9 +645,9 @@ Add to ChoiceC's Conditions:
 ## Advanced: Using Subgraphs
 
 For large projects or team collaboration, consider using **Subgraphs**:
-- **StageGraph (.stage)**: Reusable stage definitions
-- **TaskGroupGraph (.taskgroup)**: Reusable task collections
-- **StageSubgraphNode / TaskGroupSubgraphNode**: Reference subgraphs with override options
+- **StageGraph (.stage)**: Reusable stage definitions with Graph Variables for ports
+- **TaskGroupGraph (.taskgroup)**: Reusable task collections with Graph Variables for ports
+- **Native SubgraphNodeModel**: Drag subgraph files onto canvas; ports auto-generate from Graph Variables
 
 See [Quest Creation Tutorial - Creating Reusable Quests with Subgraphs](tutorial-creating-quests.md#advanced-example-creating-reusable-quests-with-subgraphs) for details.
 

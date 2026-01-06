@@ -1,6 +1,6 @@
 # Quest Graph Editor Implementation Guide
 
-*Version 1.4 | Last Updated: 2026-01-04*
+*Version 1.6 | Last Updated: 2026-01-05*
 
 > **Important**: This guide uses Unity Graph Toolkit 0.4.0-exp.2+ syntax. See the [official documentation](https://docs.unity3d.com/Packages/com.unity.graphtoolkit@0.1/manual/index.html) for updates.
 
@@ -38,6 +38,20 @@
 - Added `Subgraphs/` folder to organize subgraph reference nodes
 - Updated file structure documentation to include new subgraph nodes
 - Added subgraph mapping table (Parent Graph → Subgraph Node → Child Graph)
+
+## Key Changes in v1.6
+
+**Native Subgraph Migration (COMPLETE)**
+- Migrated from custom `StageSubgraphNode`/`TaskGroupSubgraphNode` to Unity Graph Toolkit's native `SubgraphNodeModel` system
+- Stage and TaskGroup subgraphs now use **Graph Variables** with `ModifierFlags` for automatic port generation:
+  - `ModifierFlags.Read` (1) → INPUT port on subgraph node
+  - `ModifierFlags.Write` (2) → OUTPUT port on subgraph node
+- **Removed**: `StageSubgraphNode.cs`, `TaskGroupSubgraphNode.cs` (deprecated)
+- Updated `GraphToQuestConverter`, `GraphValidationService`, `GraphTraversalUtility`, `GraphReachabilityAnalyzer` to use `ISubgraphNode` interface
+- Subgraph detection pattern: `node is ISubgraphNode s when s.GetSubgraph() is StageGraph`
+- Stage files now define their own `StageIndex`, `StageName`, `IsTerminal` properties directly (no overrides)
+
+> **Note:** The code examples in sections 3.2-3.3 reference the deprecated custom subgraph nodes. Use native `SubgraphNodeModel` with Graph Variables instead.
 
 ## Key Changes in v1.5
 

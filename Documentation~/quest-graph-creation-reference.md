@@ -130,7 +130,7 @@ Every quest graph must have exactly one QuestStartNode as the entry point.
 ```
 
 **Ports:**
-- Output: `Start` (StageFlow) - connects to first stage
+- Output: `FirstStage` (StageFlow) - connects to first stage
 
 ### 2. StageNode
 
@@ -145,19 +145,23 @@ Represents a quest stage with configuration options.
     m_InputConstantsById:
       m_KeyList:
       - In
-      - __option_StageId
+      - __option_StageIndex
       - __option_StageName
-      - __option_DisplayName
-      - __option_JournalDescription
+      - __option_JournalEntry
+      - __option_StageIcon
       - __option_IsTerminal
+      - __option_IsOptional
+      - __option_IsHidden
       - __option_HasPlayerChoices
       m_ValueList:
       - rid: <StageFlow_constant>
-      - rid: <string_constant>        # StageId (e.g., "Introduction")
-      - rid: <int_constant>           # StageName index (0, 1, 10, 20, etc.)
+      - rid: <int_constant>           # StageIndex (0, 10, 20, etc.)
+      - rid: <string_constant>        # StageName (e.g., "Introduction")
       - rid: <LocalizedString_constant>
-      - rid: <LocalizedString_constant>
+      - rid: <Sprite_constant>
       - rid: <bool_constant>          # IsTerminal
+      - rid: <bool_constant>          # IsOptional
+      - rid: <bool_constant>          # IsHidden
       - rid: <bool_constant>          # HasPlayerChoices
     m_Node:
       rid: <StageNode_rid>
@@ -167,28 +171,30 @@ Represents a quest stage with configuration options.
   type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, ...]]', ...}
   data: {}
 
-- rid: <string_constant>
-  type: {class: 'Constant`1[[System.String, mscorlib]]', ...}
-  data:
-    m_Value: Introduction
-
 - rid: <int_constant>
   type: {class: 'Constant`1[[System.Int32, mscorlib]]', ...}
   data:
     m_Value: 0
+
+- rid: <string_constant>
+  type: {class: 'Constant`1[[System.String, mscorlib]]', ...}
+  data:
+    m_Value: Introduction
 ```
 
 **Ports:**
 - Input: `In` (StageFlow)
-- Output: `TaskGroups` (TaskGroupFlow)
+- Output: `TaskGroups` (StageFlow) - connect to TaskGroupNodes
+- Output: `Then` (StageFlow) - success flow for linear progression
+- Output: `Else` (StageFlow) - failure flow
 - Output: `Choices` (ChoiceFlow) - only if HasPlayerChoices=true
-- Output: `Next` (StageFlow) - for linear progression
 
 **Key Options:**
-- `StageId`: Unique string identifier
-- `StageName`: Integer index (use gaps: 0, 10, 20, 30... for future insertion)
-- `IsTerminal`: true for final stages
-- `HasPlayerChoices`: true if stage presents player choices
+- `StageIndex`: Integer index (use gaps: 0, 10, 20, 30... for future insertion)
+- `StageName`: String identifier (e.g., "Introduction", "TheChoice")
+- `JournalEntry`: LocalizedString for quest journal display
+- `IsTerminal`: true for final stages (removes Then/Else/Choices ports)
+- `HasPlayerChoices`: true if stage presents player choices (adds Choices port)
 
 ### 3. TaskGroupNode
 
@@ -201,19 +207,21 @@ Groups related tasks within a stage.
     m_InputConstantsById:
       m_KeyList:
       - In
-      - __option_GroupId
       - __option_GroupName
-      - __option_CompletionMode
+      - __option_ExecutionMode
+      - __option_RequiredCount
       m_ValueList:
-      - rid: <TaskGroupFlow_constant>
-      - rid: <string_constant>        # GroupId
+      - rid: <StageFlow_constant>
       - rid: <string_constant>        # GroupName (display)
-      - rid: <int_constant>           # CompletionMode (0=All, 1=Any, 2=Count)
+      - rid: <int_constant>           # ExecutionMode (0=Sequential, 1=Parallel, 2=AnyOrder, 3=OptionalXofY)
+      - rid: <int_constant>           # RequiredCount (for OptionalXofY mode)
 ```
 
 **Ports:**
-- Input: `In` (TaskGroupFlow)
-- Output: `Tasks` (TaskFlow)
+- Input: `In` (StageFlow) - from Stage's TaskGroups port
+- Output: `Tasks` (TaskFlow) - connect to TaskNodes
+- Output: `Then` (StageFlow) - success flow after all tasks complete
+- Output: `Else` (StageFlow) - failure flow if group fails
 
 ### 4. TaskNode
 
@@ -392,7 +400,7 @@ Wires connect output ports to input ports between nodes.
     m_ToNodeGuid:
       m_Value0: <target_node_guid_value0>
       m_Value1: <target_node_guid_value1>
-    m_FromPortId: Start
+    m_FromPortId: FirstStage
     m_FromNodeGuid:
       m_Value0: <source_node_guid_value0>
       m_Value1: <source_node_guid_value1>
@@ -402,21 +410,22 @@ Wires connect output ports to input ports between nodes.
 
 | Node Type | Input Ports | Output Ports |
 |-----------|-------------|--------------|
-| QuestStartNode | (none) | `Start` |
-| StageNode | `In` | `TaskGroups`, `Choices`, `Next` |
-| TaskGroupNode | `In` | `Tasks` |
+| QuestStartNode | (none) | `FirstStage` |
+| StageNode | `In` | `TaskGroups`, `Then`, `Else`, `Choices` |
+| TaskGroupNode | `In` | `Tasks`, `Then`, `Else` |
 | TaskNode | `In` | (none) |
 | ChoiceNode | `In` | `Target` |
 
 ### Connection Patterns
 
 ```
-QuestStartNode.Start → StageNode.In
+QuestStartNode.FirstStage → StageNode.In
 StageNode.TaskGroups → TaskGroupNode.In
 TaskGroupNode.Tasks → TaskNode.In
 StageNode.Choices → ChoiceNode.In
 ChoiceNode.Target → StageNode.In
-StageNode.Next → StageNode.In (linear progression)
+StageNode.Then → StageNode.In (linear progression)
+TaskGroupNode.Then → TaskGroupNode.In (sequential task groups)
 ```
 
 ---

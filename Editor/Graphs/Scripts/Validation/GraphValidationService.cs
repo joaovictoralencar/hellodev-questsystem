@@ -33,20 +33,24 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
             // Get stage nodes for further validation
             var stageNodes = nodes.OfType<StageNode>().ToList();
-            var stageSubgraphNodes = nodes.OfType<StageSubgraphNode>().ToList();
+            var stageSubgraphNodes = nodes.OfType<ISubgraphNode>()
+                .Where(n => n.GetSubgraph() is StageGraph)
+                .ToList();
             var allStageNodes = stageNodes.Cast<INode>().Concat(stageSubgraphNodes).ToList();
 
             // Rule: At least one stage
             if (allStageNodes.Count == 0)
             {
                 results.Add(ValidationResult.Error(
-                    "Quest must have at least one stage (StageNode or StageSubgraphNode)",
+                    "Quest must have at least one stage (StageNode or Stage subgraph)",
                     graph: graph));
             }
 
             // Rule: At least one terminal stage
             var terminalStages = stageNodes.Where(s => s.IsTerminal).ToList();
-            var terminalSubgraphs = stageSubgraphNodes.Where(s => s.IsTerminal).ToList();
+            var terminalSubgraphs = stageSubgraphNodes
+                .Where(s => (s.GetSubgraph() as StageGraph)?.IsTerminal == true)
+                .ToList();
 
             if (terminalStages.Count == 0 && terminalSubgraphs.Count == 0 && allStageNodes.Count > 0)
             {
@@ -287,7 +291,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
             // Check for task groups
             var taskGroupNodes = nodes.OfType<TaskGroupNode>().ToList();
-            var taskGroupSubgraphNodes = nodes.OfType<TaskGroupSubgraphNode>().ToList();
+            var taskGroupSubgraphNodes = nodes.OfType<ISubgraphNode>()
+                .Where(n => n.GetSubgraph() is TaskGroupGraph)
+                .ToList();
 
             if (taskGroupNodes.Count == 0 && taskGroupSubgraphNodes.Count == 0)
             {
@@ -390,12 +396,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
         private void ValidateDuplicateStageIndices(
             List<StageNode> stageNodes,
-            List<StageSubgraphNode> stageSubgraphNodes,
+            List<ISubgraphNode> stageSubgraphNodes,
             List<ValidationResult> results,
             Graph graph)
         {
             var allIndices = stageNodes.Select(s => (s.StageIndex, (INode)s))
-                .Concat(stageSubgraphNodes.Select(s => (s.EffectiveStageIndex, (INode)s)))
+                .Concat(stageSubgraphNodes.Select(s => ((s.GetSubgraph() as StageGraph)?.StageIndex ?? 0, (INode)s)))
                 .ToList();
 
             var duplicates = allIndices
@@ -415,12 +421,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
         private void ValidateStageIndexGaps(
             List<StageNode> stageNodes,
-            List<StageSubgraphNode> stageSubgraphNodes,
+            List<ISubgraphNode> stageSubgraphNodes,
             List<ValidationResult> results,
             Graph graph)
         {
             var indices = stageNodes.Select(s => s.StageIndex)
-                .Concat(stageSubgraphNodes.Select(s => s.EffectiveStageIndex))
+                .Concat(stageSubgraphNodes.Select(s => (s.GetSubgraph() as StageGraph)?.StageIndex ?? 0))
                 .OrderBy(i => i)
                 .ToList();
 

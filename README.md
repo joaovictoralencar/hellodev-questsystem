@@ -1071,12 +1071,25 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 
 ## Changelog
 
+### v3.7.0 (2026-01-05)
+**Native Subgraph Migration:**
+- Migrated from custom StageSubgraphNode/TaskGroupSubgraphNode to Unity Graph Toolkit's native SubgraphNodeModel system
+- Stage and TaskGroup subgraphs now use Graph Variables with ModifierFlags for automatic port generation
+- Removed deprecated custom subgraph node classes (StageSubgraphNode.cs, TaskGroupSubgraphNode.cs)
+- Updated GraphToQuestConverter, GraphValidationService, GraphTraversalUtility, and GraphReachabilityAnalyzer to use ISubgraphNode interface
+- Subgraph files now define their own StageIndex, StageName, IsTerminal properties directly
+
+**Technical Changes:**
+- Stage files require Graph Variables: "In" (ModifierFlags.Read=INPUT) and optionally "Then"/"Else" (ModifierFlags.Write=OUTPUT)
+- Pattern matching updated to use `ISubgraphNode s when s.GetSubgraph() is StageGraph`
+- All subgraph detection now uses public `ISubgraphNode` interface with `GetSubgraph()` method
+
 ### v3.6.0 (2026-01-05)
 **Quest Graph Editor:**
 - Added visual node-based editor for designing quests using Unity Graph Toolkit
 - Implemented graph types: QuestGraph, StageGraph, TaskGroupGraph, QuestLineGraph
 - Added node types: QuestStartNode, StageNode, TaskNode, TaskGroupNode, ChoiceNode, ConditionGateNode, RewardNode, WorldFlagSetNode
-- Added subgraph support for StageSubgraphNode and TaskGroupSubgraphNode
+- Added subgraph support using Unity Graph Toolkit's native SubgraphNodeModel system
 - Added graph-to-ScriptableObject converters for exporting quest assets
 - Added validation system with reachability analysis
 - Added custom importers for .quest, .stage, .taskgroup, .questline file extensions

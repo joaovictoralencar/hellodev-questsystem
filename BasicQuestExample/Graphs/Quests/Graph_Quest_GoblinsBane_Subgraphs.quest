@@ -1,0 +1,534 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 61
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 790b4d75d92f4b0984310a268dbd952f, type: 3}
+  m_Name: Graph_Quest_GoblinsBane_Subgraphs
+  m_EditorClassIdentifier: Unity.GraphToolkit.Editor::Unity.GraphToolkit.Editor.Implementation.GraphObjectImp
+  m_GraphModel:
+    rid: 9000000001
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 9000000001
+      type: {class: GraphModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000001
+          m_Value1: 1000000000000000001
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 010084e2506ce67c010064a7b3b6e00d
+        m_Name: Graph_Quest_GoblinsBane_Subgraphs
+        m_GraphNodeModels:
+        - rid: 9000000010
+        - rid: 9000000200
+        - rid: 9000000300
+        - rid: 9000000400
+        - rid: 9000000500
+        m_GraphWireModels:
+        - rid: 9000000060
+        - rid: 9000000080
+        - rid: 9000000090
+        - rid: 2249559135886770314
+        m_GraphStickyNoteModels: []
+        m_GraphPlacematModels: []
+        m_GraphVariableModels: []
+        m_GraphPortalModels: []
+        m_SectionModels:
+        - rid: 9000000002
+        m_LocalSubgraphs: []
+        m_LastKnownBounds:
+          serializedVersion: 2
+          x: -204.8
+          y: 0
+          width: 928
+          height: 98.4
+        m_GraphElementMetaData:
+        - m_Guid:
+            m_Value0: 4056250720926576782
+            m_Value1: 9418156116536663970
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: 8e30c02c8ab24a38a21f57a51603b482
+          m_Category: 2
+          m_Index: 3
+        m_EntryPoint:
+          rid: 9000000010
+        m_Graph:
+          rid: 9000000003
+    - rid: 9000000002
+      type: {class: SectionModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000002
+          m_Value1: 1000000000000000002
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 020084e2506ce67c020064a7b3b6e00d
+        m_Version: 2
+        m_Items: []
+        m_Title: 
+    - rid: 9000000003
+      type: {class: QuestGraph, ns: HelloDev.QuestSystem.QuestGraph.Editor, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      data:
+        devName: GoblinsBane_Subgraphs
+        questId: 12345678-1234-1234-1234-123456789abc
+        questType: {fileID: 0}
+        recommendedLevel: -1
+        displayName:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        questDescription:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        questLocation:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        questSprite: {fileID: 0}
+        startConditions: []
+        failureConditions: []
+        rewards: []
+        targetAsset: {fileID: 0}
+    - rid: 9000000010
+      type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000010
+          m_Value1: 1000000000000000010
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 0a0084e2506ce67c0a0064a7b3b6e00d
+        m_Version: 2
+        m_Position: {x: -204.8, y: 12}
+        m_Title: 
+        m_Tooltip: 
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - __option_StartConditions
+          m_ValueList:
+          - rid: 9000000011
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0, g: 0, b: 0, a: 0}
+          m_HasUserColor: 0
+        m_Node:
+          rid: 9000000012
+    - rid: 9000000011
+      type: {class: 'Constant`1[[System.Collections.Generic.List`1[[HelloDev.Conditions.Condition_SO, HelloDev.Conditions]], mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: []
+    - rid: 9000000012
+      type: {class: QuestStartNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      data: 
+    - rid: 9000000060
+      type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000060
+          m_Value1: 1000000000000000060
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 3c0084e2506ce67c3c0064a7b3b6e00d
+        m_Version: 2
+        m_FromPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000010
+            m_Value1: 1000000000000000010
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 0a0084e2506ce67c0a0064a7b3b6e00d
+          m_UniqueId: FirstStage
+          m_PortDirection: 2
+          m_PortOrientation: 0
+          m_Title: First Stage
+        m_ToPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000200
+            m_Value1: 1000000000000000200
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: c80084e2506ce67cc80064a7b3b6e00d
+          m_UniqueId: 6400f44482916345640058ec35484453
+          m_PortDirection: 1
+          m_PortOrientation: 0
+          m_Title: In
+    - rid: 9000000080
+      type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000080
+          m_Value1: 1000000000000000080
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 500084e2506ce67c500064a7b3b6e00d
+        m_Version: 2
+        m_FromPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000300
+            m_Value1: 1000000000000000300
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 2c0184e2506ce67c2c0164a7b3b6e00d
+          m_UniqueId: 6e0058ec354844536e00bc93e9fe2461
+          m_PortDirection: 2
+          m_PortOrientation: 0
+          m_Title: Then
+        m_ToPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000400
+            m_Value1: 1000000000000000400
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 900184e2506ce67c900164a7b3b6e00d
+          m_UniqueId: 6400bc93e9fe24616400203b9db5056f
+          m_PortDirection: 1
+          m_PortOrientation: 0
+          m_Title: In
+    - rid: 9000000090
+      type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000090
+          m_Value1: 1000000000000000090
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 5a0084e2506ce67c5a0064a7b3b6e00d
+        m_Version: 2
+        m_FromPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000400
+            m_Value1: 1000000000000000400
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 900184e2506ce67c900164a7b3b6e00d
+          m_UniqueId: 6e00bc93e9fe24616e00203b9db5056f
+          m_PortDirection: 2
+          m_PortOrientation: 0
+          m_Title: Then
+        m_ToPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000500
+            m_Value1: 1000000000000000500
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: f40184e2506ce67cf40164a7b3b6e00d
+          m_UniqueId: 6400203b9db5056f640084e2506ce67c
+          m_PortDirection: 1
+          m_PortOrientation: 0
+          m_Title: In
+    - rid: 9000000200
+      type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000200
+          m_Value1: 1000000000000000200
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: c80084e2506ce67cc80064a7b3b6e00d
+        m_Version: 2
+        m_Position: {x: 0, y: 0}
+        m_Title: Investigation
+        m_Tooltip: Investigation
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - 6400f44482916345640058ec35484453
+          m_ValueList:
+          - rid: 9000000201
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0.75, g: 0.15, b: 0.15, a: 1}
+          m_HasUserColor: 1
+        m_Subgraph:
+          rid: -2
+        m_SubgraphAssetReference:
+          rid: -2
+        m_SubgraphReference:
+          m_AssetGuidAsHash:
+            serializedVersion: 2
+            Hash: 1ad7a1212ebfa541b37cfbd21d3c4c64
+          m_GraphModelGuid:
+            serializedVersion: 2
+            Hash: 0100f44482916345010058ec35484453
+          m_GraphObjectInstanceID: 0
+        m_Subtitle: Asset Subgraph
+        m_AssetProperty:
+          m_SubgraphReference:
+            m_AssetGuidAsHash:
+              serializedVersion: 2
+              Hash: 1ad7a1212ebfa541b37cfbd21d3c4c64
+            m_GraphModelGuid:
+              serializedVersion: 2
+              Hash: 0100f44482916345010058ec35484453
+            m_GraphObjectInstanceID: 0
+        m_CopyPasteLocalSubgraphModelReference:
+          rid: -2
+    - rid: 9000000201
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 9000000300
+      type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000300
+          m_Value1: 1000000000000000300
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 2c0184e2506ce67c2c0164a7b3b6e00d
+        m_Version: 2
+        m_Position: {x: 200, y: 0}
+        m_Title: Tracking Combat
+        m_Tooltip: Tracking Combat
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - 640058ec354844536400bc93e9fe2461
+          m_ValueList:
+          - rid: 9000000301
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0.75, g: 0.15, b: 0.15, a: 1}
+          m_HasUserColor: 1
+        m_Subgraph:
+          rid: -2
+        m_SubgraphAssetReference:
+          rid: -2
+        m_SubgraphReference:
+          m_AssetGuidAsHash:
+            serializedVersion: 2
+            Hash: 0f06a254ef46fd4a843e8f01e1eae92b
+          m_GraphModelGuid:
+            serializedVersion: 2
+            Hash: 010058ec354844530100bc93e9fe2461
+          m_GraphObjectInstanceID: 0
+        m_Subtitle: Asset Subgraph
+        m_AssetProperty:
+          m_SubgraphReference:
+            m_AssetGuidAsHash:
+              serializedVersion: 2
+              Hash: 0f06a254ef46fd4a843e8f01e1eae92b
+            m_GraphModelGuid:
+              serializedVersion: 2
+              Hash: 010058ec354844530100bc93e9fe2461
+            m_GraphObjectInstanceID: 0
+        m_CopyPasteLocalSubgraphModelReference:
+          rid: -2
+    - rid: 9000000301
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 9000000400
+      type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000400
+          m_Value1: 1000000000000000400
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 900184e2506ce67c900164a7b3b6e00d
+        m_Version: 2
+        m_Position: {x: 400, y: 0}
+        m_Title: Boss Confrontation
+        m_Tooltip: Boss Confrontation
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - 6400bc93e9fe24616400203b9db5056f
+          m_ValueList:
+          - rid: 9000000401
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0.75, g: 0.15, b: 0.15, a: 1}
+          m_HasUserColor: 1
+        m_Subgraph:
+          rid: -2
+        m_SubgraphAssetReference:
+          rid: -2
+        m_SubgraphReference:
+          m_AssetGuidAsHash:
+            serializedVersion: 2
+            Hash: 1dca76a031e84449a7dd1706101f3a50
+          m_GraphModelGuid:
+            serializedVersion: 2
+            Hash: 0100bc93e9fe24610100203b9db5056f
+          m_GraphObjectInstanceID: 0
+        m_Subtitle: Asset Subgraph
+        m_AssetProperty:
+          m_SubgraphReference:
+            m_AssetGuidAsHash:
+              serializedVersion: 2
+              Hash: 1dca76a031e84449a7dd1706101f3a50
+            m_GraphModelGuid:
+              serializedVersion: 2
+              Hash: 0100bc93e9fe24610100203b9db5056f
+            m_GraphObjectInstanceID: 0
+        m_CopyPasteLocalSubgraphModelReference:
+          rid: -2
+    - rid: 9000000401
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 9000000500
+      type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
+      data:
+        m_Guid:
+          m_Value0: 9000000000000000500
+          m_Value1: 1000000000000000500
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: f40184e2506ce67cf40164a7b3b6e00d
+        m_Version: 2
+        m_Position: {x: 600, y: 0}
+        m_Title: Resolution
+        m_Tooltip: Resolution
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - 6400203b9db5056f640084e2506ce67c
+          m_ValueList:
+          - rid: 9000000501
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0.75, g: 0.15, b: 0.15, a: 1}
+          m_HasUserColor: 1
+        m_Subgraph:
+          rid: -2
+        m_SubgraphAssetReference:
+          rid: -2
+        m_SubgraphReference:
+          m_AssetGuidAsHash:
+            serializedVersion: 2
+            Hash: cbcc9c57d13c8443b018b7faef997d02
+          m_GraphModelGuid:
+            serializedVersion: 2
+            Hash: 0100203b9db5056f010084e2506ce67c
+          m_GraphObjectInstanceID: 0
+        m_Subtitle: Asset Subgraph
+        m_AssetProperty:
+          m_SubgraphReference:
+            m_AssetGuidAsHash:
+              serializedVersion: 2
+              Hash: cbcc9c57d13c8443b018b7faef997d02
+            m_GraphModelGuid:
+              serializedVersion: 2
+              Hash: 0100203b9db5056f010084e2506ce67c
+            m_GraphObjectInstanceID: 0
+        m_CopyPasteLocalSubgraphModelReference:
+          rid: -2
+    - rid: 9000000501
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 2249559135886770314
+      type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Guid:
+          m_Value0: 4056250720926576782
+          m_Value1: 9418156116536663970
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 8e30c02c8ab24a38a21f57a51603b482
+        m_Version: 2
+        m_FromPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000200
+            m_Value1: 1000000000000000200
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: c80084e2506ce67cc80064a7b3b6e00d
+          m_UniqueId: 6e00f444829163456e0058ec35484453
+          m_PortDirection: 2
+          m_PortOrientation: 0
+          m_Title: Then
+        m_ToPortReference:
+          m_NodeModelGuid:
+            m_Value0: 9000000000000000300
+            m_Value1: 1000000000000000300
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 2c0184e2506ce67c2c0164a7b3b6e00d
+          m_UniqueId: 640058ec354844536400bc93e9fe2461
+          m_PortDirection: 1
+          m_PortOrientation: 0
+          m_Title: In
