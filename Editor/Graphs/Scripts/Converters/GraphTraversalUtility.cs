@@ -236,5 +236,77 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             return lookup;
         }
+
+        #region Data Port Resolution
+
+        /// <summary>
+        /// Resolves a data value from an input port by name.
+        /// Checks port connections first (Variable/Constant nodes), then embedded value.
+        /// Pattern from TextureMaker sample.
+        /// </summary>
+        /// <typeparam name="T">The type of value expected.</typeparam>
+        /// <param name="node">The node containing the port.</param>
+        /// <param name="portName">The name of the input port.</param>
+        /// <param name="fallback">Value to return if resolution fails.</param>
+        /// <returns>The resolved value.</returns>
+        public static T ResolveDataPort<T>(INode node, string portName, T fallback = default)
+        {
+            if (node == null)
+                return fallback;
+
+            try
+            {
+                var port = node.GetInputPortByName(portName);
+                return ResolveDataPort(port, fallback);
+            }
+            catch
+            {
+                return fallback;
+            }
+        }
+
+        /// <summary>
+        /// Resolves a data value from an input port.
+        /// Priority: Connected source (Variable/Constant) > Embedded value > Fallback.
+        /// </summary>
+        /// <typeparam name="T">The type of value expected.</typeparam>
+        /// <param name="port">The input port to resolve.</param>
+        /// <param name="fallback">Value to return if resolution fails.</param>
+        /// <returns>The resolved value.</returns>
+        public static T ResolveDataPort<T>(IPort port, T fallback = default)
+        {
+            if (port == null)
+                return fallback;
+
+            try
+            {
+                var sourcePort = port.firstConnectedPort;
+
+                switch (sourcePort?.GetNode())
+                {
+                    case IConstantNode constantNode:
+                        constantNode.TryGetValue(out T constantValue);
+                        return constantValue;
+
+                    case IVariableNode variableNode:
+                        variableNode.variable.TryGetDefaultValue(out T variableValue);
+                        return variableValue;
+
+                    case null:
+                        // Not connected: use embedded port value
+                        if (port.TryGetValue(out T embeddedValue))
+                            return embeddedValue;
+                        return fallback;
+                }
+            }
+            catch
+            {
+                // Port access failed
+            }
+
+            return fallback;
+        }
+
+        #endregion
     }
 }

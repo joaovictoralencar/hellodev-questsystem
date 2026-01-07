@@ -104,7 +104,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
 
-            // TaskGroups output - connect to inline TaskGroupNodes
+            // TaskGroups output - connect to TaskGroupContextNodes
             context.AddOutputPort<StageFlow>("TaskGroups")
                 .WithDisplayName("Task Groups")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)

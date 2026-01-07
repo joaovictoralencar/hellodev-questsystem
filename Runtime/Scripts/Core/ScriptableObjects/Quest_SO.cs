@@ -132,7 +132,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         /// <summary>
         /// Gets the developer-friendly name of the quest.
         /// </summary>
-        public string DevName => devName;
+        public string DevName => string.IsNullOrEmpty(devName) ? name : devName;
 
         /// <summary>
         /// Gets the unique, permanent identifier for this quest.
@@ -246,7 +246,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
         {
             if (stages == null || stages.Count == 0)
             {
-                Debug.LogWarning($"[Quest_SO] '{devName}': No stages configured. Quest will complete immediately.", this);
+                Debug.LogWarning($"[Quest_SO] '{DevName}': No stages configured. Quest will complete immediately.", this);
                 return;
             }
 
@@ -257,7 +257,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 var warnings = stage.Validate(maxStageIndex);
                 foreach (var warning in warnings)
                 {
-                    Debug.LogWarning($"[Quest_SO] '{devName}': {warning}", this);
+                    Debug.LogWarning($"[Quest_SO] '{DevName}': {warning}", this);
                 }
             }
 
@@ -268,7 +268,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
 
             foreach (var index in duplicateIndices)
             {
-                Debug.LogWarning($"[Quest_SO] '{devName}': Duplicate stage index: {index}", this);
+                Debug.LogWarning($"[Quest_SO] '{DevName}': Duplicate stage index: {index}", this);
             }
         }
 
@@ -281,11 +281,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 {
                     if (startConditions[i] == null)
                     {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': StartCondition at index {i} is null.", this);
+                        Debug.LogWarning($"[Quest_SO] '{DevName}': StartCondition at index {i} is null.", this);
                     }
                     else if (startConditions[i] is not IConditionEventDriven)
                     {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': StartCondition '{startConditions[i].name}' is not event-driven. Quest may not auto-start.", this);
+                        Debug.LogWarning($"[Quest_SO] '{DevName}': StartCondition '{startConditions[i].name}' is not event-driven. Quest may not auto-start.", this);
                     }
                 }
             }
@@ -297,11 +297,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 {
                     if (rewards[i].RewardType == null)
                     {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': Reward at index {i} has null RewardType.", this); 
+                        Debug.LogWarning($"[Quest_SO] '{DevName}': Reward at index {i} has null RewardType.", this); 
                     }
                     else if (rewards[i].Amount <= 0)
                     {
-                        Debug.LogWarning($"[Quest_SO] '{devName}': Reward '{rewards[i].RewardType.name}' has invalid amount ({rewards[i].Amount}).", this);
+                        Debug.LogWarning($"[Quest_SO] '{DevName}': Reward '{rewards[i].RewardType.name}' has invalid amount ({rewards[i].Amount}).", this);
                     }
                 }
             }

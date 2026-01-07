@@ -261,8 +261,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             {
                 StageNode stageNode => $"Stage[{stageNode.StageIndex}]: {stageNode.StageName}",
                 ChoiceNode choice => $"Choice: {choice.ChoiceId}",
-                TaskGroupNode taskGroup => $"TaskGroup: {taskGroup.GroupName}",
-                TaskNode task => $"Task: {task.DevName}",
+                TaskGroupContextNode taskGroup => $"TaskGroup: {taskGroup.GroupName}",
+                TaskBaseNode task => $"Task ({task.TaskTypeName}): {task.DevName}",
                 QuestStartNode _ => "QuestStartNode",
                 QuestLineStartNode _ => "QuestLineStartNode",
                 QuestRefNode questRef => $"QuestRef: {questRef.DisplayName}",

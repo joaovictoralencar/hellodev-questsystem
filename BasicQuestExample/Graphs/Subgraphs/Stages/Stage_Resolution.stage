@@ -138,18 +138,8 @@ MonoBehaviour:
           rid: -2
         m_State: 0
         m_InputConstantsById:
-          m_KeyList:
-          - __option_GroupName
-          - __option_ExecutionMode
-          - __option_RequiredCount
-          - __option_Subgraph
-          - In
-          m_ValueList:
-          - rid: 8000000021
-          - rid: 8000000022
-          - rid: 8000000023
-          - rid: 8000000024
-          - rid: 8000000025
+          m_KeyList: []
+          m_ValueList: []
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -164,39 +154,7 @@ MonoBehaviour:
           m_Color: {r: 0.87, g: 0.87, b: 0.05, a: 1}
           m_HasUserColor: 1
         m_Node:
-          rid: 8000000026
-    - rid: 8000000021
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: Return to Village
-    - rid: 8000000022
-      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          m_EnumType:
-            m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode,
-              HelloDev.QuestSystem, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-          m_Value: 0
-        m_EnumType:
-          m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode, HelloDev.QuestSystem,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - rid: 8000000023
-      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 1
-    - rid: 8000000024
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.TaskGroupGraph, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          groupName: Task Group
-          executionMode: 0
-          requiredCount: 1
-    - rid: 8000000025
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
-    - rid: 8000000026
-      type: {class: TaskGroupNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
-      data: 
+          rid: -2
     - rid: 8000000030
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:

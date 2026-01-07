@@ -49,10 +49,10 @@ MonoBehaviour:
         m_LocalSubgraphs: []
         m_LastKnownBounds:
           serializedVersion: 2
-          x: -204.8
+          x: -229.6
           y: 0
-          width: 928
-          height: 98.4
+          width: 952.80005
+          height: 95.20001
         m_GraphElementMetaData:
         - m_Guid:
             m_Value0: 4056250720926576782
@@ -127,7 +127,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 0a0084e2506ce67c0a0064a7b3b6e00d
         m_Version: 2
-        m_Position: {x: -204.8, y: 12}
+        m_Position: {x: -229.84346, y: 8.521738}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -191,7 +191,7 @@ MonoBehaviour:
           m_UniqueId: 6400f44482916345640058ec35484453
           m_PortDirection: 1
           m_PortOrientation: 0
-          m_Title: In
+          m_Title: Test
     - rid: 9000000080
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -276,7 +276,7 @@ MonoBehaviour:
           m_KeyList:
           - 6400f44482916345640058ec35484453
           m_ValueList:
-          - rid: 9000000201
+          - rid: 2249559157432910566
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -314,9 +314,6 @@ MonoBehaviour:
             m_GraphObjectInstanceID: 0
         m_CopyPasteLocalSubgraphModelReference:
           rid: -2
-    - rid: 9000000201
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
     - rid: 9000000300
       type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
       data:
@@ -337,7 +334,7 @@ MonoBehaviour:
           m_KeyList:
           - 640058ec354844536400bc93e9fe2461
           m_ValueList:
-          - rid: 9000000301
+          - rid: 2249559157432910567
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -375,9 +372,6 @@ MonoBehaviour:
             m_GraphObjectInstanceID: 0
         m_CopyPasteLocalSubgraphModelReference:
           rid: -2
-    - rid: 9000000301
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
     - rid: 9000000400
       type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
       data:
@@ -398,7 +392,7 @@ MonoBehaviour:
           m_KeyList:
           - 6400bc93e9fe24616400203b9db5056f
           m_ValueList:
-          - rid: 9000000401
+          - rid: 2249559157432910568
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -436,9 +430,6 @@ MonoBehaviour:
             m_GraphObjectInstanceID: 0
         m_CopyPasteLocalSubgraphModelReference:
           rid: -2
-    - rid: 9000000401
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
     - rid: 9000000500
       type: {class: SubgraphNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
       data:
@@ -459,7 +450,7 @@ MonoBehaviour:
           m_KeyList:
           - 6400203b9db5056f640084e2506ce67c
           m_ValueList:
-          - rid: 9000000501
+          - rid: 2249559157432910569
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -497,9 +488,6 @@ MonoBehaviour:
             m_GraphObjectInstanceID: 0
         m_CopyPasteLocalSubgraphModelReference:
           rid: -2
-    - rid: 9000000501
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
     - rid: 2249559135886770314
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -532,3 +520,15 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: In
+    - rid: 2249559157432910566
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 2249559157432910567
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 2249559157432910568
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}
+    - rid: 2249559157432910569
+      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data: {}

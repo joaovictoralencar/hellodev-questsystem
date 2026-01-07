@@ -480,11 +480,21 @@ MonoBehaviour:
         m_State: 0
         m_InputConstantsById:
           m_KeyList:
-          - __option_TaskAsset
           - In
+          - __option_UseTaskAsset
+          - DevNameInput
+          - DisplayNameInput
+          - DescriptionInput
+          - __option_FailureConditionCount
+          - __option_TriggerConditionCount
           m_ValueList:
-          - rid: 2249559113858286252
           - rid: 2249559113858286253
+          - rid: 2249559166051942822
+          - rid: 2249559166051942823
+          - rid: 2249559166051942824
+          - rid: 2249559166051942825
+          - rid: 2249559166051943069
+          - rid: 2249559166051943098
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -500,15 +510,11 @@ MonoBehaviour:
           m_HasUserColor: 1
         m_Node:
           rid: 2249559113858286254
-    - rid: 2249559113858286252
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.ScriptableObjects.Task_SO, HelloDev.QuestSystem]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: {fileID: 11400000, guid: 6f789012345678abcd0001020304ab01, type: 2}
     - rid: 2249559113858286253
       type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.TaskFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data: {}
     - rid: 2249559113858286254
-      type: {class: TaskNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      type: {class: TaskBoolNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
       data: 
     - rid: 2249559113858286255
       type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
@@ -657,18 +663,8 @@ MonoBehaviour:
           rid: -2
         m_State: 0
         m_InputConstantsById:
-          m_KeyList:
-          - __option_GroupName
-          - __option_ExecutionMode
-          - __option_RequiredCount
-          - __option_Subgraph
-          - In
-          m_ValueList:
-          - rid: 2249559113858286269
-          - rid: 2249559113858286270
-          - rid: 2249559113858286271
-          - rid: 2249559113858286272
-          - rid: 2249559113858286273
+          m_KeyList: []
+          m_ValueList: []
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -683,7 +679,7 @@ MonoBehaviour:
           m_Color: {r: 0.87169814, g: 0.8666585, b: 0.050986074, a: 1}
           m_HasUserColor: 1
         m_Node:
-          rid: 2249559113858286274
+          rid: -2
     - rid: 2249559113858286268
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -716,38 +712,6 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: From Stage
-    - rid: 2249559113858286269
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: Talk
-    - rid: 2249559113858286270
-      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          m_EnumType:
-            m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode,
-              HelloDev.QuestSystem, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-          m_Value: 0
-        m_EnumType:
-          m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode, HelloDev.QuestSystem,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - rid: 2249559113858286271
-      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 1
-    - rid: 2249559113858286272
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.TaskGroupGraph, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          groupName: Task Group
-          executionMode: 0
-          requiredCount: 1
-    - rid: 2249559113858286273
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
-    - rid: 2249559113858286274
-      type: {class: TaskGroupNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
-      data: 
     - rid: 2249559113858286275
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -797,18 +761,8 @@ MonoBehaviour:
           rid: -2
         m_State: 0
         m_InputConstantsById:
-          m_KeyList:
-          - __option_GroupName
-          - __option_ExecutionMode
-          - __option_RequiredCount
-          - __option_Subgraph
-          - In
-          m_ValueList:
-          - rid: 2249559113858286284
-          - rid: 2249559113858286285
-          - rid: 2249559113858286286
-          - rid: 2249559113858286287
-          - rid: 2249559113858286288
+          m_KeyList: []
+          m_ValueList: []
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -823,39 +777,7 @@ MonoBehaviour:
           m_Color: {r: 0.8745098, g: 0.8666667, b: 0.05490196, a: 1}
           m_HasUserColor: 1
         m_Node:
-          rid: 2249559113858286289
-    - rid: 2249559113858286284
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: Parallel
-    - rid: 2249559113858286285
-      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          m_EnumType:
-            m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode,
-              HelloDev.QuestSystem, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-          m_Value: 1
-        m_EnumType:
-          m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode, HelloDev.QuestSystem,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - rid: 2249559113858286286
-      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 2
-    - rid: 2249559113858286287
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.TaskGroupGraph, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          groupName: Task Group
-          executionMode: 0
-          requiredCount: 1
-    - rid: 2249559113858286288
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
-    - rid: 2249559113858286289
-      type: {class: TaskGroupNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
-      data: 
+          rid: -2
     - rid: 2249559113858286290
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -899,18 +821,28 @@ MonoBehaviour:
           Hash: fa0fd069b1d5d29a157f0f2640038cb9
         m_Version: 2
         m_Position: {x: 416.66272, y: 247.3469}
-        m_Title: TaskNode
+        m_Title: TaskBoolNode
         m_Tooltip: 
         m_NodePreviewModel:
           rid: -2
         m_State: 0
         m_InputConstantsById:
           m_KeyList:
-          - __option_TaskAsset
           - In
+          - __option_UseTaskAsset
+          - DevNameInput
+          - DisplayNameInput
+          - DescriptionInput
+          - __option_FailureConditionCount
+          - __option_TriggerConditionCount
           m_ValueList:
-          - rid: 2249559113858286295
           - rid: 2249559113858286296
+          - rid: 2249559166051942826
+          - rid: 2249559166051942827
+          - rid: 2249559166051942828
+          - rid: 2249559166051942829
+          - rid: 2249559166051943071
+          - rid: 2249559166051943099
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -926,15 +858,11 @@ MonoBehaviour:
           m_HasUserColor: 1
         m_Node:
           rid: 2249559113858286297
-    - rid: 2249559113858286295
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.ScriptableObjects.Task_SO, HelloDev.QuestSystem]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: {fileID: 11400000, guid: 6f789012345678abcd0001020304ab01, type: 2}
     - rid: 2249559113858286296
       type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.TaskFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data: {}
     - rid: 2249559113858286297
-      type: {class: TaskNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      type: {class: TaskBoolNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
       data: 
     - rid: 2249559113858286301
       type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
@@ -947,18 +875,30 @@ MonoBehaviour:
           Hash: ca0c25772e012fb191916d433bc7b974
         m_Version: 2
         m_Position: {x: 233.65332, y: 247.38904}
-        m_Title: TaskNode
+        m_Title: TaskDiscoveryNode
         m_Tooltip: 
         m_NodePreviewModel:
           rid: -2
         m_State: 0
         m_InputConstantsById:
           m_KeyList:
-          - __option_TaskAsset
           - In
+          - __option_UseTaskAsset
+          - DevNameInput
+          - DisplayNameInput
+          - DescriptionInput
+          - __option_RequiredDiscoveries
+          - __option_FailureConditionCount
+          - __option_TriggerConditionCount
           m_ValueList:
-          - rid: 2249559113858286302
           - rid: 2249559113858286303
+          - rid: 2249559166051942830
+          - rid: 2249559166051942831
+          - rid: 2249559166051942832
+          - rid: 2249559166051942833
+          - rid: 2249559166051943004
+          - rid: 2249559166051943086
+          - rid: 2249559166051943110
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -974,15 +914,11 @@ MonoBehaviour:
           m_HasUserColor: 1
         m_Node:
           rid: 2249559113858286304
-    - rid: 2249559113858286302
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.ScriptableObjects.Task_SO, HelloDev.QuestSystem]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: {fileID: 11400000, guid: 789012345678abcd0001020304ab0102, type: 2}
     - rid: 2249559113858286303
       type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.TaskFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data: {}
     - rid: 2249559113858286304
-      type: {class: TaskNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      type: {class: TaskDiscoveryNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
       data: 
     - rid: 2249559113858286307
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
@@ -1163,18 +1099,8 @@ MonoBehaviour:
           rid: -2
         m_State: 0
         m_InputConstantsById:
-          m_KeyList:
-          - __option_GroupName
-          - __option_ExecutionMode
-          - __option_RequiredCount
-          - __option_Subgraph
-          - In
-          m_ValueList:
-          - rid: 2249559113858286338
-          - rid: 2249559113858286339
-          - rid: 2249559113858286340
-          - rid: 2249559113858286341
-          - rid: 2249559113858286342
+          m_KeyList: []
+          m_ValueList: []
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1189,39 +1115,7 @@ MonoBehaviour:
           m_Color: {r: 0.8745098, g: 0.8666667, b: 0.05490196, a: 1}
           m_HasUserColor: 1
         m_Node:
-          rid: 2249559113858286343
-    - rid: 2249559113858286338
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: Return
-    - rid: 2249559113858286339
-      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          m_EnumType:
-            m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode,
-              HelloDev.QuestSystem, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-          m_Value: 0
-        m_EnumType:
-          m_Identification: HelloDev.QuestSystem.TaskGroups.TaskExecutionMode, HelloDev.QuestSystem,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - rid: 2249559113858286340
-      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 1
-    - rid: 2249559113858286341
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.TaskGroupGraph, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value:
-          groupName: Task Group
-          executionMode: 0
-          requiredCount: 1
-    - rid: 2249559113858286342
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.StageFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data: {}
-    - rid: 2249559113858286343
-      type: {class: TaskGroupNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
-      data: 
+          rid: -2
     - rid: 2249559113858286344
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1265,18 +1159,28 @@ MonoBehaviour:
           Hash: 1a2670421775c22727743cb888ccc9ec
         m_Version: 2
         m_Position: {x: 664.95276, y: 247.5361}
-        m_Title: 
+        m_Title: TaskLocationNode
         m_Tooltip: 
         m_NodePreviewModel:
           rid: -2
         m_State: 0
         m_InputConstantsById:
           m_KeyList:
-          - __option_TaskAsset
           - In
+          - __option_UseTaskAsset
+          - DevNameInput
+          - DisplayNameInput
+          - DescriptionInput
+          - __option_FailureConditionCount
+          - __option_TriggerConditionCount
           m_ValueList:
-          - rid: 2249559113858286347
           - rid: 2249559113858286348
+          - rid: 2249559166051942863
+          - rid: 2249559166051942864
+          - rid: 2249559166051942865
+          - rid: 2249559166051942866
+          - rid: 2249559166051943073
+          - rid: 2249559166051943108
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1324,15 +1228,11 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: In
-    - rid: 2249559113858286347
-      type: {class: 'Constant`1[[HelloDev.QuestSystem.ScriptableObjects.Task_SO, HelloDev.QuestSystem]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: {fileID: 11400000, guid: 12345678abcd0001020304ab01023456, type: 2}
     - rid: 2249559113858286348
       type: {class: 'Constant`1[[HelloDev.QuestSystem.QuestGraph.Editor.Ports.TaskFlow, HelloDev.QuestSystem.QuestGraph.Editor]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data: {}
     - rid: 2249559113858286349
-      type: {class: TaskNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
+      type: {class: TaskLocationNode, ns: HelloDev.QuestSystem.QuestGraph.Editor.Nodes, asm: HelloDev.QuestSystem.QuestGraph.Editor}
       data: 
     - rid: 2249559135886770266
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
@@ -1366,3 +1266,167 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: In
+    - rid: 2249559166051942822
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051942823
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 2249559166051942824
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942825
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942826
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051942827
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 2249559166051942828
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942829
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942830
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051942831
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 2249559166051942832
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942833
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942863
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051942864
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 2249559166051942865
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051942866
+      type: {class: 'Constant`1[[UnityEngine.Localization.LocalizedString, Unity.Localization]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+    - rid: 2249559166051943004
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943069
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943071
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943073
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943086
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943098
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943099
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943108
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0
+    - rid: 2249559166051943110
+      type: {class: 'Constant`1[[System.Int32, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 0

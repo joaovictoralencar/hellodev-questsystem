@@ -79,6 +79,23 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Importers
             // This allows the .quest file to be used wherever a Quest_SO is expected
             ctx.AddObjectToAsset("Quest", quest);
             ctx.SetMainObject(quest);
+
+            // Add inline task assets as sub-assets
+            // These are Task_SO instances created from inline task node definitions (Define mode)
+            var inlineTasks = converter.CreatedInlineTasks;
+            for (int i = 0; i < inlineTasks.Count; i++)
+            {
+                var inlineTask = inlineTasks[i];
+                if (inlineTask != null)
+                {
+                    ctx.AddObjectToAsset($"InlineTask_{i}_{inlineTask.name}", inlineTask);
+                }
+            }
+
+            if (inlineTasks.Count > 0)
+            {
+                Debug.Log($"[QuestGraphImporter] Added {inlineTasks.Count} inline task(s) as sub-assets to '{quest.name}'");
+            }
         }
     }
 }

@@ -11,8 +11,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 {
     /// <summary>
     /// Represents a player choice that branches the quest.
-    /// Connects to a Stage's choice output and leads to a target stage.
+    /// Connects to a Stage's choice output and leads to target stages.
     /// </summary>
+    /// <remarks>
+    /// Supports multiple output targets with conditional routing.
+    /// Set "Output Count" > 1 for conditional branching after choice selection.
+    /// First matching condition determines the output path.
+    /// </remarks>
     [Serializable]
     public class ChoiceNode : QuestBaseNode
     {
@@ -25,6 +30,15 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         private const string OPT_CHOICE_ICON = "ChoiceIcon";
         private const string OPT_CONDITIONS = "Conditions";
         private const string OPT_WORLD_FLAGS = "WorldFlagsOnSelect";
+        private const string OPT_OUTPUT_COUNT = "OutputCount";
+        private const string OPT_OUTPUT_CONDITIONS = "OutputConditions";
+
+        #endregion
+
+        #region Constants
+
+        private const int MIN_OUTPUTS = 1;
+        private const int MAX_OUTPUTS = 4;
 
         #endregion
 
@@ -37,6 +51,23 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public Sprite ChoiceIcon => GetOptionValue<Sprite>(OPT_CHOICE_ICON);
         public List<Condition_SO> Conditions => GetOptionValue<List<Condition_SO>>(OPT_CONDITIONS) ?? new List<Condition_SO>();
         public List<WorldFlagModification> WorldFlagsOnSelect => GetOptionValue<List<WorldFlagModification>>(OPT_WORLD_FLAGS) ?? new List<WorldFlagModification>();
+
+        /// <summary>
+        /// Number of output paths for conditional routing.
+        /// </summary>
+        public int OutputCount
+        {
+            get
+            {
+                var count = GetOptionValue<int>(OPT_OUTPUT_COUNT);
+                return Math.Clamp(count, MIN_OUTPUTS, MAX_OUTPUTS);
+            }
+        }
+
+        /// <summary>
+        /// Conditions for each output path (when OutputCount > 1).
+        /// </summary>
+        public List<Condition_SO> OutputConditions => GetOptionValue<List<Condition_SO>>(OPT_OUTPUT_CONDITIONS) ?? new List<Condition_SO>();
 
         #endregion
 
@@ -73,13 +104,25 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
             // Conditions & Consequences
             context.AddOption<List<Condition_SO>>(OPT_CONDITIONS)
-                .WithDisplayName("Conditions")
-                .WithTooltip("Conditions required to select this choice")
+                .WithDisplayName("Availability Conditions")
+                .WithTooltip("Conditions required for this choice to be available")
                 .ShowInInspectorOnly();
 
             context.AddOption<List<WorldFlagModification>>(OPT_WORLD_FLAGS)
                 .WithDisplayName("World Flags On Select")
                 .WithTooltip("World flags to set when this choice is selected")
+                .ShowInInspectorOnly();
+
+            // Dynamic output configuration
+            context.AddOption<int>(OPT_OUTPUT_COUNT)
+                .WithDisplayName("Output Count")
+                .WithDefaultValue(MIN_OUTPUTS)
+                .WithTooltip($"Number of output paths ({MIN_OUTPUTS}-{MAX_OUTPUTS}). Use >1 for conditional routing after selection.")
+                .Delayed();
+
+            context.AddOption<List<Condition_SO>>(OPT_OUTPUT_CONDITIONS)
+                .WithDisplayName("Output Conditions")
+                .WithTooltip("Conditions for each output path (evaluated in order)")
                 .ShowInInspectorOnly();
         }
 
@@ -95,11 +138,55 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
 
-            // Output: To target stage
-            context.AddOutputPort<StageFlow>("Target")
-                .WithDisplayName("To Stage")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
+            // Dynamic output ports based on output count
+            var outputCountOption = GetNodeOptionByName(OPT_OUTPUT_COUNT);
+            outputCountOption.TryGetValue<int>(out var outputCount);
+            outputCount = Math.Clamp(outputCount, MIN_OUTPUTS, MAX_OUTPUTS);
+
+            if (outputCount == 1)
+            {
+                // Single output - simple case
+                context.AddOutputPort<StageFlow>("Target")
+                    .WithDisplayName("To Stage")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
+            }
+            else
+            {
+                // Multiple outputs with conditions
+                for (int i = 0; i < outputCount; i++)
+                {
+                    context.AddOutputPort<StageFlow>($"Target{i}")
+                        .WithDisplayName($"Path {i + 1}")
+                        .WithConnectorUI(PortConnectorUI.Arrowhead)
+                        .Build();
+                }
+
+                // Default output when no conditions match
+                context.AddOutputPort<StageFlow>("Default")
+                    .WithDisplayName("Default")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Gets the condition for a specific output path index.
+        /// </summary>
+        /// <param name="outputIndex">Zero-based output index.</param>
+        /// <returns>The condition, or null if not set.</returns>
+        public Condition_SO GetOutputCondition(int outputIndex)
+        {
+            var conditions = OutputConditions;
+            if (outputIndex >= 0 && outputIndex < conditions.Count)
+            {
+                return conditions[outputIndex];
+            }
+            return null;
         }
 
         #endregion

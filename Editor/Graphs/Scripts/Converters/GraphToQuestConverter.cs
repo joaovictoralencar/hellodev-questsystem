@@ -27,10 +27,23 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         private List<INode> _allNodes;
         private Dictionary<int, StageNode> _stageNodeLookup;
         private Dictionary<int, ISubgraphNode> _stageSubgraphLookup;
-        private Dictionary<StageNode, List<TaskGroupNode>> _stageTaskGroups;
+        private Dictionary<StageNode, List<TaskGroupContextNode>> _stageTaskGroups;
         private Dictionary<ISubgraphNode, List<INode>> _stageSubgraphTaskGroups;
         private Dictionary<StageNode, List<ChoiceNode>> _stageChoices;
         private List<RewardNode> _rewardNodes;
+
+        // Track inline tasks created during conversion for sub-asset registration
+        private List<Task_SO> _createdInlineTasks = new();
+
+        #endregion
+
+        #region Inline Task Access
+
+        /// <summary>
+        /// Gets all inline task assets created during conversion.
+        /// Call after Export() to add these to the import context as sub-assets.
+        /// </summary>
+        public IReadOnlyList<Task_SO> CreatedInlineTasks => _createdInlineTasks;
 
         #endregion
 
@@ -72,6 +85,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             try
             {
+                // Clear inline tasks from previous conversions
+                _createdInlineTasks.Clear();
+
                 // Create or use existing asset
                 var quest = existing != null ? existing : ScriptableObject.CreateInstance<Quest_SO>();
 
@@ -155,10 +171,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             }
 
             // Build stage → task groups mapping
-            _stageTaskGroups = new Dictionary<StageNode, List<TaskGroupNode>>();
+            _stageTaskGroups = new Dictionary<StageNode, List<TaskGroupContextNode>>();
             foreach (var stageNode in _stageNodeLookup.Values)
             {
-                _stageTaskGroups[stageNode] = FindConnectedTaskGroups(stageNode);
+                _stageTaskGroups[stageNode] = FindConnectedTaskGroupContexts(stageNode);
             }
 
             // Build stage subgraph → task groups mapping
@@ -187,16 +203,16 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         /// <summary>
-        /// Finds TaskGroupNodes connected to a StageNode.
-        /// TaskGroups are connected via TaskGroupNode's "In" port from StageNode's ports.
+        /// Finds TaskGroupContextNodes connected to a StageNode.
+        /// TaskGroups are connected via TaskGroupContextNode's "In" port from StageNode's ports.
         /// </summary>
-        private List<TaskGroupNode> FindConnectedTaskGroups(StageNode stageNode)
+        private List<TaskGroupContextNode> FindConnectedTaskGroupContexts(StageNode stageNode)
         {
-            var taskGroups = new List<TaskGroupNode>();
+            var taskGroups = new List<TaskGroupContextNode>();
 
-            // TaskGroupNodes should be connected to the stage
-            // Check all TaskGroupNodes and see which ones have their "In" port connected to this stage
-            foreach (var node in _allNodes.OfType<TaskGroupNode>())
+            // TaskGroupContextNodes should be connected to the stage
+            // Check all TaskGroupContextNodes and see which ones have their "In" port connected to this stage
+            foreach (var node in _allNodes.OfType<TaskGroupContextNode>())
             {
                 try
                 {
@@ -220,22 +236,22 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         /// <summary>
-        /// Finds TaskGroupNodes connected to a stage ISubgraphNode,
+        /// Finds TaskGroupContextNodes connected to a stage ISubgraphNode,
         /// or extracts them from within the stage subgraph itself.
         /// </summary>
         private List<INode> FindConnectedTaskGroupsForSubgraph(ISubgraphNode subgraphNode)
         {
             var taskGroups = new List<INode>();
 
-            // First check for TaskGroupNodes inside the stage subgraph
+            // First check for TaskGroupContextNodes inside the stage subgraph
             var stageGraph = subgraphNode.GetSubgraph() as StageGraph;
             if (stageGraph != null)
             {
                 foreach (var node in stageGraph.GetNodes())
                 {
-                    if (node is TaskGroupNode tgNode)
+                    if (node is TaskGroupContextNode tgContextNode)
                     {
-                        taskGroups.Add(tgNode);
+                        taskGroups.Add(tgContextNode);
                     }
                     else if (node is ISubgraphNode innerSubgraph)
                     {
@@ -248,8 +264,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 }
             }
 
-            // Also check for TaskGroupNodes connected in the main quest graph
-            foreach (var node in _allNodes.OfType<TaskGroupNode>())
+            // Also check for TaskGroupContextNodes connected in the main quest graph
+            foreach (var node in _allNodes.OfType<TaskGroupContextNode>())
             {
                 try
                 {
@@ -436,117 +452,154 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             taskGroupsProperty.ClearArray();
 
             var taskGroupNodes = _stageTaskGroups[stageNode];
-            foreach (var tgNode in taskGroupNodes)
+            foreach (var tgContext in taskGroupNodes)
             {
                 taskGroupsProperty.InsertArrayElementAtIndex(taskGroupsProperty.arraySize);
                 var tgProperty = taskGroupsProperty.GetArrayElementAtIndex(taskGroupsProperty.arraySize - 1);
 
-                BuildTaskGroup(tgProperty, tgNode);
+                BuildTaskGroupFromContext(tgProperty, tgContext);
             }
         }
 
-        private void BuildTaskGroup(SerializedProperty tgProperty, TaskGroupNode tgNode)
+        private void BuildTaskGroupFromContext(SerializedProperty tgProperty, TaskGroupContextNode tgContext)
         {
-            tgProperty.FindPropertyRelative("groupName").stringValue = tgNode.GroupName;
-            tgProperty.FindPropertyRelative("executionMode").enumValueIndex = (int)tgNode.ExecutionMode;
-            tgProperty.FindPropertyRelative("requiredCount").intValue = tgNode.RequiredCount;
+            tgProperty.FindPropertyRelative("groupName").stringValue = tgContext.GroupName;
+            tgProperty.FindPropertyRelative("executionMode").enumValueIndex = (int)tgContext.ExecutionMode;
+            tgProperty.FindPropertyRelative("requiredCount").intValue = tgContext.RequiredCount;
 
-            // Find connected tasks
+            // Extract tasks from blocks inside the context node
             var tasksProperty = tgProperty.FindPropertyRelative("tasks");
             tasksProperty.ClearArray();
 
-            var taskNodes = FindConnectedTasks(tgNode);
-            foreach (var taskNode in taskNodes)
+            var taskBlocks = tgContext.blockNodes.OfType<TaskBlockBase>().ToList();
+            foreach (var taskBlock in taskBlocks)
             {
-                if (taskNode.TaskAsset != null)
+                // Handle both Asset and Define modes
+                Task_SO taskAsset = GetTaskAssetFromBlock(taskBlock);
+
+                if (taskAsset != null)
                 {
                     tasksProperty.InsertArrayElementAtIndex(tasksProperty.arraySize);
-                    tasksProperty.GetArrayElementAtIndex(tasksProperty.arraySize - 1).objectReferenceValue = taskNode.TaskAsset;
+                    tasksProperty.GetArrayElementAtIndex(tasksProperty.arraySize - 1).objectReferenceValue = taskAsset;
                 }
             }
-
-            // If the TaskGroupNode references a subgraph, also get tasks from there
-            if (tgNode.Subgraph != null)
-            {
-                var subgraphTasks = ExtractTasksFromSubgraph(tgNode.Subgraph);
-                foreach (var task in subgraphTasks)
-                {
-                    tasksProperty.InsertArrayElementAtIndex(tasksProperty.arraySize);
-                    tasksProperty.GetArrayElementAtIndex(tasksProperty.arraySize - 1).objectReferenceValue = task;
-                }
-            }
-        }
-
-        private List<TaskNode> FindConnectedTasks(TaskGroupNode tgNode)
-        {
-            var tasks = new List<TaskNode>();
-
-            if (_allNodes == null) return tasks;
-
-            // Find TaskNodes whose "In" port connects to this TaskGroupNode
-            foreach (var node in _allNodes.OfType<TaskNode>())
-            {
-                try
-                {
-                    var inPort = node.GetInputPortByName("In");
-                    if (inPort != null && inPort.isConnected)
-                    {
-                        var connectedNode = inPort.firstConnectedPort?.GetNode();
-                        if (connectedNode == tgNode)
-                        {
-                            tasks.Add(node);
-                        }
-
-                        // Also check if connected via another TaskNode (sequential chain)
-                        if (connectedNode is TaskNode prevTask)
-                        {
-                            // Walk back the chain to find the TaskGroupNode
-                            if (IsTaskInGroup(prevTask, tgNode, new HashSet<INode>()))
-                            {
-                                tasks.Add(node);
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Port access failed
-                }
-            }
-
-            return tasks.Distinct().ToList();
         }
 
         /// <summary>
-        /// Recursively checks if a task is part of a task group's chain.
+        /// Gets the Task_SO asset from a TaskBlockBase, handling both Asset and Define modes.
         /// </summary>
-        private bool IsTaskInGroup(TaskNode task, TaskGroupNode group, HashSet<INode> visited)
+        private Task_SO GetTaskAssetFromBlock(TaskBlockBase taskBlock)
         {
-            if (visited.Contains(task))
-                return false;
+            if (taskBlock == null)
+                return null;
 
-            visited.Add(task);
+            if (taskBlock.IsDefineMode)
+            {
+                // Create Task_SO from inline data
+                return CreateInlineTaskAssetFromBlock(taskBlock);
+            }
+            else
+            {
+                // Use referenced Task_SO asset
+                return taskBlock.TaskAsset;
+            }
+        }
+
+        /// <summary>
+        /// Creates a Task_SO instance from a TaskBlockBase's inline data.
+        /// The created asset is tracked for later registration as a sub-asset.
+        /// </summary>
+        private Task_SO CreateInlineTaskAssetFromBlock(TaskBlockBase taskBlock)
+        {
+            if (taskBlock == null)
+            {
+                _context.AddWarning($"Task block is null");
+                return null;
+            }
 
             try
             {
-                var inPort = task.GetInputPortByName("In");
-                if (inPort == null || !inPort.isConnected)
-                    return false;
+                // Validate the task configuration
+                if (!taskBlock.HasValidTask)
+                {
+                    _context.AddWarning($"Task '{taskBlock.DevName}' has invalid configuration for type {taskBlock.TaskTypeName}");
+                }
 
-                var connectedNode = inPort.firstConnectedPort?.GetNode();
+                // Create the Task_SO asset using the block's factory method
+                var task = taskBlock.CreateTaskAsset();
 
-                if (connectedNode == group)
-                    return true;
+                // Name the asset for debugging and sub-asset identification
+                task.name = $"InlineTask_{taskBlock.DevName}_{_createdInlineTasks.Count}";
 
-                if (connectedNode is TaskNode prevTask)
-                    return IsTaskInGroup(prevTask, group, visited);
+                // Track for sub-asset registration
+                _createdInlineTasks.Add(task);
+
+                return task;
             }
-            catch
+            catch (Exception ex)
             {
-                // Port access failed
+                _context.AddError($"Failed to create inline task: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the Task_SO asset from a TaskBaseNode, handling both Asset and Define modes.
+        /// Used for TaskBaseNodes inside TaskGroupGraph subgraphs.
+        /// </summary>
+        private Task_SO GetTaskAssetFromNode(TaskBaseNode taskNode)
+        {
+            if (taskNode == null)
+                return null;
+
+            if (taskNode.IsDefineMode)
+            {
+                // Create Task_SO from inline data
+                return CreateInlineTaskAssetFromNode(taskNode);
+            }
+            else
+            {
+                // Use referenced Task_SO asset
+                return taskNode.TaskAsset;
+            }
+        }
+
+        /// <summary>
+        /// Creates a Task_SO instance from a TaskBaseNode's inline data.
+        /// Used for TaskBaseNodes inside TaskGroupGraph subgraphs.
+        /// </summary>
+        private Task_SO CreateInlineTaskAssetFromNode(TaskBaseNode taskNode)
+        {
+            if (taskNode == null)
+            {
+                _context.AddWarning($"Task node is null");
+                return null;
             }
 
-            return false;
+            try
+            {
+                // Validate the task configuration
+                if (!taskNode.HasValidTask)
+                {
+                    _context.AddWarning($"Task '{taskNode.DevName}' has invalid configuration for type {taskNode.TaskTypeName}");
+                }
+
+                // Create the Task_SO asset using the node's factory method
+                var task = taskNode.CreateTaskAsset();
+
+                // Name the asset for debugging and sub-asset identification
+                task.name = $"InlineTask_{taskNode.DevName}_{_createdInlineTasks.Count}";
+
+                // Track for sub-asset registration
+                _createdInlineTasks.Add(task);
+
+                return task;
+            }
+            catch (Exception ex)
+            {
+                _context.AddError($"Failed to create inline task from node: {ex.Message}");
+                return null;
+            }
         }
 
         private void BuildTransitions(SerializedProperty transitionsProperty, StageNode stageNode)
@@ -594,8 +647,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
                 switch (tgNodeObj)
                 {
-                    case TaskGroupNode tgNode:
-                        BuildTaskGroup(tgProperty, tgNode);
+                    case TaskGroupContextNode tgContext:
+                        // Extract tasks from blocks inside the context node
+                        BuildTaskGroupFromContext(tgProperty, tgContext);
                         break;
                     case ISubgraphNode tgSubgraph when tgSubgraph.GetSubgraph() is TaskGroupGraph:
                         BuildTaskGroupFromSubgraph(tgProperty, tgSubgraph);
@@ -660,6 +714,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
         /// <summary>
         /// Extracts Task_SO assets from a TaskGroupGraph subgraph.
+        /// Handles both Asset and Define mode TaskBaseNodes.
         /// </summary>
         private List<Task_SO> ExtractTasksFromSubgraph(TaskGroupGraph subgraph)
         {
@@ -670,11 +725,14 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             try
             {
-                foreach (var taskNode in subgraph.GetNodes().OfType<TaskNode>())
+                foreach (var taskNode in subgraph.GetNodes().OfType<TaskBaseNode>())
                 {
-                    if (taskNode.TaskAsset != null)
+                    // Handle both Asset and Define modes
+                    Task_SO taskAsset = GetTaskAssetFromNode(taskNode);
+
+                    if (taskAsset != null)
                     {
-                        tasks.Add(taskNode.TaskAsset);
+                        tasks.Add(taskAsset);
                     }
                 }
             }

@@ -78,11 +78,32 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 ValidateChoiceNode(choiceNode, results, graph);
             }
 
-            // Validate task group nodes
-            var taskGroupNodes = nodes.OfType<TaskGroupNode>().ToList();
-            foreach (var taskGroupNode in taskGroupNodes)
+            // Validate task group context nodes
+            var taskGroupContextNodes = nodes.OfType<TaskGroupContextNode>().ToList();
+            foreach (var contextNode in taskGroupContextNodes)
             {
-                ValidateTaskGroupNode(taskGroupNode, results, graph);
+                ValidateTaskGroupContextNode(contextNode, results, graph);
+            }
+
+            // Validate reward context nodes
+            var rewardContextNodes = nodes.OfType<RewardContextNode>().ToList();
+            foreach (var rewardNode in rewardContextNodes)
+            {
+                ValidateRewardContextNode(rewardNode, results, graph);
+            }
+
+            // Validate switch nodes
+            var switchNodes = nodes.OfType<SwitchNode>().ToList();
+            foreach (var switchNode in switchNodes)
+            {
+                ValidateSwitchNode(switchNode, results, graph);
+            }
+
+            // Validate condition gate nodes
+            var conditionGateNodes = nodes.OfType<ConditionGateNode>().ToList();
+            foreach (var gateNode in conditionGateNodes)
+            {
+                ValidateConditionGateNode(gateNode, results, graph);
             }
 
             return results;
@@ -116,12 +137,46 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
         private void ValidateChoiceNode(ChoiceNode node, List<ValidationResult> results, Graph graph)
         {
-            // Choice must have a target stage connection
-            if (!HasOutputConnection(node, "Target"))
+            var outputCount = node.OutputCount;
+
+            if (outputCount == 1)
             {
-                results.Add(ValidationResult.Error(
-                    $"Choice '{node.ChoiceId}' has no target stage connection",
-                    node, graph));
+                // Single output mode - check Target connection
+                if (!HasOutputConnection(node, "Target"))
+                {
+                    results.Add(ValidationResult.Error(
+                        $"Choice '{node.ChoiceId}' has no target stage connection",
+                        node, graph));
+                }
+            }
+            else
+            {
+                // Multiple output mode - check at least one path is connected
+                bool hasAnyOutput = false;
+                for (int i = 0; i < outputCount; i++)
+                {
+                    if (HasOutputConnection(node, $"Target{i}"))
+                    {
+                        hasAnyOutput = true;
+                        break;
+                    }
+                }
+
+                if (!hasAnyOutput && !HasOutputConnection(node, "Default"))
+                {
+                    results.Add(ValidationResult.Error(
+                        $"Choice '{node.ChoiceId}' has no output connections",
+                        node, graph));
+                }
+
+                // Check output conditions are defined
+                var outputConditions = node.OutputConditions;
+                if (outputConditions.Count == 0 || outputConditions.All(c => c == null))
+                {
+                    results.Add(ValidationResult.Warning(
+                        $"Choice '{node.ChoiceId}' has multiple outputs but no conditions defined",
+                        node, graph));
+                }
             }
 
             // Warn on empty choice text
@@ -133,76 +188,163 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             }
         }
 
-        private void ValidateTaskGroupNode(TaskGroupNode node, List<ValidationResult> results, Graph graph)
+        private void ValidateTaskGroupContextNode(TaskGroupContextNode node, List<ValidationResult> results, Graph graph)
         {
+            // Get blocks from context node
+            var taskBlocks = node.blockNodes.OfType<TaskBlockBase>().ToList();
+
+            // Context should have at least one task block
+            if (taskBlocks.Count == 0)
+            {
+                results.Add(ValidationResult.Warning(
+                    $"TaskGroupContext '{node.GroupName}' has no task blocks",
+                    node, graph));
+            }
+
+            // Validate each task block
+            foreach (var taskBlock in taskBlocks)
+            {
+                if (!taskBlock.HasValidTask)
+                {
+                    results.Add(ValidationResult.Warning(
+                        $"Task block '{taskBlock.TaskTypeName}' in '{node.GroupName}' has no valid task configuration",
+                        node, graph));
+                }
+            }
+
             // OptionalXofY: requiredCount must be valid
             if (node.ExecutionMode == TaskGroups.TaskExecutionMode.OptionalXofY)
             {
                 if (node.RequiredCount < 1)
                 {
                     results.Add(ValidationResult.Error(
-                        $"TaskGroup '{node.GroupName}' uses OptionalXofY but requiredCount is {node.RequiredCount}",
+                        $"TaskGroupContext '{node.GroupName}' uses OptionalXofY but requiredCount is {node.RequiredCount}",
+                        node, graph));
+                }
+
+                if (node.RequiredCount > taskBlocks.Count)
+                {
+                    results.Add(ValidationResult.Error(
+                        $"TaskGroupContext '{node.GroupName}' requires {node.RequiredCount} tasks but only has {taskBlocks.Count}",
+                        node, graph));
+                }
+            }
+        }
+
+        private void ValidateRewardContextNode(RewardContextNode node, List<ValidationResult> results, Graph graph)
+        {
+            // Get blocks from context node
+            var rewardBlocks = node.blockNodes.OfType<RewardBlock>().ToList();
+
+            // Context should have at least one reward block
+            if (rewardBlocks.Count == 0)
+            {
+                results.Add(ValidationResult.Warning(
+                    $"RewardContext '{node.NodeName}' has no reward blocks",
+                    node, graph));
+            }
+
+            // Validate each reward block
+            foreach (var rewardBlock in rewardBlocks)
+            {
+                if (!rewardBlock.IsValid)
+                {
+                    results.Add(ValidationResult.Warning(
+                        $"Reward block in '{node.NodeName}' has invalid configuration (missing type or amount <= 0)",
                         node, graph));
                 }
             }
 
-            // Parallel/AnyOrder: Warn if tasks are chained with Then→In instead of forking from Tasks port
-            if (node.ExecutionMode == TaskGroups.TaskExecutionMode.Parallel ||
-                node.ExecutionMode == TaskGroups.TaskExecutionMode.AnyOrder)
+            // ChooseOne mode should have multiple rewards
+            if (node.GrantMode == RewardContextNode.RewardGrantMode.ChooseOne && rewardBlocks.Count < 2)
             {
-                ValidateParallelTaskWiring(node, results, graph);
+                results.Add(ValidationResult.Warning(
+                    $"RewardContext '{node.NodeName}' uses ChooseOne mode but has fewer than 2 rewards",
+                    node, graph));
             }
         }
 
-        /// <summary>
-        /// Validates that Parallel/AnyOrder TaskGroups have tasks connected as a tree (fork),
-        /// not as a sequential chain (flow).
-        /// </summary>
-        private void ValidateParallelTaskWiring(TaskGroupNode taskGroupNode, List<ValidationResult> results, Graph graph)
+        private void ValidateSwitchNode(SwitchNode node, List<ValidationResult> results, Graph graph)
         {
-            try
+            var branchCount = node.BranchCount;
+            var conditions = node.BranchConditions;
+
+            // Check if conditions are defined
+            if (conditions.Count == 0 || conditions.All(c => c == null))
             {
-                // Get the Tasks port
-                var tasksPort = taskGroupNode.GetOutputPortByName("Tasks");
-                if (tasksPort == null || !tasksPort.isConnected)
-                    return;
+                results.Add(ValidationResult.Warning(
+                    $"Switch node '{node.NodeName}' has no conditions defined",
+                    node, graph));
+            }
 
-                // Get all TaskNodes connected to this TaskGroup
-                var connectedPorts = new List<IPort>();
-                tasksPort.GetConnectedPorts(connectedPorts);
+            // Check if all branches have output connections
+            bool hasAnyOutput = false;
+            int disconnectedBranches = 0;
 
-                foreach (var port in connectedPorts)
+            for (int i = 0; i < branchCount; i++)
+            {
+                if (HasOutputConnection(node, $"Branch{i}"))
                 {
-                    var taskNode = port.GetNode() as TaskNode;
-                    if (taskNode == null)
-                        continue;
-
-                    // Check if this TaskNode has its "Then" port connected to another TaskNode's "In" port
-                    var thenPort = taskNode.GetOutputPortByName("Then");
-                    if (thenPort != null && thenPort.isConnected)
-                    {
-                        var thenConnectedPorts = new List<IPort>();
-                        thenPort.GetConnectedPorts(thenConnectedPorts);
-
-                        foreach (var connectedPort in thenConnectedPorts)
-                        {
-                            if (connectedPort.GetNode() is TaskNode chainedTask)
-                            {
-                                // Found a Then→In chain within a Parallel group
-                                results.Add(ValidationResult.Warning(
-                                    $"TaskGroup '{taskGroupNode.GroupName}' is {taskGroupNode.ExecutionMode} but has tasks chained sequentially. " +
-                                    $"For parallel execution, connect ALL tasks directly from the Tasks port (tree/fork pattern), " +
-                                    $"not through Then→In connections (flow pattern).",
-                                    taskGroupNode, graph));
-                                return; // Only warn once per TaskGroup
-                            }
-                        }
-                    }
+                    hasAnyOutput = true;
+                }
+                else
+                {
+                    disconnectedBranches++;
                 }
             }
-            catch
+
+            if (!hasAnyOutput && !HasOutputConnection(node, "Default"))
             {
-                // Port access failed, skip validation
+                results.Add(ValidationResult.Error(
+                    $"Switch node '{node.NodeName}' has no output connections",
+                    node, graph));
+            }
+            else if (disconnectedBranches > 0)
+            {
+                results.Add(ValidationResult.Warning(
+                    $"Switch node '{node.NodeName}' has {disconnectedBranches} disconnected branch(es)",
+                    node, graph));
+            }
+        }
+
+        private void ValidateConditionGateNode(ConditionGateNode node, List<ValidationResult> results, Graph graph)
+        {
+            var conditions = node.Conditions;
+            var mode = node.Mode;
+
+            // Check if conditions are defined
+            if (conditions.Count == 0 || conditions.All(c => c == null))
+            {
+                results.Add(ValidationResult.Warning(
+                    $"Condition gate '{node.GateName}' has no conditions defined",
+                    node, graph));
+            }
+
+            // XOfY mode validation
+            if (mode == ConditionGateNode.ConditionMode.XOfY)
+            {
+                if (node.RequiredCount < 1)
+                {
+                    results.Add(ValidationResult.Error(
+                        $"Condition gate '{node.GateName}' uses XOfY mode but RequiredCount is {node.RequiredCount}",
+                        node, graph));
+                }
+
+                int validConditions = conditions.Count(c => c != null);
+                if (node.RequiredCount > validConditions)
+                {
+                    results.Add(ValidationResult.Error(
+                        $"Condition gate '{node.GateName}' requires {node.RequiredCount} conditions but only {validConditions} are defined",
+                        node, graph));
+                }
+            }
+
+            // Check output connections
+            if (!HasOutputConnection(node, "Then") && !HasOutputConnection(node, "Else"))
+            {
+                results.Add(ValidationResult.Warning(
+                    $"Condition gate '{node.GateName}' has no output connections",
+                    node, graph));
             }
         }
 
@@ -289,13 +431,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
             var nodes = graph.GetNodes().ToList();
 
-            // Check for task groups
-            var taskGroupNodes = nodes.OfType<TaskGroupNode>().ToList();
+            // Check for task groups (context nodes or subgraphs)
+            var taskGroupContextNodes = nodes.OfType<TaskGroupContextNode>().ToList();
             var taskGroupSubgraphNodes = nodes.OfType<ISubgraphNode>()
                 .Where(n => n.GetSubgraph() is TaskGroupGraph)
                 .ToList();
 
-            if (taskGroupNodes.Count == 0 && taskGroupSubgraphNodes.Count == 0)
+            if (taskGroupContextNodes.Count == 0 && taskGroupSubgraphNodes.Count == 0)
             {
                 results.Add(ValidationResult.Warning(
                     $"Stage '{graph.StageName}' has no task groups",
@@ -325,7 +467,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             var nodes = graph.GetNodes().ToList();
 
             // Rule: At least one task
-            var taskNodes = nodes.OfType<TaskNode>().ToList();
+            var taskNodes = nodes.OfType<TaskBaseNode>().ToList();
             if (taskNodes.Count == 0)
             {
                 results.Add(ValidationResult.Error(
@@ -354,10 +496,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             // Validate each task
             foreach (var taskNode in taskNodes)
             {
-                if (taskNode.TaskAsset == null)
+                if (!taskNode.HasValidTask)
                 {
                     results.Add(ValidationResult.Warning(
-                        "Task node has no Task_SO assigned",
+                        $"Task node '{taskNode.DevName}' has no valid task configuration",
                         taskNode, graph));
                 }
             }

@@ -47,8 +47,8 @@ MonoBehaviour:
           serializedVersion: 2
           x: 0
           y: 0
-          width: 400
-          height: 200
+          width: 401.59998
+          height: 134.4
         m_GraphElementMetaData: []
         m_EntryPoint:
           rid: 6000000010
