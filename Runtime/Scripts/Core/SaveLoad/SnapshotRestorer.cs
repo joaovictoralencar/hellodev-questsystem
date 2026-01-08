@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using HelloDev.Conditions.WorldFlags;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -291,16 +292,16 @@ namespace HelloDev.QuestSystem.SaveLoad
                 }
             }
 
-            foreach (var taskSnapshot in taskSnapshots)
+            foreach (TaskSnapshot taskSnapshot in taskSnapshots)
             {
-                var task = allTasks.Find(t => t.Data.TaskId.ToString() == taskSnapshot.TaskGuid);
+                TaskRuntime task = allTasks.FirstOrDefault(t => t.Data.TaskId.ToString() == taskSnapshot.TaskGuid);
                 if (task == null)
                 {
                     QuestLogger.LogVerbose(LogSubsystem.Save, $"Task not found: {taskSnapshot.TaskGuid}");
                     continue;
                 }
 
-                var targetState = (TaskState)taskSnapshot.State;
+                TaskState targetState = (TaskState)taskSnapshot.State;
 
                 // Individual task logs are verbose only
                 QuestLogger.LogVerbose(LogSubsystem.Save, $"Task '{task.DevName}': {targetState}, progress={taskSnapshot.ProgressData.IntValue}");

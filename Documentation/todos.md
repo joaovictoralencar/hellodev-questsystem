@@ -235,17 +235,15 @@ QuestRuntime GetFirstActive(Func<QuestRuntime, bool> predicate);
 - ScriptedImporter auto-converts .quest/.questline files to Quest_SO/QuestLine_SO
 - Validation system with reachability analysis
 - USS styling for visual differentiation
-- See `docs/questsystem/quest-graph-editor-guide.md` and `quest-graph-designer-workflow.md`
+- See `Documentation/quest-graph-editor-guide.md` and `Documentation/Tutorials/tutorial-graph-editor.md`
 
 ### Dialogue Integration
 - `IDialogueIntegration` interface for third-party dialogue systems
 - Quest stages settable from dialogue scripts
-- See implementation-plan.md Phase 8.2
 
 ### Quest Tracking (Distance/Direction)
 - `IQuestTracker` interface for waypoint/compass integration
 - Distance to objective, direction arrows
-- See comprehensive-critique.md Part IV
 
 ---
 
@@ -257,7 +255,7 @@ QuestRuntime GetFirstActive(Func<QuestRuntime, bool> predicate);
 | Graph Validation System | 2026-01-04 | `Editor/Graphs/Scripts/Validation/` |
 | Graph → ScriptableObject Conversion | 2026-01-04 | `Editor/Graphs/Scripts/Converters/` |
 | ScriptedImporters for .quest/.questline | 2026-01-04 | `Editor/Graphs/Scripts/Importers/` |
-| Designer Workflow Documentation | 2026-01-04 | `docs/questsystem/quest-graph-designer-workflow.md` |
+| Designer Workflow Documentation | 2026-01-04 | `Documentation/Tutorials/tutorial-graph-editor.md` |
 | OnChoiceAvailabilityChanged event | 2026-01-04 | `Runtime/Scripts/Core/Quests/QuestRuntime.cs` |
 | Core Interfaces (ITask, IQuest, ITaskGroup) | 2026-01-04 | `Runtime/Scripts/Core/Interfaces/` |
 | Save/Load System | 2025-12-29 | `Runtime/Scripts/Core/SaveLoad/` |

@@ -822,7 +822,6 @@ namespace HelloDev.QuestSystem
             BeginEventProcessing();
             try
             {
-                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] QuestManager: Firing QuestCompleted event for '{quest.QuestData.DevName}'");
                 QuestCompleted.SafeInvoke(quest);
                 OnQuestDataChanged.SafeInvoke(QuestDataChangeType.QuestCompleted);
 

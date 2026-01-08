@@ -416,18 +416,28 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             if (stageGraph != null)
             {
-                // Identity - from the stage graph
-                stageProperty.FindPropertyRelative("stageIndex").intValue = stageGraph.StageIndex;
-                stageProperty.FindPropertyRelative("stageName").stringValue = stageGraph.StageName;
+                // Identity - check I/O variable ports first, then fall back to serialized fields
+                // This allows parent graphs to override subgraph values via connected inputs
+                stageProperty.FindPropertyRelative("stageIndex").intValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(subgraphNode, "StageIndex", stageGraph.StageIndex);
+                stageProperty.FindPropertyRelative("stageName").stringValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(subgraphNode, "StageName", stageGraph.StageName);
 
-                // Display
-                CopyLocalizedStringToProperty(stageProperty, "journalEntry", stageGraph.JournalEntry);
-                stageProperty.FindPropertyRelative("stageIcon").objectReferenceValue = stageGraph.StageIcon;
+                // Display - check I/O variable ports with serialized field fallback
+                var journalEntry = GraphTraversalUtility.ResolveSubgraphInput(
+                    subgraphNode, "JournalEntry", stageGraph.JournalEntry);
+                CopyLocalizedStringToProperty(stageProperty, "journalEntry", journalEntry);
 
-                // Flags
-                stageProperty.FindPropertyRelative("isOptional").boolValue = stageGraph.IsOptional;
-                stageProperty.FindPropertyRelative("isHidden").boolValue = stageGraph.IsHidden;
-                stageProperty.FindPropertyRelative("isTerminal").boolValue = stageGraph.IsTerminal;
+                stageProperty.FindPropertyRelative("stageIcon").objectReferenceValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(subgraphNode, "StageIcon", stageGraph.StageIcon);
+
+                // Flags - check I/O variable ports with serialized field fallback
+                stageProperty.FindPropertyRelative("isOptional").boolValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(subgraphNode, "IsOptional", stageGraph.IsOptional);
+                stageProperty.FindPropertyRelative("isHidden").boolValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(subgraphNode, "IsHidden", stageGraph.IsHidden);
+                stageProperty.FindPropertyRelative("isTerminal").boolValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(subgraphNode, "IsTerminal", stageGraph.IsTerminal);
             }
             else
             {
@@ -664,10 +674,18 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             if (taskGroupGraph != null)
             {
-                // Use values from the TaskGroupGraph
-                tgProperty.FindPropertyRelative("groupName").stringValue = taskGroupGraph.GroupName;
-                tgProperty.FindPropertyRelative("executionMode").enumValueIndex = (int)taskGroupGraph.ExecutionMode;
-                tgProperty.FindPropertyRelative("requiredCount").intValue = taskGroupGraph.RequiredCount;
+                // Check I/O variable ports first, then fall back to serialized fields
+                // This allows parent graphs to override subgraph values via connected inputs
+                tgProperty.FindPropertyRelative("groupName").stringValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(tgSubgraphNode, "GroupName", taskGroupGraph.GroupName);
+
+                // For ExecutionMode, try to resolve from port (as int) then fall back
+                var executionMode = GraphTraversalUtility.ResolveSubgraphInput(
+                    tgSubgraphNode, "ExecutionMode", (int)taskGroupGraph.ExecutionMode);
+                tgProperty.FindPropertyRelative("executionMode").enumValueIndex = executionMode;
+
+                tgProperty.FindPropertyRelative("requiredCount").intValue =
+                    GraphTraversalUtility.ResolveSubgraphInput(tgSubgraphNode, "RequiredCount", taskGroupGraph.RequiredCount);
 
                 var tasksProperty = tgProperty.FindPropertyRelative("tasks");
                 tasksProperty.ClearArray();

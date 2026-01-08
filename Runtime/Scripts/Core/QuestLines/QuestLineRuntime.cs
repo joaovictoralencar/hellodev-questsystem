@@ -188,7 +188,7 @@ namespace HelloDev.QuestSystem.QuestLines
         {
             if (Data.CompletionRewards == null) return;
 
-            foreach (var reward in Data.CompletionRewards)
+            foreach (RewardInstance reward in Data.CompletionRewards)
             {
                 reward.RewardType?.GiveReward(reward.Amount);
             }

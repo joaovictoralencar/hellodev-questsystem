@@ -111,7 +111,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Gets all stages in this quest.
         /// </summary>
-        public List<QuestStageRuntime> Stages { get; }
+        public IReadOnlyList<QuestStageRuntime> Stages { get; }
 
         /// <summary>
         /// Gets the currently active stage, or null if quest is not in progress.
@@ -126,7 +126,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Gets all task groups across all stages (flattened for backward compatibility).
         /// </summary>
-        public List<TaskGroupRuntime> TaskGroups => Stages.SelectMany(s => s.TaskGroups).ToList();
+        public IReadOnlyList<TaskGroupRuntime> TaskGroups => Stages.SelectMany(s => s.TaskGroups).ToList();
 
         /// <summary>
         /// Gets the currently active task group from the current stage.
@@ -148,7 +148,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Gets all tasks across all stages and groups (flattened list for backward compatibility).
         /// </summary>
-        public List<TaskRuntime> Tasks => Stages.SelectMany(s => s.AllTasks).ToList();
+        public IReadOnlyList<TaskRuntime> Tasks => Stages.SelectMany(s => s.AllTasks).ToList();
 
         /// <summary>
         /// Gets the overall progress of this quest (0-1).
@@ -846,23 +846,13 @@ namespace HelloDev.QuestSystem.Quests
             _blockAutoStart = blockAutoStart;
 
             if (QuestData.StartConditions == null)
-            {
-                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': No start conditions to subscribe to");
                 return;
-            }
-
-            QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Subscribing to {QuestData.StartConditions.Count} start conditions");
 
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
                 if (condition is IConditionEventDriven conditionEventDriven)
                 {
-                    QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Subscribing to condition '{condition.name}'");
                     conditionEventDriven.SubscribeToEvent(TryStartQuestIfConditionsMet);
-                }
-                else
-                {
-                    QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Condition '{condition?.name ?? "null"}' is not event-driven");
                 }
             }
         }
@@ -967,24 +957,13 @@ namespace HelloDev.QuestSystem.Quests
 
         private void TryStartQuestIfConditionsMet()
         {
-            QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': TryStartQuestIfConditionsMet called, CurrentState={CurrentState}, blockAutoStart={_blockAutoStart}");
-
             if (_blockAutoStart)
-            {
-                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Skipping - auto-start blocked (restore in progress)");
                 return;
-            }
 
             if (CurrentState != QuestState.NotStarted)
-            {
-                QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': Skipping - not in NotStarted state");
                 return;
-            }
 
-            bool conditionsMet = CheckStartConditions();
-            QuestLogger.LogVerbose(LogSubsystem.Quest, $"[CHAIN DEBUG] '{QuestData.DevName}': CheckStartConditions returned {conditionsMet}");
-
-            if (conditionsMet)
+            if (CheckStartConditions())
             {
                 QuestLogger.Log(LogSubsystem.Quest, $"Chain trigger starting quest <b>'{QuestData.DevName}'</b>");
                 StartQuest();
@@ -1016,29 +995,14 @@ namespace HelloDev.QuestSystem.Quests
         public bool CheckStartConditions()
         {
             if (QuestData.StartConditions == null || QuestData.StartConditions.Count == 0)
-            {
-                QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG] CheckStartConditions '{QuestData.DevName}': No conditions (null={QuestData.StartConditions == null}, count={(QuestData.StartConditions?.Count ?? 0)}) → returning TRUE");
                 return true;
-            }
 
-            QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG] CheckStartConditions '{QuestData.DevName}': Evaluating {QuestData.StartConditions.Count} conditions:");
-            bool allMet = true;
             foreach (var condition in QuestData.StartConditions)
             {
-                if (condition == null)
-                {
-                    QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG]   - NULL condition → treating as false");
-                    allMet = false;
-                }
-                else
-                {
-                    bool result = condition.Evaluate();
-                    QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG]   - '{condition.name}' (type: {condition.GetType().Name}) → {result}");
-                    if (!result) allMet = false;
-                }
+                if (condition == null || !condition.Evaluate())
+                    return false;
             }
-            QuestLogger.LogVerbose(LogSubsystem.Quest,$"[INIT DEBUG] CheckStartConditions '{QuestData.DevName}': Final result → {allMet}");
-            return allMet;
+            return true;
         }
 
         #endregion

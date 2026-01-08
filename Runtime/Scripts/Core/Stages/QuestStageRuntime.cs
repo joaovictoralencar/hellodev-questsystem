@@ -96,7 +96,7 @@ namespace HelloDev.QuestSystem.Stages
         /// <summary>
         /// Gets all task groups in this stage.
         /// </summary>
-        public List<TaskGroupRuntime> TaskGroups { get; }
+        public IReadOnlyList<TaskGroupRuntime> TaskGroups { get; }
 
         /// <summary>
         /// Gets the currently active task group, or null if stage is not in progress.
@@ -115,7 +115,7 @@ namespace HelloDev.QuestSystem.Stages
         /// <summary>
         /// Gets all tasks across all groups in this stage (flattened).
         /// </summary>
-        public List<TaskRuntime> AllTasks => TaskGroups.SelectMany(g => g.Tasks).ToList();
+        public IReadOnlyList<TaskRuntime> AllTasks => TaskGroups.SelectMany(g => g.Tasks).ToList();
 
         /// <summary>
         /// Gets the progress of this stage (0-1).

@@ -1,5 +1,3 @@
-using System;
-using HelloDev.Conditions;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using UnityEngine;
@@ -12,10 +10,9 @@ namespace HelloDev.QuestSystem.Conditions
     /// <summary>
     /// An event-driven condition that checks the state of a quest.
     /// Used for quest chains where Quest B requires Quest A to be in a specific state.
-    /// Subscribes to QuestManager events to automatically re-evaluate when quest states change.
     /// </summary>
     [CreateAssetMenu(menuName = "HelloDev/Quest System/Conditions/Quest State Condition")]
-    public class ConditionQuestState_SO : Condition_SO, IConditionEventDriven
+    public class ConditionQuestState_SO : EventDrivenQuestCondition_SO
     {
         #region Serialized Fields
 
@@ -47,25 +44,6 @@ namespace HelloDev.QuestSystem.Conditions
 
         #endregion
 
-        #region Private Fields
-
-        /// <summary>
-        /// Multicast delegate for all registered callbacks.
-        /// </summary>
-        private Action _onConditionMet;
-
-        /// <summary>
-        /// Number of active subscribers.
-        /// </summary>
-        private int _subscriberCount;
-
-        /// <summary>
-        /// Whether we're subscribed to QuestManager events.
-        /// </summary>
-        private bool _isSubscribedToEvents;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -85,111 +63,54 @@ namespace HelloDev.QuestSystem.Conditions
 
         #endregion
 
-        #region ICondition Implementation
+        #region EventDrivenQuestCondition_SO Implementation
 
-        /// <summary>
-        /// Evaluates the condition by checking the quest's current state against the target state.
-        /// </summary>
-        /// <returns>True if the condition is met, respecting IsInverted.</returns>
-        public override bool Evaluate()
+        /// <inheritdoc/>
+        protected override string GetConditionDisplayName() => "ConditionQuestState_SO";
+
+        /// <inheritdoc/>
+        protected override void SubscribeToManagerEvents()
+        {
+            QuestManager.Instance.QuestStarted.AddListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestCompleted.AddListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestFailed.AddListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestRestarted.AddListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestAdded.AddListener(OnQuestStateChanged);
+        }
+
+        /// <inheritdoc/>
+        protected override void UnsubscribeFromManagerEvents()
+        {
+            QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
+        }
+
+        /// <inheritdoc/>
+        protected override bool EvaluateCondition()
         {
             if (questToCheck == null)
             {
-                Debug.LogWarning($"[ConditionQuestState_SO] Quest reference is null on '{name}'. Returning IsInverted={IsInverted}");
-                return IsInverted;
+                Debug.LogWarning($"[ConditionQuestState_SO] Quest reference is null on '{name}'.");
+                return false;
             }
 
             if (QuestManager.Instance == null)
             {
-                Debug.LogWarning($"[ConditionQuestState_SO] QuestManager.Instance is null. Returning IsInverted={IsInverted}");
-                return IsInverted;
+                Debug.LogWarning($"[ConditionQuestState_SO] QuestManager.Instance is null.");
+                return false;
             }
 
             QuestState currentState = GetQuestCurrentState();
-            bool result = EvaluateComparison(currentState, targetState);
-            bool finalResult = IsInverted ? !result : result;
-
-            return finalResult;
-        }
-
-        #endregion
-
-        #region IConditionEventDriven Implementation
-
-        /// <summary>
-        /// Subscribes to QuestManager events to be notified when quest states change.
-        /// Multiple subscribers can register callbacks.
-        /// </summary>
-        /// <param name="onConditionMet">Callback to invoke when the condition becomes true.</param>
-        public void SubscribeToEvent(Action onConditionMet)
-        {
-            if (onConditionMet == null) return;
-
-            // Add callback to multicast delegate
-            _onConditionMet += onConditionMet;
-            _subscriberCount++;
-
-            // Subscribe to QuestManager events on first subscriber
-            if (!_isSubscribedToEvents)
-            {
-                if (QuestManager.Instance != null)
-                {
-                    QuestManager.Instance.QuestStarted.AddListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestCompleted.AddListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestFailed.AddListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestRestarted.AddListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestAdded.AddListener(OnQuestStateChanged);
-                    _isSubscribedToEvents = true;
-                }
-                else
-                {
-                    Debug.LogWarning($"[ConditionQuestState_SO] Cannot subscribe - QuestManager.Instance is null.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Unsubscribes a specific callback from QuestManager events.
-        /// </summary>
-        public void UnsubscribeFromEvent(Action callback)
-        {
-            if (callback == null) return;
-
-            // Remove callback from multicast delegate
-            _onConditionMet -= callback;
-            _subscriberCount = Math.Max(0, _subscriberCount - 1);
-
-            // Unsubscribe from QuestManager events when no subscribers remain
-            if (_subscriberCount == 0 && _isSubscribedToEvents)
-            {
-                if (QuestManager.Instance != null)
-                {
-                    QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
-                }
-                _isSubscribedToEvents = false;
-            }
-        }
-
-        /// <summary>
-        /// Forces the condition to be fulfilled. For debugging purposes.
-        /// Note: This doesn't actually change quest state, just fires the callback if condition would be met.
-        /// </summary>
-        public void ForceFulfillCondition()
-        {
-            _onConditionMet?.Invoke();
+            return EvaluateComparison(currentState, targetState);
         }
 
         #endregion
 
         #region Private Methods
 
-        /// <summary>
-        /// Gets the current state of the referenced quest from QuestManager.
-        /// </summary>
         private QuestState GetQuestCurrentState()
         {
             if (QuestManager.Instance == null || questToCheck == null)
@@ -207,9 +128,6 @@ namespace HelloDev.QuestSystem.Conditions
             return QuestState.NotStarted;
         }
 
-        /// <summary>
-        /// Evaluates the comparison between current state and target state.
-        /// </summary>
         private bool EvaluateComparison(QuestState currentState, QuestState target)
         {
             return comparisonType switch
@@ -220,57 +138,12 @@ namespace HelloDev.QuestSystem.Conditions
             };
         }
 
-        /// <summary>
-        /// Called when any quest's state changes. Checks if it's the quest we're tracking.
-        /// </summary>
         private void OnQuestStateChanged(QuestRuntime quest)
         {
             if (quest == null || questToCheck == null) return;
-
-            // Only process if this event is for the quest we're tracking
             if (quest.QuestData != questToCheck) return;
 
-            // Evaluate and fire callback if condition is now met
-            if (Evaluate())
-            {
-                _onConditionMet?.Invoke();
-            }
-        }
-
-        #endregion
-
-        #region Unity Lifecycle
-
-        protected override void OnScriptableObjectReset()
-        {
-            ClearAllSubscriptions();
-        }
-
-        private void OnDestroy()
-        {
-            ClearAllSubscriptions();
-        }
-
-        /// <summary>
-        /// Clears all subscriptions. Used during reset and destroy.
-        /// </summary>
-        private void ClearAllSubscriptions()
-        {
-            if (_isSubscribedToEvents)
-            {
-                if (QuestManager.Instance != null)
-                {
-                    QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
-                    QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
-                }
-                _isSubscribedToEvents = false;
-            }
-
-            _onConditionMet = null;
-            _subscriberCount = 0;
+            OnTrackedEntityChanged();
         }
 
         #endregion

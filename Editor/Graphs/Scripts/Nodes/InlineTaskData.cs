@@ -21,6 +21,19 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     }
 
     /// <summary>
+    /// Defines the available task types for validation and creation.
+    /// </summary>
+    public enum TaskType
+    {
+        Bool,
+        Int,
+        String,
+        Location,
+        Discovery,
+        Timed
+    }
+
+    /// <summary>
     /// Serializable container for inline task data.
     /// Holds all possible fields for any task type.
     /// Each task node type only exposes relevant fields.
@@ -191,52 +204,42 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         #region Validation
 
         /// <summary>
-        /// Checks if this inline data has valid configuration.
+        /// Checks if this inline data has valid configuration for the specified task type.
         /// </summary>
-        public bool IsValidForBool()
+        /// <param name="taskType">The task type to validate for.</param>
+        /// <returns>True if valid, false otherwise.</returns>
+        public bool IsValidFor(TaskType taskType)
         {
-            return !string.IsNullOrWhiteSpace(devName);
+            // Base validation: devName must not be empty
+            if (string.IsNullOrWhiteSpace(devName))
+                return false;
+
+            // Type-specific validation
+            return taskType switch
+            {
+                TaskType.Int => requiredCount >= 1,
+                TaskType.Timed => timeLimit >= 1f,
+                _ => true // Bool, String, Location, Discovery have no additional requirements
+            };
         }
 
-        /// <summary>
-        /// Checks if this inline data has valid configuration for Int task.
-        /// </summary>
-        public bool IsValidForInt()
-        {
-            return !string.IsNullOrWhiteSpace(devName) && requiredCount >= 1;
-        }
+        /// <summary>Checks if valid for Bool task.</summary>
+        public bool IsValidForBool() => IsValidFor(TaskType.Bool);
 
-        /// <summary>
-        /// Checks if this inline data has valid configuration for String task.
-        /// </summary>
-        public bool IsValidForString()
-        {
-            return !string.IsNullOrWhiteSpace(devName);
-        }
+        /// <summary>Checks if valid for Int task.</summary>
+        public bool IsValidForInt() => IsValidFor(TaskType.Int);
 
-        /// <summary>
-        /// Checks if this inline data has valid configuration for Location task.
-        /// </summary>
-        public bool IsValidForLocation()
-        {
-            return !string.IsNullOrWhiteSpace(devName);
-        }
+        /// <summary>Checks if valid for String task.</summary>
+        public bool IsValidForString() => IsValidFor(TaskType.String);
 
-        /// <summary>
-        /// Checks if this inline data has valid configuration for Discovery task.
-        /// </summary>
-        public bool IsValidForDiscovery()
-        {
-            return !string.IsNullOrWhiteSpace(devName);
-        }
+        /// <summary>Checks if valid for Location task.</summary>
+        public bool IsValidForLocation() => IsValidFor(TaskType.Location);
 
-        /// <summary>
-        /// Checks if this inline data has valid configuration for Timed task.
-        /// </summary>
-        public bool IsValidForTimed()
-        {
-            return !string.IsNullOrWhiteSpace(devName) && timeLimit >= 1f;
-        }
+        /// <summary>Checks if valid for Discovery task.</summary>
+        public bool IsValidForDiscovery() => IsValidFor(TaskType.Discovery);
+
+        /// <summary>Checks if valid for Timed task.</summary>
+        public bool IsValidForTimed() => IsValidFor(TaskType.Timed);
 
         #endregion
     }

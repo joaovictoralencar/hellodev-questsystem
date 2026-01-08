@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -13,7 +14,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// Uses event-driven conditions: each condition can only be fulfilled once (duplicate-protected).
     /// Task completes when requiredDiscoveries conditions are fulfilled.
     /// </summary>
-    public class DiscoveryTaskRuntime : TaskRuntime
+    public class DiscoveryTaskRuntime : TaskRuntime, ICountableTask
     {
         public override float Progress => RequiredDiscoveries == 0 ? 1f : (float)DiscoveredCount / RequiredDiscoveries;
 
@@ -28,6 +29,16 @@ namespace HelloDev.QuestSystem.Tasks
         /// Gets the current number of fulfilled conditions (discoveries).
         /// </summary>
         public int DiscoveredCount => _fulfilledConditions.Count;
+
+        #region ICountableTask Implementation
+
+        /// <inheritdoc />
+        int ICountableTask.CurrentCount => DiscoveredCount;
+
+        /// <inheritdoc />
+        int ICountableTask.RequiredCount => RequiredDiscoveries;
+
+        #endregion
 
         /// <summary>
         /// Gets the set of fulfilled conditions. Used for save/load.

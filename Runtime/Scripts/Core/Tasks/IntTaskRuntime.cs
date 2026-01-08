@@ -1,4 +1,5 @@
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -11,7 +12,7 @@ namespace HelloDev.QuestSystem.Tasks
     /// Uses event-driven conditions: each condition fulfillment increments the counter.
     /// Task completes when counter reaches requiredCount.
     /// </summary>
-    public class IntTaskRuntime : TaskRuntime
+    public class IntTaskRuntime : TaskRuntime, ICountableTask
     {
         public override float Progress => RequiredCount == 0 ? 1 : (float)_currentCount / RequiredCount;
 

@@ -1,0 +1,99 @@
+● Phase 1: Quest Narrative Design
+
+  Based on my research, I'll now design the quest narrative. I'm using existing assets from the BasicQuestExample:
+
+  ---
+  Quest: "The Shadow Cult Conspiracy"
+
+  QuestLine: "The Hidden Darkness"
+
+  Narrative Summary
+
+  After defeating the Goblin Chief, mysterious symbols have been appearing around the village. The player must investigate this dark cult, track down their hideout, confront the leader, and decide the cult's fate.
+
+  ---
+  Stage Structure (5 stages, 2 choices, 10+ tasks)
+
+  Stage 0: Initial Investigation (stageIndex: 0)
+
+  Journal Entry: "Strange symbols have appeared in the village. I should investigate."
+
+  TaskGroup: Investigate Village (Sequential)
+  1. Task 1 (Bool): Talk to the Merchant → Condition: SO_Condition_Event_ID_MerchantDialogue
+  2. Task 2 (Bool): Find the Cult Symbol → Condition: SO_Condition_Event_ID_CultSymbol
+  3. Task 3 (Bool): Talk to the Captain → Condition: SO_Condition_Event_ID_CaptainDialogue
+
+  Transition: OnGroupsComplete → Stage 10
+
+  ---
+  Stage 10: Track the Cultists (stageIndex: 10)
+
+  Journal Entry: "The Captain mentioned seeing suspicious activity near the Wasteland."
+
+  TaskGroup: Track and Discover (Parallel)
+  4. Task 4 (Bool): Find Ritual Scroll → Condition: SO_Condition_Event_ID_RitualScroll
+  5. Task 5 (Bool): Discover the Ritual Site → Condition: SO_Condition_Event_ID_RitualSite
+
+  Transition: OnGroupsComplete → Stage 20
+
+  ---
+  Stage 20: The Confrontation (stageIndex: 20)
+
+  Journal Entry: "I've found their hideout. Time to confront the cult."
+
+  TaskGroup: Infiltrate Hideout (Sequential)
+  6. Task 6 (Bool): Enter the Shadow Hideout → Condition: SO_Condition_Event_ID_ShadowHideout
+  7. Task 7 (Int, x3): Defeat Cultist Scouts (kill 3 Goblin Scouts) → Condition: SO_Condition_Event_ID_GoblinKill (uses SO_ID_Enemy_GoblinScout)
+
+  Transition: OnGroupsComplete → Stage 30
+
+  ---
+  Stage 30: The Choice (stageIndex: 30, HasPlayerChoices = true)
+
+  Journal Entry: "The Cult Leader offers information about a greater threat in exchange for mercy."
+
+  TaskGroup: Confront Leader (Sequential)
+  8. Task 8 (Bool): Talk to the Informant → Condition: SO_Condition_Event_ID_InformantDialogue
+
+  Player Choice Transitions:
+  - Choice A: "Destroy the Cult" → Stage 40 (Combat Resolution)
+  - Choice B: "Spare the Leader" → Stage 50 (Diplomatic Resolution)
+
+  ---
+  Stage 40: Combat Resolution (stageIndex: 40, isTerminal = true)
+
+  Journal Entry: "I've chosen to destroy the cult once and for all."
+
+  TaskGroup: Final Battle (Sequential)
+  9. Task 9 (Bool): Defeat the Cult Leader → Condition: SO_Condition_Event_ID_CultLeaderDefeated
+
+  Outcome: Quest Complete (militant path)
+
+  ---
+  Stage 50: Diplomatic Resolution (stageIndex: 50, isTerminal = true)
+
+  Journal Entry: "I've spared the leader. They revealed secrets about the true threat."
+
+  TaskGroup: Gather Intelligence (Sequential)
+  10. Task 10 (Bool): Receive Sealed Orders from the Leader → Condition: SO_Condition_Event_ID_SealedOrders
+
+  Outcome: Quest Complete (diplomatic path)
+
+  ---
+  Asset References (Existing in BasicQuestExample)
+
+  | Reference Type        | Asset                                    | Path                          |
+  |-----------------------|------------------------------------------|-------------------------------|
+  | Condition             | SO_Condition_Event_ID_MerchantDialogue   | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_CultSymbol         | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_CaptainDialogue    | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_RitualScroll       | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_RitualSite         | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_ShadowHideout      | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_GoblinKill         | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_InformantDialogue  | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_CultLeaderDefeated | ScriptableObjects/Conditions/ |
+  | Condition             | SO_Condition_Event_ID_SealedOrders       | ScriptableObjects/Conditions/ |
+  | LocalizedString Table | Quests                                   | Settings/Localization/Tables/ |
+  | LocalizedString Table | Stages                                   | Settings/Localization/Tables/ |
+  | LocalizedString Table | Tasks                                    | Settings/Localization/Tables/ |

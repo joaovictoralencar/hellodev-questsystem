@@ -75,7 +75,7 @@ namespace HelloDev.QuestSystem.TaskGroups
         /// <summary>
         /// All runtime tasks in this group.
         /// </summary>
-        public List<TaskRuntime> Tasks { get; }
+        public IReadOnlyList<TaskRuntime> Tasks { get; }
 
         /// <summary>
         /// Current state of this group.

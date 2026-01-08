@@ -70,7 +70,7 @@ namespace HelloDev.QuestSystem.Interfaces
         /// <summary>
         /// Gets all runtime tasks in this group.
         /// </summary>
-        List<TaskRuntime> Tasks { get; }
+        IReadOnlyList<TaskRuntime> Tasks { get; }
 
         /// <summary>
         /// Gets all tasks that are currently in progress.

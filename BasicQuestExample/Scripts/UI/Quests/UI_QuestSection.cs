@@ -287,36 +287,5 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         }
 
         #endregion
-
-        #region Legacy Compatibility
-
-        /// <summary>
-        /// Legacy method - use SetQuestToggleGroup instead.
-        /// </summary>
-        [Obsolete("Use SetQuestToggleGroup instead")]
-        public void SetToggleGroup(ToggleGroup toggleGroup)
-        {
-            SetQuestToggleGroup(toggleGroup);
-        }
-
-        /// <summary>
-        /// Legacy method - use SpawnQuestItems instead.
-        /// </summary>
-        [Obsolete("Use SpawnQuestItems instead")]
-        public void SpawnQuestsItems(List<QuestRuntime> quests, Action<QuestRuntime> onQuestSelected)
-        {
-            SpawnQuestItems(quests, onQuestSelected);
-        }
-
-        /// <summary>
-        /// Legacy method - use SelectFirstQuest instead.
-        /// </summary>
-        [Obsolete("Use SelectFirstQuest instead")]
-        public void Select()
-        {
-            SelectFirstQuest();
-        }
-
-        #endregion
     }
 }

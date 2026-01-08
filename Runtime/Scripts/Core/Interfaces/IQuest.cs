@@ -57,7 +57,7 @@ namespace HelloDev.QuestSystem.Interfaces
         /// <summary>
         /// Gets all stages in this quest.
         /// </summary>
-        List<QuestStageRuntime> Stages { get; }
+        IReadOnlyList<QuestStageRuntime> Stages { get; }
 
         /// <summary>
         /// Gets the currently active stage, or null if quest is not in progress.
@@ -71,7 +71,7 @@ namespace HelloDev.QuestSystem.Interfaces
         /// <summary>
         /// Gets all task groups across all stages.
         /// </summary>
-        List<TaskGroupRuntime> TaskGroups { get; }
+        IReadOnlyList<TaskGroupRuntime> TaskGroups { get; }
 
         /// <summary>
         /// Gets the currently active task group.
@@ -95,7 +95,7 @@ namespace HelloDev.QuestSystem.Interfaces
         /// <summary>
         /// Gets all tasks across all stages (flattened list).
         /// </summary>
-        List<TaskRuntime> Tasks { get; }
+        IReadOnlyList<TaskRuntime> Tasks { get; }
 
         #endregion
 

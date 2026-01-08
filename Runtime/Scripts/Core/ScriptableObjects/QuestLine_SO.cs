@@ -244,7 +244,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             }
 
             // Check for duplicate quests
-            var seen = new HashSet<Guid>();
+            HashSet<Guid> seen = new HashSet<Guid>();
             foreach (var quest in quests)
             {
                 if (quest != null && !seen.Add(quest.QuestId))

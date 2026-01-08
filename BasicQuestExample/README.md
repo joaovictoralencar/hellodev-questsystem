@@ -210,6 +210,11 @@ Add entries in your StringTable and link via Inspector.
 | TimedTask | `{remaining}`, `{limit}` | "{remaining}s remaining" |
 | LocationTask | `{target}` | "Go to {target}" |
 
+## Related Documentation
+
+- **[Event Integration Guide](Docs/EventIntegrationGuide.md)** - How to wire game events to the quest system
+- **[Quest Graph Editor Guide](../Documentation/quest-graph-editor-guide.md)** - Visual node-based quest editing
+
 ## Dependencies
 
 - HelloDev.QuestSystem

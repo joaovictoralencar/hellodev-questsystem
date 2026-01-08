@@ -308,5 +308,79 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         #endregion
+
+        #region Subgraph Port Resolution
+
+        /// <summary>
+        /// Resolves a value from a subgraph node's input port with fallback to a default value.
+        /// Use this to read I/O variables passed from the parent graph to the subgraph.
+        /// </summary>
+        /// <remarks>
+        /// When a subgraph defines an Input variable (ModifierFlags.Read) in its blackboard,
+        /// it appears as an input port on the ISubgraphNode in the parent graph.
+        /// This method reads the connected value, or returns the fallback if not connected.
+        ///
+        /// Example usage:
+        /// - Subgraph has "StageIndex" Input variable (int)
+        /// - Parent graph connects a constant "3" to that port
+        /// - This method returns 3; otherwise returns the fallback (e.g., stageGraph.StageIndex)
+        /// </remarks>
+        /// <typeparam name="T">The type of value expected.</typeparam>
+        /// <param name="subgraphNode">The subgraph node in the parent graph.</param>
+        /// <param name="portName">The name of the input port (matches the variable name).</param>
+        /// <param name="fallback">Value to return if port is not connected.</param>
+        /// <returns>The connected value, or fallback if not connected.</returns>
+        public static T ResolveSubgraphInput<T>(ISubgraphNode subgraphNode, string portName, T fallback)
+        {
+            if (subgraphNode == null)
+                return fallback;
+
+            try
+            {
+                // Cast to INode to access port methods
+                var node = subgraphNode as INode;
+                if (node == null)
+                    return fallback;
+
+                var port = node.GetInputPortByName(portName);
+                if (port == null || !port.isConnected)
+                    return fallback;
+
+                // Port is connected - resolve the value from the connection
+                return ResolveDataPort(port, fallback);
+            }
+            catch
+            {
+                return fallback;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a subgraph node has a connected input port.
+        /// </summary>
+        /// <param name="subgraphNode">The subgraph node.</param>
+        /// <param name="portName">The name of the input port.</param>
+        /// <returns>True if the port exists and is connected.</returns>
+        public static bool HasConnectedSubgraphInput(ISubgraphNode subgraphNode, string portName)
+        {
+            if (subgraphNode == null)
+                return false;
+
+            try
+            {
+                var node = subgraphNode as INode;
+                if (node == null)
+                    return false;
+
+                var port = node.GetInputPortByName(portName);
+                return port != null && port.isConnected;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        #endregion
     }
 }

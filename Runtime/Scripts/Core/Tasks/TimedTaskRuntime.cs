@@ -1,3 +1,4 @@
+using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -9,9 +10,14 @@ namespace HelloDev.QuestSystem.Tasks
     /// A runtime task with a time limit. The task fails if time runs out before completion.
     /// Used for objectives like "Defeat the boss within 2 minutes".
     /// </summary>
-    public class TimedTaskRuntime : TaskRuntime
+    public class TimedTaskRuntime : TaskRuntime, ITimedTask
     {
-        public override float Progress => IsCompleted ? 1f : 0f;
+        /// <summary>
+        /// Gets the progress of time remaining as a value from 0 to 1.
+        /// Returns 1 when time is full, decreases as time runs out.
+        /// Returns 1 when the objective is completed.
+        /// </summary>
+        public override float Progress => IsCompleted ? 1f : TimeProgress;
 
         private float _remainingTime;
         private bool _isCompleted;
