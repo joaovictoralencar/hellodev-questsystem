@@ -138,6 +138,23 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
         {
             foreach (var node in stageNodes)
             {
+                // Check if stage has valid configuration
+                if (!node.HasValidStage)
+                {
+                    if (node.UseStageSubgraph)
+                    {
+                        results.Add(ValidationResult.Warning(
+                            $"Stage node has no Stage Subgraph assigned",
+                            node, graph));
+                    }
+                    else
+                    {
+                        results.Add(ValidationResult.Warning(
+                            $"Stage node has no valid name",
+                            node, graph));
+                    }
+                }
+
                 // Non-terminal stages should have at least one output connection
                 if (!node.IsTerminal)
                 {
@@ -148,16 +165,16 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                     if (!hasThenConnection && !hasElseConnection && !hasChoicesConnection)
                     {
                         results.Add(ValidationResult.Error(
-                            $"Non-terminal stage '{node.StageName}' has no output connections",
+                            $"Non-terminal stage '{node.DisplayName}' has no output connections",
                             node, graph));
                     }
                 }
 
-                // Stages with player choices should have choice connections
-                if (node.HasPlayerChoices && !HasOutputConnection(node, "Choices"))
+                // Stages with player choices should have choice connections (Define mode only)
+                if (!node.UseStageSubgraph && node.HasPlayerChoices && !HasOutputConnection(node, "Choices"))
                 {
                     results.Add(ValidationResult.Warning(
-                        $"Stage '{node.StageName}' has player choices enabled but no choice connections",
+                        $"Stage '{node.DisplayName}' has player choices enabled but no choice connections",
                         node, graph));
                 }
             }
