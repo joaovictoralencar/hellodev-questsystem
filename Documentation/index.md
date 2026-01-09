@@ -1,0 +1,38 @@
+# Quest System Documentation
+
+*Last Updated: 2026-01-08*
+
+## Getting Started
+
+- [Overview](overview.md) - System introduction and architecture
+- [Architecture](architecture.md) - Detailed architecture docs
+
+## Core Concepts
+
+- [Quests](quests.md) - Quest configuration and runtime
+- [Tasks](tasks.md) - Task types and usage
+- [QuestLine Integration](questline-integration.md) - Multi-quest narratives
+- [Quest Manager](quest-manager.md) - Central manager documentation
+- [Rewards](rewards.md) - Reward system
+- [Choice Patterns](choice-patterns.md) - Branching and player choices
+
+## Tutorials
+
+- [Creating Tasks](Tutorials/tutorial-creating-tasks.md)
+- [Creating Quests](Tutorials/tutorial-creating-quests.md)
+- [Graph Editor](Tutorials/tutorial-graph-editor.md)
+- [Event Integration](Tutorials/tutorial-event-integration.md)
+
+## Tools
+
+- [Quest Graph Editor Guide](quest-graph-editor-guide.md)
+- [Graph Creation Reference](quest-graph-creation-reference.md)
+
+## Reference
+
+- [Feature Matrix](feature-matrix.md) - Comparison with AAA standards
+- [Code Quality Audit](code-quality-audit.md) - SOLID principles and architecture review
+- [Dependency Diagram](quest-dependency-diagram.md)
+- [Implementation Plan](implementation-plan.md) - Feature roadmap and history
+- [Testing Guide](testing.md)
+- [Known Issues & Backlog](todos.md)
