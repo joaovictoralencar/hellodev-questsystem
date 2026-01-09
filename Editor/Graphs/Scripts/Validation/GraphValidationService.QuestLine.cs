@@ -28,36 +28,38 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             // Rule: Exactly one start node
             ValidateStartNode<QuestLineStartNode>(nodes, "QuestLineStartNode", results, graph);
 
-            // Get quest reference nodes
-            var questRefNodes = nodes.OfType<QuestRefNode>().ToList();
+            // Get quest nodes
+            var questNodes = nodes.OfType<QuestNode>().ToList();
 
-            // Rule: At least one quest reference
-            if (questRefNodes.Count == 0)
+            // Get quest subgraph nodes (native subgraph functionality)
+            var questSubgraphs = nodes.OfType<ISubgraphNode>()
+                .Where(n => n.GetSubgraph() is QuestGraph)
+                .ToList();
+
+            // Rule: At least one quest reference (either QuestNode or QuestGraph subgraph)
+            if (questNodes.Count == 0 && questSubgraphs.Count == 0)
             {
-                results.Add(ValidationResult.Error(
-                    "QuestLine must have at least one quest reference",
+                results.Add(ValidationResult.Warning(
+                    "QuestLine has no quests. Add QuestNode nodes or embed QuestGraph subgraphs.",
                     graph: graph));
             }
 
-            // Validate each quest reference
-            foreach (var questRef in questRefNodes)
+            // Validate each quest node
+            foreach (var questNode in questNodes)
             {
-                ValidateQuestRefNode(questRef, results, graph);
+                ValidateQuestNode(questNode, results, graph);
             }
 
             return results;
         }
 
-        private void ValidateQuestRefNode(QuestRefNode node, List<ValidationResult> results, Graph graph)
+        private void ValidateQuestNode(QuestNode node, List<ValidationResult> results, Graph graph)
         {
             // Check for empty references
-            bool hasAsset = node.QuestAsset != null;
-            bool hasGraph = node.QuestGraphAsset != null;
-
-            if (!hasAsset && !hasGraph)
+            if (!node.HasValidQuest)
             {
                 results.Add(ValidationResult.Warning(
-                    "Quest reference is empty (no Quest_SO or QuestGraph assigned)",
+                    $"Quest node has no Quest Asset assigned",
                     node, graph));
             }
         }

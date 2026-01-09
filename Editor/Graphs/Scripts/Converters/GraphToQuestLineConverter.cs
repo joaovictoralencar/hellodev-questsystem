@@ -157,14 +157,14 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         /// <summary>
-        /// Collects QuestRefNodes in execution order by traversing the graph.
+        /// Collects QuestNodes in execution order by traversing the graph.
         /// </summary>
-        private List<QuestRefNode> CollectQuestsInOrder(QuestLineStartNode startNode)
+        private List<QuestNode> CollectQuestsInOrder(QuestLineStartNode startNode)
         {
-            var quests = new List<QuestRefNode>();
+            var quests = new List<QuestNode>();
             var visited = new HashSet<INode>();
 
-            // BFS traversal following "Out" port connections
+            // BFS traversal following port connections
             var queue = new Queue<INode>();
 
             // Get first quest from start node
@@ -183,22 +183,22 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
                 visited.Add(current);
 
-                if (current is QuestRefNode questRef)
+                if (current is QuestNode questNode)
                 {
-                    quests.Add(questRef);
+                    quests.Add(questNode);
 
-                    // Follow the "Out" port to the next quest
-                    var nextQuest = GraphTraversalUtility.GetNextNode(current, "Out");
-                    if (nextQuest != null && !visited.Contains(nextQuest))
-                    {
-                        queue.Enqueue(nextQuest);
-                    }
-
-                    // Also check Then port for branching paths
+                    // Follow the "Then" port to the next quest
                     var thenNode = GraphTraversalUtility.GetNextNode(current, "Then");
                     if (thenNode != null && !visited.Contains(thenNode))
                     {
                         queue.Enqueue(thenNode);
+                    }
+
+                    // Also check Else port for failure paths
+                    var elseNode = GraphTraversalUtility.GetNextNode(current, "Else");
+                    if (elseNode != null && !visited.Contains(elseNode))
+                    {
+                        queue.Enqueue(elseNode);
                     }
                 }
             }
@@ -207,23 +207,17 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         /// <summary>
-        /// Resolves a QuestRefNode to a Quest_SO.
-        /// If the node references a QuestGraph, converts it first.
+        /// Resolves a QuestNode to a Quest_SO.
         /// </summary>
-        private Quest_SO ResolveQuestReference(QuestRefNode questRef)
+        private Quest_SO ResolveQuestReference(QuestNode questNode)
         {
-            switch (questRef.RefType)
+            if (questNode.QuestAsset != null)
             {
-                case QuestRefNode.ReferenceType.ExistingAsset:
-                    return questRef.QuestAsset;
-
-                case QuestRefNode.ReferenceType.GraphAsset:
-                    return ConvertQuestGraph(questRef.QuestGraphAsset, questRef.DisplayName);
-
-                default:
-                    _context.AddWarning($"Unknown reference type for quest '{questRef.DisplayName}'");
-                    return null;
+                return questNode.QuestAsset;
             }
+
+            _context.AddWarning($"Quest node '{questNode.DisplayName}' has no Quest Asset assigned");
+            return null;
         }
 
         /// <summary>

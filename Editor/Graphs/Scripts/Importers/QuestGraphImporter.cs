@@ -18,7 +18,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Importers
     /// - Graph is converted to runtime ScriptableObject (Quest_SO)
     /// - Only the runtime asset is added to the import context
     /// </remarks>
-    [ScriptedImporter(1, QuestGraph.AssetExtension)]
+    // NOTE: Using string literal instead of QuestGraph.AssetExtension to avoid
+    // circular type reference that crashes Unity when QuestGraph is both a
+    // subgraph and supports subgraphs.
+    [ScriptedImporter(1, "quest")]
     public class QuestGraphImporter : ScriptedImporter
     {
         public override void OnImportAsset(AssetImportContext ctx)
