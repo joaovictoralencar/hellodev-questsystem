@@ -96,9 +96,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .Build();
 
             // Dynamic output ports based on branch count
+            // Note: Must handle null option during node scanning (before options are committed)
+            var branchCount = MIN_BRANCHES;
             var portCountOption = GetNodeOptionByName(OPT_BRANCH_COUNT);
-            portCountOption.TryGetValue<int>(out var branchCount);
-            branchCount = Math.Clamp(branchCount, MIN_BRANCHES, MAX_BRANCHES);
+            if (portCountOption != null && portCountOption.TryGetValue<int>(out var count))
+            {
+                branchCount = Math.Clamp(count, MIN_BRANCHES, MAX_BRANCHES);
+            }
 
             for (int i = 0; i < branchCount; i++)
             {

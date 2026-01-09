@@ -139,9 +139,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .Build();
 
             // Dynamic output ports based on output count
+            // Note: Must handle null option during node scanning (before options are committed)
+            var outputCount = MIN_OUTPUTS;
             var outputCountOption = GetNodeOptionByName(OPT_OUTPUT_COUNT);
-            outputCountOption.TryGetValue<int>(out var outputCount);
-            outputCount = Math.Clamp(outputCount, MIN_OUTPUTS, MAX_OUTPUTS);
+            if (outputCountOption != null && outputCountOption.TryGetValue<int>(out var count))
+            {
+                outputCount = Math.Clamp(count, MIN_OUTPUTS, MAX_OUTPUTS);
+            }
 
             if (outputCount == 1)
             {
