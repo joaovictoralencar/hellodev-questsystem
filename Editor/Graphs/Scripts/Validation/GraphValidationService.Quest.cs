@@ -159,10 +159,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 if (!node.IsTerminal)
                 {
                     bool hasThenConnection = HasOutputConnection(node, "Then");
-                    bool hasElseConnection = HasOutputConnection(node, "Else");
                     bool hasChoicesConnection = HasOutputConnection(node, "Choices");
 
-                    if (!hasThenConnection && !hasElseConnection && !hasChoicesConnection)
+                    if (!hasThenConnection && !hasChoicesConnection)
                     {
                         results.Add(ValidationResult.Error(
                             $"Non-terminal stage '{node.DisplayName}' has no output connections",
@@ -409,7 +408,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 }
 
                 // Check output connections
-                if (!HasOutputConnection(node, "Then") && !HasOutputConnection(node, "Else"))
+                if (!HasOutputConnection(node, "Then"))
                 {
                     results.Add(ValidationResult.Warning(
                         $"Condition gate '{node.GateName}' has no output connections",

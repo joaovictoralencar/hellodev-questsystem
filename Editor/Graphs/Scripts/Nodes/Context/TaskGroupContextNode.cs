@@ -118,12 +118,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithDisplayName("Then")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
-
-            // Failure flow - group failed
-            context.AddOutputPort<StageFlow>("Else")
-                .WithDisplayName("Else (Failed)")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
         }
 
         #endregion

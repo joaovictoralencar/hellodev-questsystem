@@ -193,13 +193,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                     {
                         queue.Enqueue(thenNode);
                     }
-
-                    // Also check Else port for failure paths
-                    var elseNode = GraphTraversalUtility.GetNextNode(current, "Else");
-                    if (elseNode != null && !visited.Contains(elseNode))
-                    {
-                        queue.Enqueue(elseNode);
-                    }
                 }
             }
 

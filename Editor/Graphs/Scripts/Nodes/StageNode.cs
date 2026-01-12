@@ -195,8 +195,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 context.AddOption<bool>(OPT_IS_OPTIONAL)
                     .WithDisplayName("Is Optional")
                     .WithDefaultValue(false)
-                    .WithTooltip("If true, this stage can be skipped")
-                    .ShowInInspectorOnly();
+                    .WithTooltip("If true, this stage can be skipped");
 
                 context.AddOption<bool>(OPT_IS_HIDDEN)
                     .WithDisplayName("Is Hidden")
@@ -267,12 +266,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             // Success flow - where to go when stage completes
             context.AddOutputPort<StageFlow>("Then")
                 .WithDisplayName("Then")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
-
-            // Failure flow - where to go if stage fails
-            context.AddOutputPort<StageFlow>("Else")
-                .WithDisplayName("Else")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
 

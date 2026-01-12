@@ -626,14 +626,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             {
                 AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
             }
-
-            // Else transition (failure path)
-            var elseTarget = GraphTraversalUtility.GetConnectedStageIndex(stageNode, "Else");
-            if (elseTarget >= 0)
-            {
-                AddTransition(transitionsProperty, elseTarget, TransitionTrigger.OnConditionsMet, "Stage Failed");
-            }
-
             // Player choices
             var choices = _stageChoices[stageNode];
             foreach (var choice in choices)
@@ -720,13 +712,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             if (thenTarget >= 0)
             {
                 AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
-            }
-
-            // Else transition (failure path) - check for "Else" port on the subgraph node
-            var elseTarget = GraphTraversalUtility.GetConnectedStageIndex(subgraphNode, "Else");
-            if (elseTarget >= 0)
-            {
-                AddTransition(transitionsProperty, elseTarget, TransitionTrigger.OnConditionsMet, "Stage Failed");
             }
         }
 

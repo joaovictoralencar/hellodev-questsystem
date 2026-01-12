@@ -61,6 +61,7 @@
 - Added `GetOptionValue<T>()` helper method to `QuestBaseNode`
 - Removed `[SerializeField]` fields - replaced with Graph Toolkit options
 - Options with `.ShowInInspectorOnly()` appear only in Inspector, not on node
+- See [Node Options Tutorial](Tutorials/tutorial-node-options.md) for detailed explanation
 
 ## Key Changes in v1.2
 

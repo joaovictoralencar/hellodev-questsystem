@@ -141,12 +141,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithDisplayName("Then (True)")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
-
-            // Failure path - condition evaluates to false
-            context.AddOutputPort<StageFlow>("Else")
-                .WithDisplayName("Else (False)")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
         }
 
         #endregion

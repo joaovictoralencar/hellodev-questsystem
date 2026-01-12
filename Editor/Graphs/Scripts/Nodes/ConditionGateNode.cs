@@ -18,7 +18,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     ///
     /// The condition is evaluated when the flow reaches this node:
     /// - If evaluation returns true → flow continues via "Then" port
-    /// - If evaluation returns false → flow continues via "Else" port
     ///
     /// Supports multiple conditions with different evaluation modes:
     /// - All: All conditions must be true (AND)
@@ -169,12 +168,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             // Success path - condition evaluates to true
             context.AddOutputPort<StageFlow>("Then")
                 .WithDisplayName("Then (True)")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
-
-            // Failure path - condition evaluates to false
-            context.AddOutputPort<StageFlow>("Else")
-                .WithDisplayName("Else (False)")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
         }

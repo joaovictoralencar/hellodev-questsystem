@@ -22,6 +22,7 @@
 - [Creating Quests](Tutorials/tutorial-creating-quests.md)
 - [Graph Editor](Tutorials/tutorial-graph-editor.md)
 - [Event Integration](Tutorials/tutorial-event-integration.md)
+- [Node Options Architecture](Tutorials/tutorial-node-options.md) - Understanding node variables vs inspector-only fields
 
 ## Tools
 

@@ -664,6 +664,7 @@ See [Quest Creation Tutorial - Creating Reusable Quests with Subgraphs](tutorial
 **Tutorials:**
 - [Task Creation Tutorial](tutorial-creating-tasks.md) - Step-by-step guide to creating tasks
 - [Quest Creation Tutorial](tutorial-creating-quests.md) - Step-by-step guide to creating quests
+- [Node Options Architecture](tutorial-node-options.md) - Understanding node variables vs inspector-only fields (for programmers)
 
 **Reference:**
 - [Quest System Overview](overview.md)
