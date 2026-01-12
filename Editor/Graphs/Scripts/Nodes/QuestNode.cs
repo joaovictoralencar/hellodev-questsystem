@@ -28,8 +28,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         #region Option Names
 
         private const string OPT_USE_QUEST_ASSET = "UseQuestAsset";
-        private const string OPT_IS_OPTIONAL = "IsOptional";
-        private const string OPT_QUEST_ORDER = "QuestOrderOverride";
+
+        // Count options - must remain options for dynamic port regeneration
         private const string OPT_STAGE_COUNT = "StageCount";
         private const string OPT_START_CONDITION_COUNT = "StartConditionCount";
         private const string OPT_FAILURE_CONDITION_COUNT = "FailureConditionCount";
@@ -42,12 +42,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         // Asset Mode
         private const string PORT_QUEST_ASSET = "QuestAssetInput";
 
-        // Define Mode - Identity
+        // Define Mode - Identity ports (visible on node)
         private const string PORT_DEV_NAME = "DevNameInput";
-        private const string PORT_QUEST_TYPE = "QuestTypeInput";
+        private const string PORT_IS_OPTIONAL = "IsOptionalInput";
         private const string PORT_RECOMMENDED_LEVEL = "RecommendedLevelInput";
 
-        // Define Mode - Display
+        // Define Mode - Display (LocalizedStrings and assets)
+        private const string PORT_QUEST_TYPE = "QuestTypeInput";
         private const string PORT_DISPLAY_NAME = "DisplayNameInput";
         private const string PORT_DESCRIPTION = "DescriptionInput";
         private const string PORT_LOCATION = "LocationInput";
@@ -71,12 +72,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// <summary>
         /// Whether this quest is optional in the questline.
         /// </summary>
-        public bool IsOptional => GetOptionValue<bool>(OPT_IS_OPTIONAL);
-
-        /// <summary>
-        /// Override for quest order (-1 = use graph position).
-        /// </summary>
-        public int QuestOrderOverride => GetOptionValue<int>(OPT_QUEST_ORDER);
+        public bool IsOptional => GraphTraversalUtility.ResolveDataPort<bool>(this, PORT_IS_OPTIONAL, false);
 
         /// <summary>
         /// Number of stage ports to show (Define mode).
@@ -112,39 +108,39 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         }
 
         /// <summary>
-        /// Dev name from port (Define mode only).
+        /// Dev name for this quest (Define mode only).
         /// </summary>
-        public string PortDevName => GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "New Quest");
+        public string DevName => GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "New Quest");
 
         /// <summary>
         /// Quest type from port (Define mode only).
         /// </summary>
-        public QuestType_SO PortQuestType => GraphTraversalUtility.ResolveDataPort<QuestType_SO>(this, PORT_QUEST_TYPE, null);
+        public QuestType_SO QuestType => GraphTraversalUtility.ResolveDataPort<QuestType_SO>(this, PORT_QUEST_TYPE, null);
 
         /// <summary>
-        /// Recommended level from port (Define mode only).
+        /// Recommended player level for this quest (Define mode only).
         /// </summary>
-        public int PortRecommendedLevel => GraphTraversalUtility.ResolveDataPort<int>(this, PORT_RECOMMENDED_LEVEL, -1);
+        public int RecommendedLevel => GraphTraversalUtility.ResolveDataPort<int>(this, PORT_RECOMMENDED_LEVEL, -1);
 
         /// <summary>
         /// Display name from port (Define mode only).
         /// </summary>
-        public LocalizedString PortDisplayName => GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_DISPLAY_NAME, default);
+        public LocalizedString DisplayNameLocalized => GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_DISPLAY_NAME, default);
 
         /// <summary>
         /// Description from port (Define mode only).
         /// </summary>
-        public LocalizedString PortDescription => GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_DESCRIPTION, default);
+        public LocalizedString Description => GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_DESCRIPTION, default);
 
         /// <summary>
         /// Location from port (Define mode only).
         /// </summary>
-        public LocalizedString PortLocation => GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_LOCATION, default);
+        public LocalizedString Location => GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_LOCATION, default);
 
         /// <summary>
         /// Sprite from port (Define mode only).
         /// </summary>
-        public Sprite PortSprite => GraphTraversalUtility.ResolveDataPort<Sprite>(this, PORT_SPRITE, null);
+        public Sprite QuestSprite => GraphTraversalUtility.ResolveDataPort<Sprite>(this, PORT_SPRITE, null);
 
         /// <summary>
         /// Whether this node has a valid quest configuration.
@@ -157,7 +153,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                     return QuestAsset != null;
 
                 // Define mode: at least need a dev name
-                return !string.IsNullOrWhiteSpace(PortDevName);
+                return !string.IsNullOrWhiteSpace(DevName);
             }
         }
 
@@ -171,8 +167,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 string prefix = IsOptional ? "[Optional] " : "";
                 if (UseQuestAsset && QuestAsset != null)
                     return prefix + QuestAsset.DevName;
-                if (!UseQuestAsset && !string.IsNullOrEmpty(PortDevName))
-                    return prefix + PortDevName;
+                if (!UseQuestAsset && !string.IsNullOrEmpty(DevName))
+                    return prefix + DevName;
                 return "[Quest] " + (UseQuestAsset ? "No Asset" : "Unnamed");
             }
         }
@@ -190,11 +186,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             }
         }
 
-        /// <summary>
-        /// Effective quest order (override or -1 for graph position).
-        /// </summary>
-        public int EffectiveQuestOrder => QuestOrderOverride >= 0 ? QuestOrderOverride : -1;
-
         #endregion
 
         #region Option Definition
@@ -207,40 +198,30 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithDefaultValue(true)
                 .WithTooltip("Check to use an existing Quest_SO asset.\nUncheck to define quest inline.");
 
-            context.AddOption<bool>(OPT_IS_OPTIONAL)
-                .WithDisplayName("Is Optional")
-                .WithDefaultValue(false)
-                .WithTooltip("If true, this quest can be skipped in the questline.");
-
             // Only show count options in Define mode
             if (!UseQuestAsset)
             {
+                // Count options - control dynamic port generation
                 context.AddOption<int>(OPT_STAGE_COUNT)
                     .WithDisplayName("Stage Count")
                     .WithDefaultValue(1)
-                    .WithTooltip("Number of stage ports to show.");
+                    .WithTooltip("Number of stage ports to show");
 
                 context.AddOption<int>(OPT_START_CONDITION_COUNT)
-                    .WithDisplayName("Start Condition Count")
+                    .WithDisplayName("Start Cond Count")
                     .WithDefaultValue(0)
-                    .WithTooltip("Number of start condition ports to show.");
+                    .WithTooltip("Number of start condition ports to show");
 
                 context.AddOption<int>(OPT_FAILURE_CONDITION_COUNT)
-                    .WithDisplayName("Failure Condition Count")
+                    .WithDisplayName("Fail Cond Count")
                     .WithDefaultValue(0)
-                    .WithTooltip("Number of failure condition ports to show.");
+                    .WithTooltip("Number of failure condition ports to show");
 
                 context.AddOption<int>(OPT_REWARD_COUNT)
                     .WithDisplayName("Reward Count")
                     .WithDefaultValue(0)
-                    .WithTooltip("Number of reward ports to show.");
+                    .WithTooltip("Number of reward ports to show");
             }
-
-            context.AddOption<int>(OPT_QUEST_ORDER)
-                .WithDisplayName("Order Override")
-                .WithDefaultValue(-1)
-                .WithTooltip("Override quest order (-1 = use graph position).")
-                .ShowInInspectorOnly();
         }
 
         #endregion
@@ -260,11 +241,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
 
-            context.AddOutputPort<QuestFlow>("Else")
-                .WithDisplayName("Else")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
-
             if (UseQuestAsset)
             {
                 // Asset Mode: Show Quest Asset input port only
@@ -274,22 +250,26 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             }
             else
             {
-                // Define Mode: Show inline data ports
+                // Define Mode: Show data ports and dynamic ports
 
-                // Identity ports
+                // Identity ports - visible on node and in Node Properties
                 context.AddInputPort<string>(PORT_DEV_NAME)
                     .WithDisplayName("Dev Name")
                     .Build();
 
-                context.AddInputPort<QuestType_SO>(PORT_QUEST_TYPE)
-                    .WithDisplayName("Quest Type")
+                context.AddInputPort<bool>(PORT_IS_OPTIONAL)
+                    .WithDisplayName("Is Optional")
                     .Build();
 
                 context.AddInputPort<int>(PORT_RECOMMENDED_LEVEL)
                     .WithDisplayName("Recommended Level")
                     .Build();
 
-                // Display ports
+                // Display ports - editable in Node Properties inspector
+                context.AddInputPort<QuestType_SO>(PORT_QUEST_TYPE)
+                    .WithDisplayName("Quest Type")
+                    .Build();
+
                 context.AddInputPort<LocalizedString>(PORT_DISPLAY_NAME)
                     .WithDisplayName("Display Name")
                     .Build();
@@ -306,7 +286,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                     .WithDisplayName("Sprite")
                     .Build();
 
-                // Dynamic stage ports - accept StageFlow from StageGraph subgraphs
+                // Dynamic stage ports - accept StageFlow from StageNodes
                 for (int i = 0; i < StageCount; i++)
                 {
                     context.AddInputPort<StageFlow>(PORT_STAGE + i)
@@ -319,7 +299,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 for (int i = 0; i < StartConditionCount; i++)
                 {
                     context.AddInputPort<Condition_SO>(PORT_START_CONDITION + i)
-                        .WithDisplayName($"Start Condition {i + 1}")
+                        .WithDisplayName($"Start Cond {i + 1}")
                         .Build();
                 }
 
@@ -327,7 +307,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 for (int i = 0; i < FailureConditionCount; i++)
                 {
                     context.AddInputPort<Condition_SO>(PORT_FAILURE_CONDITION + i)
-                        .WithDisplayName($"Fail Condition {i + 1}")
+                        .WithDisplayName($"Fail Cond {i + 1}")
                         .Build();
                 }
 

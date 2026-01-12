@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.8.0] - 2026-01-11
+
+### Changed
+- **Graph Node UX Improvements**: Converted key fields from options to ports for better visibility
+  - Fields now appear directly on nodes AND in Node Properties inspector section
+  - Users can edit values without opening the full inspector
+- **QuestNode**: DevName, IsOptional, RecommendedLevel now ports; removed OrderOverride
+- **TaskTypedNode**: DevName now a port (propagates to all task nodes)
+- **TaskIntNode**: RequiredCount now a port
+- **TaskTimedNode**: TimeLimit, FailQuestOnExpire now ports
+- **TaskStringNode**: TargetValue now a port
+- **QuestStartNode**: Added OutputMode toggle to support both StageFlow and QuestFlow outputs
+
+### Fixed
+- TaskBaseNode.InlineData is now virtual for proper override instead of shadowing
+- Count fields (StageCount, TriggerConditionCount, etc.) remain as options to preserve dynamic port regeneration
+
 ## [2.2.0] - 2025-12-28
 
 ### Added

@@ -57,9 +57,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public bool IsDefineMode => TaskAsset == null;
 
         /// <summary>
-        /// Gets the inline task data constructed from options.
+        /// Gets the inline task data constructed from options/ports.
+        /// Override in subclasses to customize how data is populated.
         /// </summary>
-        public InlineTaskData InlineData
+        public virtual InlineTaskData InlineData
         {
             get
             {

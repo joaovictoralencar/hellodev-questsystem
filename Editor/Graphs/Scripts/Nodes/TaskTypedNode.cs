@@ -32,6 +32,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         #region Option Names
 
         protected const string OPT_USE_TASK_ASSET = "UseTaskAsset";
+
+        // Count options - must remain options for dynamic port regeneration
         protected const string OPT_TRIGGER_CONDITION_COUNT = "TriggerConditionCount";
         protected const string OPT_FAILURE_CONDITION_COUNT = "FailureConditionCount";
 
@@ -40,9 +42,15 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         #region Port Names
 
         protected const string PORT_TASK_ASSET = "TaskAssetInput";
+
+        // Identity ports (visible on node)
         protected const string PORT_DEV_NAME = "DevNameInput";
+
+        // Display ports
         protected const string PORT_DISPLAY_NAME = "DisplayNameInput";
         protected const string PORT_DESCRIPTION = "DescriptionInput";
+
+        // Dynamic condition ports
         protected const string PORT_TRIGGER_CONDITION = "TriggerConditionInput";
         protected const string PORT_FAILURE_CONDITION = "FailureConditionInput";
 
@@ -77,9 +85,23 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         }
 
         /// <summary>
-        /// The dev name from port (Define mode only).
+        /// The dev name for this task (Define mode only).
         /// </summary>
-        public string PortDevName => GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "New Task");
+        public new string DevName => GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "New Task");
+
+        /// <summary>
+        /// Gets the inline task data constructed from options/ports.
+        /// Overrides base to use port-based DevName.
+        /// </summary>
+        public override InlineTaskData InlineData
+        {
+            get
+            {
+                var data = base.InlineData;
+                data.devName = DevName;
+                return data;
+            }
+        }
 
         /// <inheritdoc/>
         public sealed override bool HasValidTask
@@ -89,7 +111,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 if (IsAssetMode)
                     return TaskAsset != null;
 
-                if (string.IsNullOrWhiteSpace(PortDevName))
+                if (string.IsNullOrWhiteSpace(DevName))
                     return false;
 
                 return ValidateTypeSpecificFields();
@@ -124,10 +146,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             else
             {
                 // Define Mode: Show inline data ports
+
+                // Identity port - visible on node and in Node Properties
                 context.AddInputPort<string>(PORT_DEV_NAME)
                     .WithDisplayName("Dev Name")
                     .Build();
 
+                // Display ports (LocalizedStrings need ports for picker UI)
                 context.AddInputPort<LocalizedString>(PORT_DISPLAY_NAME)
                     .WithDisplayName("Display Name")
                     .Build();
@@ -136,7 +161,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                     .WithDisplayName("Description")
                     .Build();
 
-                // Type-specific ports (e.g., RequiredCount, TimeLimit)
+                // Type-specific ports (if any remain after conversion to options)
                 DefineTypeSpecificPorts(context);
 
                 // Dynamic trigger condition ports
@@ -174,12 +199,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithDefaultValue(false)
                 .WithTooltip($"Check to use an existing {typeof(TTaskSO).Name} asset.\nUncheck to define task inline.");
 
-            // Only show count options in Define mode
+            // Only show these options in Define mode
             if (!UseTaskAsset)
             {
-                // Type-specific options (e.g., RequiredDiscoveries for Discovery tasks)
+                // Type-specific options (e.g., RequiredCount, TimeLimit)
                 DefineTypeSpecificOptions(context);
 
+                // Count options - control dynamic port generation
                 context.AddOption<int>(OPT_TRIGGER_CONDITION_COUNT)
                     .WithDisplayName("Trigger Condition Count")
                     .WithDefaultValue(0)

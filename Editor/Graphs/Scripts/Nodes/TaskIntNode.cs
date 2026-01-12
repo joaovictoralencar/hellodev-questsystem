@@ -22,7 +22,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public override string TaskTypeName => "Int";
 
         /// <summary>
-        /// The required count from port (Define mode only).
+        /// The required count for task completion (Define mode only).
         /// </summary>
         public int RequiredCount => GraphTraversalUtility.ResolveDataPort<int>(this, PORT_REQUIRED_COUNT, 1);
 

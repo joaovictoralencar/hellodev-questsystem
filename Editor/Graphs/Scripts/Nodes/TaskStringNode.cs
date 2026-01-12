@@ -22,7 +22,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public override string TaskTypeName => "String";
 
         /// <summary>
-        /// The target string value from port (Define mode only).
+        /// The target string value for task completion (Define mode only).
         /// </summary>
         public string TargetValue => GraphTraversalUtility.ResolveDataPort<string>(this, PORT_TARGET_VALUE, "");
 

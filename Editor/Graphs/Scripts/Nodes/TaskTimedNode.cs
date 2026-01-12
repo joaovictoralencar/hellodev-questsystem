@@ -24,12 +24,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public override string TaskTypeName => "Timed";
 
         /// <summary>
-        /// Time limit in seconds from port (Define mode only).
+        /// Time limit in seconds (Define mode only).
         /// </summary>
         public float TimeLimit => GraphTraversalUtility.ResolveDataPort<float>(this, PORT_TIME_LIMIT, 120f);
 
         /// <summary>
-        /// Whether expiring fails the entire quest from port (Define mode only).
+        /// Whether expiring fails the entire quest (Define mode only).
         /// </summary>
         public bool FailQuestOnExpire => GraphTraversalUtility.ResolveDataPort<bool>(this, PORT_FAIL_ON_EXPIRE, false);
 
