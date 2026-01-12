@@ -234,6 +234,11 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 if (node is QuestStartNode)
                     continue;
 
+                // Skip variable/constant nodes - they're data sources, not flow nodes
+                // These are Blackboard variables that don't participate in flow traversal
+                if (IsDataSourceNode(node))
+                    continue;
+
                 string nodeName = GetNodeDisplayName(node);
                 results.Add(ValidationResult.Warning(
                     $"Node '{nodeName}' is not reachable from the start node",
@@ -250,6 +255,40 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Checks if a node is a data source node (variable/constant from Blackboard).
+        /// These nodes provide data to other nodes but don't participate in flow traversal.
+        /// </summary>
+        private bool IsDataSourceNode(INode node)
+        {
+            // Check by type name - Graph Toolkit variable/constant nodes
+            var typeName = node.GetType().Name;
+            if (typeName.Contains("VariableNode") ||
+                typeName.Contains("ConstantNode") ||
+                typeName.Contains("BlackboardNode"))
+            {
+                return true;
+            }
+
+            // Check if node has no flow ports (only data ports)
+            // Data source nodes typically have only output data ports
+            var inputPorts = node.GetInputPorts().ToList();
+            var outputPorts = node.GetOutputPorts().ToList();
+
+            // If node has no input ports and only data output ports, it's likely a data source
+            if (inputPorts.Count == 0 && outputPorts.Count > 0)
+            {
+                // Check if it's NOT a start node type (those legitimately have no inputs)
+                if (!(node is QuestStartNode || node is QuestLineStartNode ||
+                      node is StageStartNode || node is TaskGroupStartNode))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
