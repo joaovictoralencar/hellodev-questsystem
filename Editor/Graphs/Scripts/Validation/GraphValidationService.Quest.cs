@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.GraphToolkit.Editor;
 using HelloDev.QuestSystem.QuestGraph.Editor.Nodes;
+using HelloDev.QuestSystem.Stages;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 {
@@ -55,6 +56,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             // Validate individual nodes
             ValidateStageNodes(stageNodes, results, graph);
             ValidateChoiceNodes(nodes.OfType<ChoiceNode>().ToList(), results, graph);
+            ValidateTransitionNodes(nodes.OfType<TransitionNode>().ToList(), results, graph);
             ValidateTaskGroupContextNodes(nodes.OfType<TaskGroupContextNode>().ToList(), results, graph);
             ValidateRewardContextNodes(nodes.OfType<RewardContextNode>().ToList(), results, graph);
             ValidateSwitchNodes(nodes.OfType<SwitchNode>().ToList(), results, graph);
@@ -234,6 +236,51 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 {
                     results.Add(ValidationResult.Warning(
                         $"Choice '{node.ChoiceId}' has no choice text",
+                        node, graph));
+                }
+            }
+        }
+
+        #endregion
+
+        #region Transition Validation
+
+        private void ValidateTransitionNodes(List<TransitionNode> transitionNodes, List<ValidationResult> results, Graph graph)
+        {
+            foreach (var node in transitionNodes)
+            {
+                // Check if transition has a valid target
+                if (!node.HasValidTarget)
+                {
+                    results.Add(ValidationResult.Error(
+                        $"Transition '{node.DisplayName}' has no target stage connected",
+                        node, graph));
+                }
+
+                // OnConditionsMet should have conditions connected
+                if (node.Trigger == TransitionTrigger.OnConditionsMet)
+                {
+                    if (!HasInputConnection(node, "ConditionsInput"))
+                    {
+                        results.Add(ValidationResult.Warning(
+                            $"Transition '{node.DisplayName}' uses OnConditionsMet trigger but has no conditions connected",
+                            node, graph));
+                    }
+                }
+
+                // Check if transition has an input connection (is it reachable?)
+                if (!HasInputConnection(node, "In"))
+                {
+                    results.Add(ValidationResult.Warning(
+                        $"Transition '{node.DisplayName}' has no input connection (unreachable)",
+                        node, graph));
+                }
+
+                // PlayerChoice trigger should not be used with TransitionNode (use ChoiceNode instead)
+                if (node.Trigger == TransitionTrigger.PlayerChoice)
+                {
+                    results.Add(ValidationResult.Warning(
+                        $"Transition '{node.DisplayName}' uses PlayerChoice trigger. Consider using ChoiceNode instead for player choices.",
                         node, graph));
                 }
             }

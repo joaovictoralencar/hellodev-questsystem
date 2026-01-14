@@ -8,16 +8,19 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 {
     /// <summary>
     /// Context node that contains reward blocks as a visual container.
-    /// Provides an alternative to RewardNode with inline reward editing via blocks.
+    /// Provides rewards for QuestNode via the context pattern.
     /// </summary>
     /// <remarks>
-    /// Benefits over RewardNode:
+    /// Flow design:
+    /// - RewardContextNode.Then (output) → QuestNode.Rewards (input)
+    /// - No input port - this node is a source of rewards, not part of a flow chain
+    ///
+    /// Benefits of the context pattern:
     /// - Rewards can be reordered via drag-and-drop inside the context
     /// - Visual grouping of related rewards
     /// - Can add multiple reward types (XP, Gold, Items) as separate blocks
     ///
-    /// Use RewardNode for simple single-reward scenarios.
-    /// Use RewardContextNode for complex multi-reward scenarios.
+    /// Use for quest completion rewards (granted when the quest completes successfully).
     /// </remarks>
     [Serializable]
     public class RewardContextNode : ContextNode
@@ -118,14 +121,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
         protected override void OnDefinePorts(IPortDefinitionContext context)
         {
-            // Input: From previous node in the flow
-            context.AddInputPort<StageFlow>("In")
-                .WithDisplayName("In")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
-
-            // Continue flow after granting rewards
-            context.AddOutputPort<StageFlow>("Then")
+            // Output: Connects to QuestNode's Rewards input
+            context.AddOutputPort<RewardFlow>("Then")
                 .WithDisplayName("Then")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();

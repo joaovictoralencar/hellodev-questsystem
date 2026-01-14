@@ -162,10 +162,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
             if (tableRef != null && source.TableReference.TableCollectionNameGuid != Guid.Empty)
             {
-                var tableGuid = tableRef.FindPropertyRelative("m_TableCollectionNameGuid");
-                if (tableGuid != null)
+                // Unity.Localization serializes as m_TableCollectionName with format "GUID:xxxxx"
+                var tableCollectionName = tableRef.FindPropertyRelative("m_TableCollectionName");
+                if (tableCollectionName != null)
                 {
-                    tableGuid.stringValue = source.TableReference.TableCollectionNameGuid.ToString();
+                    // Format: "GUID:" + GUID without dashes (e.g., "GUID:05b8775364730764ab5bf1891aa1cb86")
+                    tableCollectionName.stringValue = "GUID:" + source.TableReference.TableCollectionNameGuid.ToString("N");
                 }
             }
 

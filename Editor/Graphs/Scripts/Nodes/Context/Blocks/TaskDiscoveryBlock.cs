@@ -1,7 +1,8 @@
 using System;
-using HelloDev.IDs;
 using Unity.GraphToolkit.Editor;
 using HelloDev.QuestSystem.ScriptableObjects;
+using HelloDev.QuestSystem.QuestGraph.Editor.Converters;
+using UnityEditor;
 using UnityEngine;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
@@ -11,16 +12,17 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     /// Tracks discovery of multiple items/locations/objectives.
     /// </summary>
     /// <remarks>
-    /// Discovery tasks allow completing a subset of conditions.
-    /// If requiredDiscoveries is 0, all conditions must be met.
+    /// Discovery tasks use the standard Conditions from Task_SO base class.
+    /// Each condition represents one discoverable item/clue.
+    /// RequiredDiscoveries specifies how many conditions must be fulfilled.
+    /// If RequiredDiscoveries is 0, all conditions must be fulfilled.
+    ///
     /// Use for objectives like "Discover 3 of 5 Hidden Locations" or "Find All Artifacts".
-    /// Type-specific: RequiredDiscoveries option, dynamic Discovery ID ports.
     /// </remarks>
     [Serializable]
     public class TaskDiscoveryBlock : TaskTypedBlock<TaskDiscovery_SO>
     {
-        private const string OPT_REQUIRED_DISCOVERIES = "RequiredDiscoveries";
-        private const string PORT_DISCOVERY = "DiscoveryInput";
+        private const string PORT_REQUIRED_DISCOVERIES = "RequiredDiscoveriesInput";
 
         /// <inheritdoc/>
         public override string TaskTypeName => "Discovery";
@@ -32,34 +34,30 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         protected override string TaskAssetTooltipType => "TaskDiscovery_SO";
 
         /// <summary>
-        /// Number of discoveries required. Controls how many Discovery ID ports are shown.
+        /// Number of discoveries required to complete the task.
+        /// If 0, all trigger conditions must be fulfilled.
         /// </summary>
-        public int RequiredDiscoveries => GetOptionValue<int>(OPT_REQUIRED_DISCOVERIES);
-
-        /// <inheritdoc/>
-        protected override void DefineTypeSpecificOptions(IOptionDefinitionContext context)
-        {
-            context.AddOption<int>(OPT_REQUIRED_DISCOVERIES)
-                .WithDisplayName("Required Discoveries")
-                .WithDefaultValue(0)
-                .WithTooltip("Number of discoveries required. Controls how many Discovery ID ports appear.");
-        }
+        public int RequiredDiscoveries => GraphTraversalUtility.ResolveDataPort<int>(this, PORT_REQUIRED_DISCOVERIES, 0);
 
         /// <inheritdoc/>
         protected override void DefineTypeSpecificPorts(IPortDefinitionContext context)
         {
-            for (int i = 0; i < RequiredDiscoveries; i++)
-            {
-                context.AddInputPort<ID_SO>(PORT_DISCOVERY + i)
-                    .WithDisplayName($"Discovery ID {i + 1}")
-                    .Build();
-            }
+            context.AddInputPort<int>(PORT_REQUIRED_DISCOVERIES)
+                .WithDisplayName("Required Discoveries")
+                .Build();
         }
 
         /// <inheritdoc/>
         public override Task_SO CreateTaskAsset()
         {
-            return ScriptableObject.CreateInstance<TaskDiscovery_SO>();
+            var task = CreateTaskAssetWithCommonFields<TaskDiscovery_SO>();
+
+            // Set type-specific field
+            var so = new SerializedObject(task);
+            so.FindProperty("requiredDiscoveries").intValue = RequiredDiscoveries;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            return task;
         }
     }
 }

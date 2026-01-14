@@ -2,6 +2,7 @@ using System;
 using Unity.GraphToolkit.Editor;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.QuestGraph.Editor.Converters;
+using UnityEditor;
 using UnityEngine;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
@@ -60,7 +61,15 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// <inheritdoc/>
         public override Task_SO CreateTaskAsset()
         {
-            return ScriptableObject.CreateInstance<TaskTimed_SO>();
+            var task = CreateTaskAssetWithCommonFields<TaskTimed_SO>();
+
+            // Set type-specific fields
+            var so = new SerializedObject(task);
+            so.FindProperty("timeLimit").floatValue = TimeLimit;
+            so.FindProperty("failQuestOnExpire").boolValue = FailQuestOnExpire;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            return task;
         }
     }
 }

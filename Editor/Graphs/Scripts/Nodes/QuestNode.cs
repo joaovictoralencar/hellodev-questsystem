@@ -1,5 +1,4 @@
 using System;
-using HelloDev.Conditions;
 using HelloDev.QuestSystem.QuestGraph.Editor.Converters;
 using HelloDev.QuestSystem.QuestGraph.Editor.Ports;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -14,13 +13,22 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     /// Supports two modes: Asset Mode (reference existing Quest_SO) or Define Mode (create inline).
     /// </summary>
     /// <remarks>
-    /// Follows the TaskTypedNode pattern:
+    /// Follows the StageNode pattern for context inputs:
     /// - Boolean toggle "Use Quest Asset" controls which ports are shown
     /// - Asset Mode: Shows Quest Asset input port only
-    /// - Define Mode: Shows inline data ports for all Quest_SO fields
+    /// - Define Mode: Shows inline data ports and context inputs
     ///
-    /// In Define Mode, stages can be connected via StageGraph subgraph references
-    /// which will be converted to stages during export.
+    /// Output ports:
+    /// - Then (QuestFlow): Connects to the next quest in the questline chain
+    /// - Stages (StageFlow): Connects to the first stage of this quest
+    ///
+    /// Input ports (Define mode):
+    /// - Trigger Conditions (ConditionFlow): Receives from ConditionContextNode
+    /// - Fail Conditions (ConditionFlow): Receives from ConditionContextNode
+    /// - Rewards (RewardFlow): Receives from RewardContextNode
+    ///
+    /// This design allows quests to chain to other quests while also defining their stages,
+    /// conditions, and rewards via context nodes with draggable blocks.
     /// </remarks>
     [Serializable]
     public class QuestNode : QuestBaseNode
@@ -28,12 +36,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         #region Option Names
 
         private const string OPT_USE_QUEST_ASSET = "UseQuestAsset";
-
-        // Count options - must remain options for dynamic port regeneration
-        private const string OPT_STAGE_COUNT = "StageCount";
-        private const string OPT_START_CONDITION_COUNT = "StartConditionCount";
-        private const string OPT_FAILURE_CONDITION_COUNT = "FailureConditionCount";
-        private const string OPT_REWARD_COUNT = "RewardCount";
 
         #endregion
 
@@ -54,11 +56,14 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         private const string PORT_LOCATION = "LocationInput";
         private const string PORT_SPRITE = "SpriteInput";
 
-        // Define Mode - Dynamic ports (prefix + index)
-        private const string PORT_STAGE = "StageInput";
-        private const string PORT_START_CONDITION = "StartConditionInput";
-        private const string PORT_FAILURE_CONDITION = "FailureConditionInput";
-        private const string PORT_REWARD = "RewardInput";
+        // Define Mode - Flow outputs
+        private const string PORT_STAGES_FLOW = "Stages";
+
+        // Define Mode - Context inputs (receive from ConditionContextNode/RewardContextNode)
+        private const string PORT_TRIGGER_CONDITIONS = "TriggerConditionsInput";
+        private const string PORT_FAIL_CONDITIONS = "FailConditionsInput";
+        private const string PORT_GLOBAL_TASK_FAILURE = "GlobalTaskFailureInput";
+        private const string PORT_REWARDS = "RewardsInput";
 
         #endregion
 
@@ -73,26 +78,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// Whether this quest is optional in the questline.
         /// </summary>
         public bool IsOptional => GraphTraversalUtility.ResolveDataPort<bool>(this, PORT_IS_OPTIONAL, false);
-
-        /// <summary>
-        /// Number of stage ports to show (Define mode).
-        /// </summary>
-        public int StageCount => GetOptionValue<int>(OPT_STAGE_COUNT);
-
-        /// <summary>
-        /// Number of start condition ports to show (Define mode).
-        /// </summary>
-        public int StartConditionCount => GetOptionValue<int>(OPT_START_CONDITION_COUNT);
-
-        /// <summary>
-        /// Number of failure condition ports to show (Define mode).
-        /// </summary>
-        public int FailureConditionCount => GetOptionValue<int>(OPT_FAILURE_CONDITION_COUNT);
-
-        /// <summary>
-        /// Number of reward ports to show (Define mode).
-        /// </summary>
-        public int RewardCount => GetOptionValue<int>(OPT_REWARD_COUNT);
 
         /// <summary>
         /// The referenced Quest_SO asset (Asset mode only).
@@ -197,31 +182,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithDisplayName("Use Quest Asset")
                 .WithDefaultValue(true)
                 .WithTooltip("Check to use an existing Quest_SO asset.\nUncheck to define quest inline.");
-
-            // Only show count options in Define mode
-            if (!UseQuestAsset)
-            {
-                // Count options - control dynamic port generation
-                context.AddOption<int>(OPT_STAGE_COUNT)
-                    .WithDisplayName("Stage Count")
-                    .WithDefaultValue(1)
-                    .WithTooltip("Number of stage ports to show");
-
-                context.AddOption<int>(OPT_START_CONDITION_COUNT)
-                    .WithDisplayName("Start Cond Count")
-                    .WithDefaultValue(0)
-                    .WithTooltip("Number of start condition ports to show");
-
-                context.AddOption<int>(OPT_FAILURE_CONDITION_COUNT)
-                    .WithDisplayName("Fail Cond Count")
-                    .WithDefaultValue(0)
-                    .WithTooltip("Number of failure condition ports to show");
-
-                context.AddOption<int>(OPT_REWARD_COUNT)
-                    .WithDisplayName("Reward Count")
-                    .WithDefaultValue(0)
-                    .WithTooltip("Number of reward ports to show");
-            }
         }
 
         #endregion
@@ -250,7 +210,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             }
             else
             {
-                // Define Mode: Show data ports and dynamic ports
+                // Define Mode: Show data ports and context inputs
 
                 // Identity ports - visible on node and in Node Properties
                 context.AddInputPort<string>(PORT_DEV_NAME)
@@ -286,83 +246,33 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                     .WithDisplayName("Sprite")
                     .Build();
 
-                // Dynamic stage ports - accept StageFlow from StageNodes
-                for (int i = 0; i < StageCount; i++)
-                {
-                    context.AddInputPort<StageFlow>(PORT_STAGE + i)
-                        .WithDisplayName($"Stage {i + 1}")
-                        .WithConnectorUI(PortConnectorUI.Arrowhead)
-                        .Build();
-                }
+                // StageFlow output - connect to StageNodes via flow
+                context.AddOutputPort<StageFlow>(PORT_STAGES_FLOW)
+                    .WithDisplayName("Stages")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
 
-                // Dynamic start condition ports
-                for (int i = 0; i < StartConditionCount; i++)
-                {
-                    context.AddInputPort<Condition_SO>(PORT_START_CONDITION + i)
-                        .WithDisplayName($"Start Cond {i + 1}")
-                        .Build();
-                }
+                // Context inputs - receive from ConditionContextNode/RewardContextNode
+                context.AddInputPort<ConditionFlow>(PORT_TRIGGER_CONDITIONS)
+                    .WithDisplayName("Trigger Conditions")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
 
-                // Dynamic failure condition ports
-                for (int i = 0; i < FailureConditionCount; i++)
-                {
-                    context.AddInputPort<Condition_SO>(PORT_FAILURE_CONDITION + i)
-                        .WithDisplayName($"Fail Cond {i + 1}")
-                        .Build();
-                }
+                context.AddInputPort<ConditionFlow>(PORT_FAIL_CONDITIONS)
+                    .WithDisplayName("Fail Conditions")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
 
-                // Dynamic reward ports
-                for (int i = 0; i < RewardCount; i++)
-                {
-                    context.AddInputPort<RewardInstance>(PORT_REWARD + i)
-                        .WithDisplayName($"Reward {i + 1}")
-                        .Build();
-                }
+                context.AddInputPort<ConditionFlow>(PORT_GLOBAL_TASK_FAILURE)
+                    .WithDisplayName("Global Task Failure")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
+
+                context.AddInputPort<RewardFlow>(PORT_REWARDS)
+                    .WithDisplayName("Rewards")
+                    .WithConnectorUI(PortConnectorUI.Arrowhead)
+                    .Build();
             }
-        }
-
-        #endregion
-
-        #region Helpers
-
-        /// <summary>
-        /// Gets a stage from the dynamic port by index.
-        /// </summary>
-        public StageGraph GetStageGraph(int index)
-        {
-            if (index < 0 || index >= StageCount)
-                return null;
-            return GraphTraversalUtility.ResolveDataPort<StageGraph>(this, PORT_STAGE + index, null);
-        }
-
-        /// <summary>
-        /// Gets a start condition from the dynamic port by index.
-        /// </summary>
-        public Condition_SO GetStartCondition(int index)
-        {
-            if (index < 0 || index >= StartConditionCount)
-                return null;
-            return GraphTraversalUtility.ResolveDataPort<Condition_SO>(this, PORT_START_CONDITION + index, null);
-        }
-
-        /// <summary>
-        /// Gets a failure condition from the dynamic port by index.
-        /// </summary>
-        public Condition_SO GetFailureCondition(int index)
-        {
-            if (index < 0 || index >= FailureConditionCount)
-                return null;
-            return GraphTraversalUtility.ResolveDataPort<Condition_SO>(this, PORT_FAILURE_CONDITION + index, null);
-        }
-
-        /// <summary>
-        /// Gets a reward from the dynamic port by index.
-        /// </summary>
-        public RewardInstance? GetReward(int index)
-        {
-            if (index < 0 || index >= RewardCount)
-                return null;
-            return GraphTraversalUtility.ResolveDataPort<RewardInstance>(this, PORT_REWARD + index, default);
         }
 
         #endregion

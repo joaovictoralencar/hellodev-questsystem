@@ -379,6 +379,51 @@ Represents a player choice that branches the quest.
 - `Conditions`: List of Condition_SO for gating (e.g., reputation requirements)
 - `WorldFlagsOnSelect`: WorldFlagModification list to set flags when chosen
 
+### 6. TransitionNode
+
+Represents a configurable stage transition with trigger conditions, priority, and optional labels. Use TransitionNode when you need more control over stage transitions than simple linear connections provide.
+
+```yaml
+- rid: <TransitionNode_wrapper>
+  type: {class: UserNodeModelImp, ...}
+  data:
+    m_Position: {x: 300, y: 100}
+    m_InputConstantsById:
+      m_KeyList:
+      - In
+      - ConditionsInput
+      - __option_Trigger
+      - __option_Priority
+      - __option_Label
+      m_ValueList:
+      - rid: <StageFlow_constant>
+      - rid: <ConditionFlow_constant>
+      - rid: <int_constant>           # Trigger enum (0=OnGroupsComplete, 1=OnConditionsMet, 2=Manual)
+      - rid: <int_constant>           # Priority (higher = evaluated first)
+      - rid: <string_constant>        # Label for debugging
+```
+
+**Ports:**
+- Input: `In` (StageFlow) - from source Stage's `Then` port
+- Input: `ConditionsInput` (ConditionFlow) - optional conditions for OnConditionsMet trigger
+- Output: `To` (StageFlow) - to target Stage's `In` port
+
+**Key Options:**
+- `Trigger`: TransitionTrigger enum
+  - `OnGroupsComplete` (0): Triggers when all task groups in the source stage complete
+  - `OnConditionsMet` (1): Triggers when connected conditions evaluate to true
+  - `Manual` (2): Only triggers via API call (`QuestRuntime.TriggerManualTransition`)
+- `Priority`: Integer for ordering when multiple transitions are valid (higher = evaluated first)
+- `Label`: Optional string for debugging and identification
+
+**Use Cases:**
+- **Conditional skipping**: Skip optional stages when conditions are met
+- **Multiple paths**: Different transitions based on player progress or world state
+- **Manual triggers**: API-driven transitions for dialogue or cutscene integration
+- **Priority ordering**: Control which transition fires when multiple are valid
+
+**Note:** For simple linear progression (Stage→Stage), you can connect stages directly without a TransitionNode. Direct connections create implicit `OnGroupsComplete` transitions with priority 0.
+
 ---
 
 ## Asset References (GUIDs)
@@ -497,12 +542,15 @@ Wires connect output ports to input ports between nodes.
 | Node Type | Input Ports | Output Ports |
 |-----------|-------------|--------------|
 | QuestStartNode | (none) | `FirstStage` |
-| StageNode | `In` | `TaskGroups`, `Then`, `Else`, `Choices` |
+| StageNode | `In` (multi-capacity) | `TaskGroups`, `Then`, `Else`, `Choices` |
 | TaskGroupNode | `In` | `Tasks`, `Then`, `Else` |
 | Task Nodes* | `In` | `Then` |
 | ChoiceNode | `In` | `Target` |
+| TransitionNode | `In`, `ConditionsInput` | `To` |
 
 *Task Nodes: TaskBoolNode, TaskIntNode, TaskStringNode, TaskLocationNode, TaskDiscoveryNode, TaskTimedNode
+
+**Note:** StageNode's `In` port accepts multiple connections, allowing multiple TransitionNodes or sources to target the same stage.
 
 ### Connection Patterns
 
@@ -513,9 +561,16 @@ TaskGroupNode.Tasks → TaskBoolNode.In (or other task node type)
 TaskBoolNode.Then → TaskIntNode.In (sequential task chain)
 StageNode.Choices → ChoiceNode.In
 ChoiceNode.Target → StageNode.In
-StageNode.Then → StageNode.In (linear progression)
+StageNode.Then → StageNode.In (linear progression - implicit transition)
+StageNode.Then → TransitionNode.In (explicit transition)
+TransitionNode.To → StageNode.In (transition target)
 TaskGroupNode.Then → TaskGroupNode.In (sequential task groups)
 ```
+
+**TransitionNode vs Direct Connections:**
+- Direct Stage→Stage creates implicit `OnGroupsComplete` transition (priority 0)
+- TransitionNode provides explicit control over trigger, priority, and conditions
+- Multiple TransitionNodes can target the same stage (multi-capacity `In` port)
 
 ---
 

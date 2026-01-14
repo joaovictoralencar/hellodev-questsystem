@@ -6,17 +6,21 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 {
     /// <summary>
     /// Context node that contains condition blocks as a visual container.
-    /// Provides a cleaner alternative to ConditionGateNode for multiple conditions.
+    /// Provides trigger and failure conditions for QuestNode via the context pattern.
     /// </summary>
     /// <remarks>
-    /// Benefits over ConditionGateNode with list:
+    /// Flow design:
+    /// - ConditionContextNode.Then (output) → QuestNode.TriggerConditions or FailConditions (input)
+    /// - No input port - this node is a source of conditions, not part of a flow chain
+    ///
+    /// Benefits of the context pattern:
     /// - Conditions can be reordered via drag-and-drop
     /// - Each condition is a separate block for clear visual separation
     /// - Easier to add/remove individual conditions
     /// - Visual grouping with shared evaluation mode
     ///
-    /// Use ConditionGateNode for simple 1-3 condition scenarios.
-    /// Use ConditionContextNode for complex multi-condition scenarios.
+    /// Use for quest trigger conditions (when the quest can start) or
+    /// failure conditions (when the quest fails).
     /// </remarks>
     [Serializable]
     public class ConditionContextNode : ContextNode
@@ -130,15 +134,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
         protected override void OnDefinePorts(IPortDefinitionContext context)
         {
-            // Input: From previous node in the flow
-            context.AddInputPort<StageFlow>("In")
-                .WithDisplayName("In")
-                .WithConnectorUI(PortConnectorUI.Arrowhead)
-                .Build();
-
-            // Success path - condition evaluates to true
-            context.AddOutputPort<StageFlow>("Then")
-                .WithDisplayName("Then (True)")
+            // Output: Connects to QuestNode's TriggerConditions or FailConditions input
+            context.AddOutputPort<ConditionFlow>("Then")
+                .WithDisplayName("Then")
                 .WithConnectorUI(PortConnectorUI.Arrowhead)
                 .Build();
         }

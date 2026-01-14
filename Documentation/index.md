@@ -1,6 +1,6 @@
 # Quest System Documentation
 
-*Last Updated: 2026-01-08*
+*Last Updated: 2026-01-14*
 
 ## Getting Started
 
@@ -23,6 +23,7 @@
 - [Graph Editor](Tutorials/tutorial-graph-editor.md)
 - [Event Integration](Tutorials/tutorial-event-integration.md)
 - [Node Options Architecture](Tutorials/tutorial-node-options.md) - Understanding node variables vs inspector-only fields
+- [Goblin's Bane Graph Tutorial](Tutorials/tutorial-create-goblins-bane-graph.md) - Complete quest with TransitionNodes
 
 ## Tools
 

@@ -50,6 +50,19 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             }
         }
 
+        private bool HasInputConnection(INode node, string portName)
+        {
+            try
+            {
+                var port = node.GetInputPortByName(portName);
+                return port != null && port.isConnected;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region Convenience Methods

@@ -9,7 +9,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
     /// </summary>
     /// <typeparam name="TGraph">The graph type.</typeparam>
     /// <typeparam name="TAsset">The ScriptableObject type.</typeparam>
-    public interface IGraphConverter<TGraph, TAsset>
+    public interface IGraphConverter<TGraph, TAsset> 
         where TGraph : Graph
         where TAsset : ScriptableObject
     {

@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.10.0] - 2026-01-14
+
+### Added
+- **TransitionNode**: New graph node for configurable stage transitions
+  - Supports three trigger types: OnGroupsComplete, OnConditionsMet, Manual
+  - Priority ordering when multiple transitions are valid (higher = evaluated first)
+  - Optional label for debugging and identification
+  - Conditions input port for conditional transitions
+  - Enables complex patterns like conditional stage skipping
+- **PortCapacityHelper**: Utility for setting port capacity via reflection
+  - Workaround for Unity Graph Toolkit's internal PortCapacity API
+  - Extension methods: `SetMultiCapacity()`, `SetSingleCapacity()`
+
+### Changed
+- **StageNode**: `In` port now accepts multiple connections (multi-capacity)
+  - Allows multiple TransitionNodes or sources to target the same stage
+  - Enables branching patterns where different paths converge
+
+### Documentation
+- Updated quest-graph-creation-reference.md with TransitionNode section
+- Updated Goblin's Bane tutorial with conditional skip path using TransitionNode
+- Added connection patterns and port capacity notes
+
+## [3.9.0] - 2026-01-11
+
+### Added
+- **QuestChoiceNode**: New node for quest-level branching in QuestLineGraph
+  - Allows branching questlines based on conditions or quest outcomes
+  - Quest1 -> QuestChoiceNode -> Quest2 (Path A) / Quest3 (Path B)
+  - Supports 1-4 output paths with conditional routing
+  - Default output path when no conditions match
+
+### Changed
+- **StageNode**: Converted identity fields from options to ports for consistency
+  - StageName, JournalEntry, StageIcon now ports (visible on node)
+  - IsTerminal, IsOptional, IsHidden now ports (visible on node)
+  - HasPlayerChoices, TaskGroupCount remain options (control port generation)
+
+### Fixed
+- GraphToQuestLineConverter now handles QuestChoiceNode when collecting quests
+- Added validation rules for QuestChoiceNode (connected outputs, condition count)
+
 ## [3.8.0] - 2026-01-11
 
 ### Changed
@@ -18,6 +60,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - TaskBaseNode.InlineData is now virtual for proper override instead of shadowing
 - Count fields (StageCount, TriggerConditionCount, etc.) remain as options to preserve dynamic port regeneration
+- QuestNode stage ports now use StageGraph type (was incorrectly using StageFlow)
+- Validation no longer reports false "unreachable" warnings for subgraph nodes and Blackboard variables
 
 ## [2.2.0] - 2025-12-28
 

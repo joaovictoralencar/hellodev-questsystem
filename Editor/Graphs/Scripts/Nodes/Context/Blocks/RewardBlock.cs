@@ -1,5 +1,6 @@
 using System;
 using Unity.GraphToolkit.Editor;
+using HelloDev.QuestSystem.QuestGraph.Editor.Converters;
 using HelloDev.QuestSystem.ScriptableObjects;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
@@ -10,7 +11,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     /// </summary>
     /// <remarks>
     /// Add multiple RewardBlocks to a RewardContextNode to define quest rewards.
-    /// The amount can be set directly or connected from a Variable/Constant.
+    /// Both RewardType and Amount are input ports that can receive connections
+    /// from Variables/Constants or have embedded values.
     /// </remarks>
     [UseWithContext(typeof(RewardContextNode))]
     [Serializable]
@@ -18,14 +20,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     {
         #region Option Names
 
-        private const string OPT_REWARD_TYPE = "RewardType";
-        private const string OPT_AMOUNT = "Amount";
         private const string OPT_DESCRIPTION = "Description";
 
         #endregion
 
         #region Port Names
 
+        private const string PORT_REWARD_TYPE = "RewardTypeInput";
         private const string PORT_AMOUNT = "AmountInput";
 
         #endregion
@@ -50,12 +51,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// <summary>
         /// The type of reward to grant.
         /// </summary>
-        public QuestRewardType_SO RewardType => GetOptionValue<QuestRewardType_SO>(OPT_REWARD_TYPE);
+        public QuestRewardType_SO RewardType => GraphTraversalUtility.ResolveDataPort<QuestRewardType_SO>(this, PORT_REWARD_TYPE, null);
 
         /// <summary>
         /// The amount of this reward to grant.
         /// </summary>
-        public int Amount => GetOptionValue<int>(OPT_AMOUNT);
+        public int Amount => GraphTraversalUtility.ResolveDataPort<int>(this, PORT_AMOUNT, 1);
 
         /// <summary>
         /// Optional description override for this reward instance.
@@ -82,15 +83,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
         protected override void OnDefineOptions(IOptionDefinitionContext context)
         {
-            context.AddOption<QuestRewardType_SO>(OPT_REWARD_TYPE)
-                .WithDisplayName("Reward Type")
-                .WithTooltip("The type of reward to grant (XP, Gold, Items, etc.)");
-
-            context.AddOption<int>(OPT_AMOUNT)
-                .WithDisplayName("Amount")
-                .WithDefaultValue(1)
-                .WithTooltip("The amount of this reward to grant");
-
             context.AddOption<string>(OPT_DESCRIPTION)
                 .WithDisplayName("Description")
                 .WithDefaultValue("")
@@ -104,7 +96,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
         protected override void OnDefinePorts(IPortDefinitionContext context)
         {
-            // Data input port for dynamic amount from Variables/Constants
+            // Reward type input port - can connect to Variable/Constant
+            context.AddInputPort<QuestRewardType_SO>(PORT_REWARD_TYPE)
+                .WithDisplayName("Reward Type")
+                .Build();
+
+            // Amount input port - can connect to Variable/Constant
             context.AddInputPort<int>(PORT_AMOUNT)
                 .WithDisplayName("Amount")
                 .Build();

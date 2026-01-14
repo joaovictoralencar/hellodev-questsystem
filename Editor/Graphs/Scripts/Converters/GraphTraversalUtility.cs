@@ -37,6 +37,33 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         /// <summary>
+        /// Gets the node connected to a specific input port.
+        /// Used for finding source nodes that connect TO this node.
+        /// </summary>
+        /// <param name="currentNode">The node containing the input port.</param>
+        /// <param name="portName">The name of the input port.</param>
+        /// <returns>The connected source node, or null if not connected.</returns>
+        public static INode GetConnectedInputNode(INode currentNode, string portName)
+        {
+            if (currentNode == null)
+                return null;
+
+            try
+            {
+                var inputPort = currentNode.GetInputPortByName(portName);
+                if (inputPort == null || !inputPort.isConnected)
+                    return null;
+
+                var sourcePort = inputPort.firstConnectedPort;
+                return sourcePort?.GetNode();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets all nodes connected to a specific output port.
         /// Useful for ports that can have multiple connections.
         /// </summary>
@@ -99,13 +126,22 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 // If port is connected to another node, get value from connection
                 if (port.isConnected)
                 {
-                    var connectedNode = port.firstConnectedPort?.GetNode();
+                    var sourcePort = port.firstConnectedPort;
+                    var connectedNode = sourcePort?.GetNode();
 
                     switch (connectedNode)
                     {
                         case IVariableNode variableNode:
-                            variableNode.variable.TryGetDefaultValue<T>(out value);
-                            return value;
+                            // Try TryGetDefaultValue (works for simple types)
+                            if (variableNode.variable.TryGetDefaultValue<T>(out value))
+                                return value;
+
+                            // Fallback: Try to get value from source port
+                            // For complex types, the port may provide the value directly
+                            if (sourcePort != null && sourcePort.TryGetValue(out value))
+                                return value;
+                            break;
+
                         case IConstantNode constantNode:
                             constantNode.TryGetValue<T>(out value);
                             return value;
@@ -281,27 +317,45 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             try
             {
                 var sourcePort = port.firstConnectedPort;
+                var sourceNode = sourcePort?.GetNode();
 
-                switch (sourcePort?.GetNode())
+                // Handle connected nodes
+                if (sourceNode != null)
                 {
-                    case IConstantNode constantNode:
-                        constantNode.TryGetValue(out T constantValue);
-                        return constantValue;
+                    switch (sourceNode)
+                    {
+                        case IConstantNode constantNode:
+                            if (constantNode.TryGetValue(out T constantValue))
+                                return constantValue;
+                            break;
 
-                    case IVariableNode variableNode:
-                        variableNode.variable.TryGetDefaultValue(out T variableValue);
-                        return variableValue;
+                        case IVariableNode variableNode:
+                            if (variableNode.variable.TryGetDefaultValue(out T variableValue))
+                                return variableValue;
+                            break;
+                    }
 
-                    case null:
-                        // Not connected: use embedded port value
-                        if (port.TryGetValue(out T embeddedValue))
-                            return embeddedValue;
-                        return fallback;
+                    // If connected node didn't provide a value, try the source port's embedded value
+                    if (sourcePort != null && sourcePort.TryGetValue(out T sourceValue))
+                        return sourceValue;
                 }
+
+                // Not connected or connection didn't provide value: use this port's embedded value
+                if (port.TryGetValue(out T embeddedValue))
+                    return embeddedValue;
             }
             catch
             {
-                // Port access failed
+                // Port access failed - try embedded value as last resort
+                try
+                {
+                    if (port.TryGetValue(out T embeddedValue))
+                        return embeddedValue;
+                }
+                catch
+                {
+                    // Complete failure
+                }
             }
 
             return fallback;

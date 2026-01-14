@@ -50,6 +50,13 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 ValidateQuestNode(questNode, results, graph);
             }
 
+            // Get and validate quest choice nodes
+            var questChoiceNodes = nodes.OfType<QuestChoiceNode>().ToList();
+            foreach (var choiceNode in questChoiceNodes)
+            {
+                ValidateQuestChoiceNode(choiceNode, results, graph);
+            }
+
             return results;
         }
 
@@ -61,6 +68,65 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 results.Add(ValidationResult.Warning(
                     $"Quest node has no Quest Asset assigned",
                     node, graph));
+            }
+        }
+
+        private void ValidateQuestChoiceNode(QuestChoiceNode node, List<ValidationResult> results, Graph graph)
+        {
+            // Check for empty choice ID
+            if (string.IsNullOrWhiteSpace(node.ChoiceId))
+            {
+                results.Add(ValidationResult.Warning(
+                    $"Quest branch node '{node.ChoiceName}' has no Branch ID",
+                    node, graph));
+            }
+
+            // Check that at least one output is connected
+            var outputCount = node.OutputCount;
+            bool hasAnyConnection = false;
+
+            if (outputCount == 1)
+            {
+                var targetPort = node.GetOutputPortByName("Target");
+                hasAnyConnection = targetPort != null && targetPort.isConnected;
+            }
+            else
+            {
+                for (int i = 0; i < outputCount; i++)
+                {
+                    var targetPort = node.GetOutputPortByName($"Target{i}");
+                    if (targetPort != null && targetPort.isConnected)
+                    {
+                        hasAnyConnection = true;
+                        break;
+                    }
+                }
+
+                // Also check Default port
+                var defaultPort = node.GetOutputPortByName("Default");
+                if (defaultPort != null && defaultPort.isConnected)
+                {
+                    hasAnyConnection = true;
+                }
+            }
+
+            if (!hasAnyConnection)
+            {
+                results.Add(ValidationResult.Warning(
+                    $"Quest branch node '{node.DisplayName}' has no connected outputs",
+                    node, graph));
+            }
+
+            // Check output conditions for multi-output mode
+            if (outputCount > 1)
+            {
+                var conditions = node.OutputConditions;
+                if (conditions.Count < outputCount)
+                {
+                    results.Add(ValidationResult.Info(
+                        $"Quest branch node '{node.DisplayName}' has {outputCount} outputs but only {conditions.Count} conditions configured. Missing conditions will use Default path.",
+                        node, graph));
+                }
             }
         }
     }

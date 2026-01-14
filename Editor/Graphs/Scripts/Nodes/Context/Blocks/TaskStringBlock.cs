@@ -2,6 +2,7 @@ using System;
 using Unity.GraphToolkit.Editor;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.QuestGraph.Editor.Converters;
+using UnityEditor;
 using UnityEngine;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
@@ -44,7 +45,14 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// <inheritdoc/>
         public override Task_SO CreateTaskAsset()
         {
-            return ScriptableObject.CreateInstance<TaskString_SO>();
+            var task = CreateTaskAssetWithCommonFields<TaskString_SO>();
+
+            // Set type-specific field
+            var so = new SerializedObject(task);
+            so.FindProperty("targetValue").stringValue = TargetValue;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            return task;
         }
     }
 }

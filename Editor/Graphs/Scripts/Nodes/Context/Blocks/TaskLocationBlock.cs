@@ -28,7 +28,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// <inheritdoc/>
         public override Task_SO CreateTaskAsset()
         {
-            return ScriptableObject.CreateInstance<TaskLocation_SO>();
+            // TaskLocation_SO has no type-specific fields
+            return CreateTaskAssetWithCommonFields<TaskLocation_SO>();
         }
     }
 }

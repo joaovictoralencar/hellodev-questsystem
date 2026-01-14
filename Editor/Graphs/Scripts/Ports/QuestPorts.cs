@@ -31,4 +31,18 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Ports
     /// </summary>
     [Serializable]
     public class ChoiceFlow { }
+
+    /// <summary>
+    /// Represents flow from ConditionContextNode to QuestNode.
+    /// Used for trigger conditions and failure conditions.
+    /// </summary>
+    [Serializable]
+    public class ConditionFlow { }
+
+    /// <summary>
+    /// Represents flow from RewardContextNode to QuestNode.
+    /// Used for quest rewards.
+    /// </summary>
+    [Serializable]
+    public class RewardFlow { }
 }

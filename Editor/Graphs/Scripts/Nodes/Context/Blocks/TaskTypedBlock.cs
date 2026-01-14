@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using HelloDev.Conditions;
+using HelloDev.QuestSystem.QuestGraph.Editor.Converters;
 using Unity.GraphToolkit.Editor;
 using HelloDev.QuestSystem.ScriptableObjects;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Localization;
 
@@ -81,9 +84,36 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public int FailureConditionCount => GetOptionValue<int>(OPT_FAILURE_CONDITION_COUNT);
 
         /// <inheritdoc/>
-        public sealed override Task_SO TaskAsset => UseTaskAsset
-            ? GetOptionValue<TTaskSO>(TaskAssetOptionName)
-            : null;
+        public sealed override Task_SO TaskAsset
+        {
+            get
+            {
+                if (!UseTaskAsset)
+                    return null;
+
+                // Check option first (embedded value in inspector)
+                var optionAsset = GetOptionValue<TTaskSO>(TaskAssetOptionName);
+                if (optionAsset != null)
+                    return optionAsset;
+
+                // Also check port (connected or embedded port value)
+                return GraphTraversalUtility.ResolveDataPort<TTaskSO>(this, PORT_TASK_ASSET, null);
+            }
+        }
+
+        /// <summary>
+        /// Dev name for this task (Define mode).
+        /// Reads from port in Define mode.
+        /// </summary>
+        public new string DevName
+        {
+            get
+            {
+                if (IsAssetMode)
+                    return TaskAsset?.DevName ?? "No Task";
+                return GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "Unnamed Task");
+            }
+        }
 
         /// <inheritdoc/>
         public sealed override bool HasValidTask
@@ -93,8 +123,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 if (IsAssetMode)
                     return TaskAsset != null;
 
-                var devName = GetOptionValue<string>(OPT_DEV_NAME);
-                if (string.IsNullOrWhiteSpace(devName))
+                // Use DevName property which reads from port
+                if (string.IsNullOrWhiteSpace(DevName) || DevName == "Unnamed Task")
                     return false;
 
                 return ValidateTypeSpecificFields();
@@ -209,6 +239,115 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// Called only in Define mode when DevName is valid.
         /// </summary>
         protected virtual bool ValidateTypeSpecificFields() => true;
+
+        #endregion
+
+        #region Task Asset Creation Helpers
+
+        /// <summary>
+        /// Creates a Task_SO instance and populates common fields from ports.
+        /// Subclasses should call this, then add type-specific fields.
+        /// </summary>
+        /// <typeparam name="T">The concrete Task_SO type to create.</typeparam>
+        /// <returns>A new Task_SO instance with common fields populated.</returns>
+        protected T CreateTaskAssetWithCommonFields<T>() where T : Task_SO
+        {
+            var task = ScriptableObject.CreateInstance<T>();
+            var so = new SerializedObject(task);
+
+            // Common fields
+            so.FindProperty("devName").stringValue = DevName;
+            so.FindProperty("taskId").stringValue = Guid.NewGuid().ToString();
+
+            // Localization: Copy LocalizedString references from ports
+            var displayNameLS = GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_DISPLAY_NAME, default);
+            var descriptionLS = GraphTraversalUtility.ResolveDataPort<LocalizedString>(this, PORT_DESCRIPTION, default);
+
+            CopyLocalizedStringToProperty(so.FindProperty("displayName"), displayNameLS);
+            CopyLocalizedStringToProperty(so.FindProperty("taskDescription"), descriptionLS);
+
+            // Conditions from dynamic ports
+            var triggerConditions = CollectConditionsFromPorts(PORT_TRIGGER_CONDITION, TriggerConditionCount);
+            var failConditions = CollectConditionsFromPorts(PORT_FAILURE_CONDITION, FailureConditionCount);
+
+            CopyConditionListToProperty(so.FindProperty("conditions"), triggerConditions);
+            CopyConditionListToProperty(so.FindProperty("failureConditions"), failConditions);
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return task;
+        }
+
+        /// <summary>
+        /// Collects Condition_SO references from numbered ports.
+        /// </summary>
+        private List<Condition_SO> CollectConditionsFromPorts(string portPrefix, int count)
+        {
+            var conditions = new List<Condition_SO>();
+            for (int i = 0; i < count; i++)
+            {
+                var condition = GraphTraversalUtility.ResolveDataPort<Condition_SO>(this, portPrefix + i, null);
+                if (condition != null)
+                {
+                    conditions.Add(condition);
+                }
+            }
+            return conditions;
+        }
+
+        /// <summary>
+        /// Copies a LocalizedString to a SerializedProperty.
+        /// </summary>
+        private static void CopyLocalizedStringToProperty(SerializedProperty prop, LocalizedString source)
+        {
+            if (prop == null || source == null)
+                return;
+
+            var tableRef = prop.FindPropertyRelative("m_TableReference");
+            var entryRef = prop.FindPropertyRelative("m_TableEntryReference");
+
+            if (tableRef != null && source.TableReference.TableCollectionNameGuid != Guid.Empty)
+            {
+                // Unity.Localization serializes as m_TableCollectionName with format "GUID:xxxxx"
+                var tableCollectionName = tableRef.FindPropertyRelative("m_TableCollectionName");
+                if (tableCollectionName != null)
+                {
+                    // Format: "GUID:" + GUID without dashes (e.g., "GUID:05b8775364730764ab5bf1891aa1cb86")
+                    tableCollectionName.stringValue = "GUID:" + source.TableReference.TableCollectionNameGuid.ToString("N");
+                }
+            }
+
+            if (entryRef != null && source.TableEntryReference.KeyId != 0)
+            {
+                var keyId = entryRef.FindPropertyRelative("m_KeyId");
+                if (keyId != null)
+                {
+                    keyId.longValue = source.TableEntryReference.KeyId;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Copies a list of Condition_SO to a SerializedProperty array.
+        /// </summary>
+        private static void CopyConditionListToProperty(SerializedProperty prop, List<Condition_SO> conditions)
+        {
+            if (prop == null)
+                return;
+
+            prop.ClearArray();
+
+            if (conditions == null)
+                return;
+
+            foreach (var condition in conditions)
+            {
+                if (condition != null)
+                {
+                    prop.InsertArrayElementAtIndex(prop.arraySize);
+                    prop.GetArrayElementAtIndex(prop.arraySize - 1).objectReferenceValue = condition;
+                }
+            }
+        }
 
         #endregion
     }

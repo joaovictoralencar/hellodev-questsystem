@@ -70,8 +70,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 visited.Add(current);
                 result.ReachableNodes.Add(current);
 
-                // Get all connected nodes via output ports
-                var connectedNodes = GetConnectedOutputNodes(current);
+                // Get all connected nodes for reachability (includes backwards trace for data providers)
+                var connectedNodes = GetConnectedNodesForReachability(current);
 
                 foreach (var connected in connectedNodes)
                 {
@@ -85,7 +85,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             // Find unreachable nodes
             result.UnreachableNodes.UnionWith(allNodes.Except(result.ReachableNodes));
 
-            // Check for cycles using DFS
+            // Check for cycles using DFS (forward direction only)
             DetectCycles(startNode, new HashSet<INode>(), new HashSet<INode>(), result);
 
             return result;
@@ -123,7 +123,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 visited.Add(current);
                 result.ReachableNodes.Add(current);
 
-                var connectedNodes = GetConnectedOutputNodes(current);
+                // Get all connected nodes for reachability (includes backwards trace for data providers)
+                var connectedNodes = GetConnectedNodesForReachability(current);
 
                 foreach (var connected in connectedNodes)
                 {
@@ -140,7 +141,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
         }
 
         /// <summary>
-        /// Gets all nodes connected to the output ports of the given node.
+        /// Gets all nodes connected to the output ports of the given node (forward direction only).
+        /// Used for cycle detection where we only want forward flow.
         /// </summary>
         private List<INode> GetConnectedOutputNodes(INode node)
         {
@@ -164,6 +166,47 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                             if (connectedNode != null)
                             {
                                 connectedNodes.Add(connectedNode);
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Port access may fail for some node types
+            }
+
+            return connectedNodes;
+        }
+
+        /// <summary>
+        /// Gets all nodes connected for reachability analysis.
+        /// Includes forward connections plus special handling for StageNode's TaskGroupsInput
+        /// which receives from TaskGroupContextNode.Then (backwards trace for data providers).
+        /// </summary>
+        private List<INode> GetConnectedNodesForReachability(INode node)
+        {
+            // Start with forward connections
+            var connectedNodes = GetConnectedOutputNodes(node);
+
+            try
+            {
+                // Special handling: StageNode's TaskGroupsInput receives from TaskGroupContextNode.Then
+                // Trace backwards to find these "provider" nodes as reachable
+                if (node is StageNode stageNode)
+                {
+                    var taskGroupsInputPort = stageNode.GetInputPortByName("TaskGroupsInput");
+                    if (taskGroupsInputPort != null && taskGroupsInputPort.isConnected)
+                    {
+                        var inputConnectedPorts = new List<IPort>();
+                        taskGroupsInputPort.GetConnectedPorts(inputConnectedPorts);
+
+                        foreach (var connectedPort in inputConnectedPorts)
+                        {
+                            var providerNode = connectedPort.GetNode();
+                            if (providerNode != null)
+                            {
+                                connectedNodes.Add(providerNode);
                             }
                         }
                     }
@@ -258,7 +301,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
         }
 
         /// <summary>
-        /// Checks if a node is a data source node (variable/constant from Blackboard).
+        /// Checks if a node is a data source node (variable/constant from Blackboard or subgraph).
         /// These nodes provide data to other nodes but don't participate in flow traversal.
         /// </summary>
         private bool IsDataSourceNode(INode node)
@@ -268,6 +311,12 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             if (typeName.Contains("VariableNode") ||
                 typeName.Contains("ConstantNode") ||
                 typeName.Contains("BlackboardNode"))
+            {
+                return true;
+            }
+
+            // Subgraph nodes are data sources - they provide graph references, not flow
+            if (node is ISubgraphNode)
             {
                 return true;
             }

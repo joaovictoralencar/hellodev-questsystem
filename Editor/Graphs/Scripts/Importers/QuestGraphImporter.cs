@@ -95,10 +95,6 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Importers
                 }
             }
 
-            if (inlineTasks.Count > 0)
-            {
-                Debug.Log($"[QuestGraphImporter] Added {inlineTasks.Count} inline task(s) as sub-assets to '{quest.name}'");
-            }
         }
     }
 }

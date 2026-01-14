@@ -125,10 +125,11 @@ A visual node-based editor for designing quests using Unity's Graph Toolkit.
 
 **Node Types:**
 - `QuestStartNode` - Entry point with quest metadata
-- `StageNode` - Quest stages with task groups
+- `StageNode` - Quest stages with task groups (multi-capacity input)
 - `TaskNode` - Individual tasks (int, bool, string, etc.)
 - `TaskGroupNode` - Groups of tasks with completion mode
 - `ChoiceNode` - Player choice branches
+- `TransitionNode` - Configurable stage transitions with triggers and conditions
 - `ConditionGateNode` - Conditional flow control
 - `RewardNode` - Quest rewards
 - `WorldFlagSetNode` - Set world flags on completion
@@ -1070,6 +1071,12 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 - Odin Inspector (for enhanced inspectors)
 
 ## Changelog
+
+### v3.10.0 (2026-01-14)
+**TransitionNode & Port Capacity:**
+- Added `TransitionNode` for configurable stage transitions with trigger types (OnGroupsComplete, OnConditionsMet, Manual), priority ordering, and optional conditions input
+- Added `PortCapacityHelper` utility for setting port capacity via reflection (workaround for internal Graph Toolkit API)
+- `StageNode` input port now accepts multiple connections, allowing multiple TransitionNodes to target the same stage
 
 ### v3.7.0 (2026-01-05)
 **Native Subgraph Migration:**

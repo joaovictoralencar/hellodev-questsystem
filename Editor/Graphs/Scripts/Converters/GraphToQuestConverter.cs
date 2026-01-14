@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HelloDev.QuestSystem.QuestGraph.Editor.Nodes;
 using HelloDev.QuestSystem.QuestGraph.Editor.Validation;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -9,6 +10,7 @@ using HelloDev.QuestSystem.TaskGroups;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 {
@@ -34,6 +36,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
         // Track inline tasks created during conversion for sub-asset registration
         private List<Task_SO> _createdInlineTasks = new();
+
+        // Store LocalizedString mappings for reflection-based fallback
+        // Key: stage index (in order they appear in stages list), Value: journalEntry LocalizedString
+        private Dictionary<int, LocalizedString> _stageJournalEntries = new();
 
         #endregion
 
@@ -85,8 +91,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             try
             {
-                // Clear inline tasks from previous conversions
+                // Clear data from previous conversions
                 _createdInlineTasks.Clear();
+                _stageJournalEntries.Clear();
 
                 // Create or use existing asset
                 var quest = existing != null ? existing : ScriptableObject.CreateInstance<Quest_SO>();
@@ -96,6 +103,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
                 // Pass 2: Build Quest_SO structure
                 BuildQuestData(graph, quest);
+
+                // Pass 3: Apply LocalizedStrings via reflection (fallback for SerializedProperty issues)
+                ApplyLocalizedStringsViaReflection(quest);
 
                 return quest;
             }
@@ -204,22 +214,21 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
         /// <summary>
         /// Finds TaskGroupContextNodes connected to a StageNode.
-        /// TaskGroups are connected via TaskGroupContextNode's "In" port from StageNode's ports.
+        /// TaskGroups connect via TaskGroupContextNode.Then to StageNode's "TaskGroupsInput" port.
         /// </summary>
         private List<TaskGroupContextNode> FindConnectedTaskGroupContexts(StageNode stageNode)
         {
             var taskGroups = new List<TaskGroupContextNode>();
 
-            // TaskGroupContextNodes should be connected to the stage
-            // Check all TaskGroupContextNodes and see which ones have their "In" port connected to this stage
+            // Find TaskGroupContextNodes whose "Then" output connects to this stage's TaskGroupsInput
             foreach (var node in _allNodes.OfType<TaskGroupContextNode>())
             {
                 try
                 {
-                    var inPort = node.GetInputPortByName("In");
-                    if (inPort != null && inPort.isConnected)
+                    var thenPort = node.GetOutputPortByName("Then");
+                    if (thenPort != null && thenPort.isConnected)
                     {
-                        var connectedNode = inPort.firstConnectedPort?.GetNode();
+                        var connectedNode = thenPort.firstConnectedPort?.GetNode();
                         if (connectedNode == stageNode)
                         {
                             taskGroups.Add(node);
@@ -264,15 +273,15 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 }
             }
 
-            // Also check for TaskGroupContextNodes connected in the main quest graph
+            // Also check for TaskGroupContextNodes whose "Then" connects to this subgraph node
             foreach (var node in _allNodes.OfType<TaskGroupContextNode>())
             {
                 try
                 {
-                    var inPort = node.GetInputPortByName("In");
-                    if (inPort != null && inPort.isConnected)
+                    var thenPort = node.GetOutputPortByName("Then");
+                    if (thenPort != null && thenPort.isConnected)
                     {
-                        var connectedNode = inPort.firstConnectedPort?.GetNode();
+                        var connectedNode = thenPort.firstConnectedPort?.GetNode();
                         if (connectedNode == subgraphNode)
                         {
                             taskGroups.Add(node);
@@ -313,39 +322,85 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         {
             var so = new SerializedObject(quest);
 
-            // Copy identity fields
-            so.FindProperty("devName").stringValue = graph.DevName;
+            // Check for QuestNode in Define Mode - use its values over graph fields
+            var questNode = _allNodes.OfType<QuestNode>().FirstOrDefault();
+            bool useQuestNode = questNode != null && !questNode.UseQuestAsset;
+
+            // Copy identity fields - prefer QuestNode (Define mode) over graph fields
+            var devName = useQuestNode ? questNode.DevName : graph.DevName;
+            var questType = useQuestNode ? questNode.QuestType : graph.QuestType;
+            var recommendedLevel = useQuestNode ? questNode.RecommendedLevel : graph.RecommendedLevel;
+
+            so.FindProperty("devName").stringValue = devName;
             so.FindProperty("questId").stringValue = graph.QuestId;
-            so.FindProperty("questType").objectReferenceValue = graph.QuestType;
-            so.FindProperty("recommendedLevel").intValue = graph.RecommendedLevel;
+            so.FindProperty("questType").objectReferenceValue = questType;
+            so.FindProperty("recommendedLevel").intValue = recommendedLevel;
 
-            // Copy display fields
-            CopyLocalizedString(so, "displayName", graph.DisplayName);
-            CopyLocalizedString(so, "questDescription", graph.QuestDescription);
-            CopyLocalizedString(so, "questLocation", graph.QuestLocation);
-            so.FindProperty("questSprite").objectReferenceValue = graph.QuestSprite;
+            // Copy display fields - prefer QuestNode (Define mode) over graph fields
+            var displayName = useQuestNode ? questNode.DisplayNameLocalized : graph.DisplayName;
+            var description = useQuestNode ? questNode.Description : graph.QuestDescription;
+            var location = useQuestNode ? questNode.Location : graph.QuestLocation;
+            var sprite = useQuestNode ? questNode.QuestSprite : graph.QuestSprite;
 
-            // Copy conditions
-            CopyConditionList(so, "startConditions", graph.StartConditions);
-            CopyConditionList(so, "failureConditions", graph.FailureConditions);
+            CopyLocalizedString(so, "displayName", displayName);
+            CopyLocalizedString(so, "questDescription", description);
+            CopyLocalizedString(so, "questLocation", location);
+            so.FindProperty("questSprite").objectReferenceValue = sprite;
 
-            // Copy rewards - combine graph rewards and RewardNode rewards
+            // Copy conditions - prefer QuestNode's context inputs over graph fields
+            var startConditions = useQuestNode
+                ? CollectConditionsFromQuestNode(questNode, "TriggerConditionsInput")
+                : graph.StartConditions;
+            var failureConditions = useQuestNode
+                ? CollectConditionsFromQuestNode(questNode, "FailConditionsInput")
+                : graph.FailureConditions;
+            var globalTaskFailure = useQuestNode
+                ? CollectConditionsFromQuestNode(questNode, "GlobalTaskFailureInput")
+                : new List<HelloDev.Conditions.Condition_SO>();
+
+            CopyConditionList(so, "startConditions", startConditions);
+            CopyConditionList(so, "failureConditions", failureConditions);
+            CopyConditionList(so, "globalTaskFailureConditions", globalTaskFailure);
+
+            // Copy rewards - prefer QuestNode context, fall back to graph fields and legacy nodes
             var allRewards = new List<RewardInstance>();
-            if (graph.Rewards != null)
-            {
-                allRewards.AddRange(graph.Rewards);
-            }
 
-            // Add rewards from RewardNodes in the graph
-            foreach (var rewardNode in _rewardNodes)
+            if (useQuestNode)
             {
-                if (rewardNode.Rewards != null)
+                // QuestNode Define mode: get rewards from connected RewardContextNode
+                allRewards.AddRange(CollectRewardsFromQuestNode(questNode));
+            }
+            else
+            {
+                // Fallback: Graph's serialized rewards list
+                if (graph.Rewards != null)
                 {
-                    foreach (var reward in rewardNode.Rewards)
+                    allRewards.AddRange(graph.Rewards);
+                }
+
+                // Legacy: RewardNode instances in the graph
+                foreach (var rewardNode in _rewardNodes)
+                {
+                    if (rewardNode.Rewards != null)
                     {
-                        if (reward.IsValid)
+                        foreach (var reward in rewardNode.Rewards)
                         {
-                            allRewards.Add(reward);
+                            if (reward.IsValid)
+                            {
+                                allRewards.Add(reward);
+                            }
+                        }
+                    }
+                }
+
+                // Legacy: All RewardContextNodes in graph (when not using QuestNode)
+                foreach (var rewardContext in _allNodes.OfType<RewardContextNode>())
+                {
+                    foreach (var block in rewardContext.blockNodes.OfType<RewardBlock>())
+                    {
+                        if (block.IsValid)
+                        {
+                            allRewards.Add(block.ToRewardInstance());
                         }
                     }
                 }
@@ -371,6 +426,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 .OrderBy(k => k)
                 .ToList();
 
+            int arrayIndex = 0;
             foreach (var stageIndex in allStageIndices)
             {
                 stagesProperty.InsertArrayElementAtIndex(stagesProperty.arraySize);
@@ -379,23 +435,26 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 // Check if it's an inline StageNode or a stage subgraph node
                 if (_stageNodeLookup.TryGetValue(stageIndex, out var stageNode))
                 {
-                    BuildStage(stageProperty, stageNode);
+                    BuildStage(stageProperty, stageNode, arrayIndex);
                 }
                 else if (_stageSubgraphLookup.TryGetValue(stageIndex, out var subgraphNode))
                 {
-                    BuildStageFromSubgraph(stageProperty, subgraphNode);
+                    BuildStageFromSubgraph(stageProperty, subgraphNode, arrayIndex);
                 }
+                arrayIndex++;
             }
         }
 
-        private void BuildStage(SerializedProperty stageProperty, StageNode stageNode)
+        private void BuildStage(SerializedProperty stageProperty, StageNode stageNode, int arrayIndex)
         {
             // Identity
             stageProperty.FindPropertyRelative("stageIndex").intValue = stageNode.StageIndex;
             stageProperty.FindPropertyRelative("stageName").stringValue = stageNode.StageName;
 
-            // Display
-            CopyLocalizedStringToProperty(stageProperty, "journalEntry", stageNode.JournalEntry);
+            // Display - store for reflection fallback
+            var journalEntry = stageNode.JournalEntry;
+            _stageJournalEntries[arrayIndex] = journalEntry;
+            CopyLocalizedStringToProperty(stageProperty, "journalEntry", journalEntry);
             stageProperty.FindPropertyRelative("stageIcon").objectReferenceValue = stageNode.StageIcon;
 
             // Flags
@@ -410,7 +469,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             BuildTransitions(stageProperty.FindPropertyRelative("transitions"), stageNode);
         }
 
-        private void BuildStageFromSubgraph(SerializedProperty stageProperty, ISubgraphNode subgraphNode)
+        private void BuildStageFromSubgraph(SerializedProperty stageProperty, ISubgraphNode subgraphNode, int arrayIndex)
         {
             var stageGraph = subgraphNode.GetSubgraph() as StageGraph;
 
@@ -426,6 +485,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 // Display - check I/O variable ports with serialized field fallback
                 var journalEntry = GraphTraversalUtility.ResolveSubgraphInput(
                     subgraphNode, "JournalEntry", stageGraph.JournalEntry);
+                _stageJournalEntries[arrayIndex] = journalEntry;
                 CopyLocalizedStringToProperty(stageProperty, "journalEntry", journalEntry);
 
                 stageProperty.FindPropertyRelative("stageIcon").objectReferenceValue =
@@ -620,17 +680,48 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             if (stageNode.IsTerminal)
                 return;
 
-            // Then transition (success path)
-            var thenTarget = GraphTraversalUtility.GetConnectedStageIndex(stageNode, "Then");
-            if (thenTarget >= 0)
+            // Get all nodes connected to the "Then" output port
+            var connectedNodes = GraphTraversalUtility.GetAllConnectedNodes(stageNode, "Then");
+
+            foreach (var connectedNode in connectedNodes)
             {
-                AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
+                switch (connectedNode)
+                {
+                    case TransitionNode transitionNode:
+                        // Use TransitionNode's full configuration
+                        AddTransitionFromNode(transitionsProperty, transitionNode);
+                        break;
+
+                    case StageNode targetStage:
+                        // Direct Stage→Stage connection: implicit OnGroupsComplete
+                        AddTransition(transitionsProperty, targetStage.StageIndex, TransitionTrigger.OnGroupsComplete);
+                        break;
+
+                    case ISubgraphNode subgraphNode when subgraphNode.GetSubgraph() is StageGraph stageGraph:
+                        // Direct Stage→StageSubgraph connection: implicit OnGroupsComplete
+                        AddTransition(transitionsProperty, stageGraph.StageIndex, TransitionTrigger.OnGroupsComplete);
+                        break;
+                }
             }
-            // Player choices
-            var choices = _stageChoices[stageNode];
-            foreach (var choice in choices)
+
+            // If no transitions were added from "Then" port but we have connected nodes, warn
+            if (connectedNodes.Count == 0)
             {
-                AddChoiceTransition(transitionsProperty, choice);
+                // Check for legacy direct connection (GetConnectedStageIndex handles single connection)
+                var thenTarget = GraphTraversalUtility.GetConnectedStageIndex(stageNode, "Then");
+                if (thenTarget >= 0)
+                {
+                    AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
+                }
+            }
+
+            // Player choices (from Choices output port)
+            if (_stageChoices.TryGetValue(stageNode, out var choices))
+            {
+                foreach (var choice in choices)
+                {
+                    AddChoiceTransition(transitionsProperty, choice);
+                }
             }
         }
 
@@ -707,11 +798,43 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             if (stageGraph != null && stageGraph.IsTerminal)
                 return;
 
-            // Then transition (success path) - check for "Then" port on the subgraph node
-            var thenTarget = GraphTraversalUtility.GetConnectedStageIndex(subgraphNode, "Then");
-            if (thenTarget >= 0)
+            // Cast to INode to access port methods
+            var node = subgraphNode as INode;
+            if (node == null)
+                return;
+
+            // Get all nodes connected to the "Then" output port
+            var connectedNodes = GraphTraversalUtility.GetAllConnectedNodes(node, "Then");
+
+            foreach (var connectedNode in connectedNodes)
             {
-                AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
+                switch (connectedNode)
+                {
+                    case TransitionNode transitionNode:
+                        // Use TransitionNode's full configuration
+                        AddTransitionFromNode(transitionsProperty, transitionNode);
+                        break;
+
+                    case StageNode targetStage:
+                        // Direct connection: implicit OnGroupsComplete
+                        AddTransition(transitionsProperty, targetStage.StageIndex, TransitionTrigger.OnGroupsComplete);
+                        break;
+
+                    case ISubgraphNode targetSubgraph when targetSubgraph.GetSubgraph() is StageGraph targetStageGraph:
+                        // Direct connection: implicit OnGroupsComplete
+                        AddTransition(transitionsProperty, targetStageGraph.StageIndex, TransitionTrigger.OnGroupsComplete);
+                        break;
+                }
+            }
+
+            // Fallback for legacy single connection
+            if (connectedNodes.Count == 0)
+            {
+                var thenTarget = GraphTraversalUtility.GetConnectedStageIndex(node, "Then");
+                if (thenTarget >= 0)
+                {
+                    AddTransition(transitionsProperty, thenTarget, TransitionTrigger.OnGroupsComplete);
+                }
             }
         }
 
@@ -748,18 +871,88 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         }
 
         private void AddTransition(SerializedProperty transitionsProperty, int targetIndex,
-            TransitionTrigger trigger, string label = null)
+            TransitionTrigger trigger, string label = null, int priority = 0)
         {
             transitionsProperty.InsertArrayElementAtIndex(transitionsProperty.arraySize);
             var transProperty = transitionsProperty.GetArrayElementAtIndex(transitionsProperty.arraySize - 1);
 
             transProperty.FindPropertyRelative("targetStageIndex").intValue = targetIndex;
             transProperty.FindPropertyRelative("trigger").enumValueIndex = (int)trigger;
+            transProperty.FindPropertyRelative("priority").intValue = priority;
 
             if (!string.IsNullOrEmpty(label))
             {
                 transProperty.FindPropertyRelative("transitionLabel").stringValue = label;
             }
+        }
+
+        /// <summary>
+        /// Adds a transition from a TransitionNode with full configuration.
+        /// </summary>
+        private void AddTransitionFromNode(SerializedProperty transitionsProperty, TransitionNode transitionNode)
+        {
+            // Get target stage from TransitionNode's "To" output port
+            var targetIndex = transitionNode.TargetStageIndex;
+            if (targetIndex < 0)
+            {
+                _context.AddWarning($"TransitionNode '{transitionNode.Label}' has no target stage connected");
+                return;
+            }
+
+            transitionsProperty.InsertArrayElementAtIndex(transitionsProperty.arraySize);
+            var transProperty = transitionsProperty.GetArrayElementAtIndex(transitionsProperty.arraySize - 1);
+
+            // Basic fields from TransitionNode
+            transProperty.FindPropertyRelative("targetStageIndex").intValue = targetIndex;
+            transProperty.FindPropertyRelative("trigger").enumValueIndex = (int)transitionNode.Trigger;
+            transProperty.FindPropertyRelative("priority").intValue = transitionNode.Priority;
+
+            if (!string.IsNullOrEmpty(transitionNode.Label))
+            {
+                transProperty.FindPropertyRelative("transitionLabel").stringValue = transitionNode.Label;
+            }
+
+            // Collect conditions from connected ConditionContextNode
+            var conditions = CollectConditionsFromTransitionNode(transitionNode);
+            var conditionsProperty = transProperty.FindPropertyRelative("conditions");
+            conditionsProperty.ClearArray();
+
+            foreach (var condition in conditions)
+            {
+                if (condition != null)
+                {
+                    conditionsProperty.InsertArrayElementAtIndex(conditionsProperty.arraySize);
+                    conditionsProperty.GetArrayElementAtIndex(conditionsProperty.arraySize - 1).objectReferenceValue = condition;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collects conditions from a TransitionNode's ConditionsInput port.
+        /// </summary>
+        private List<HelloDev.Conditions.Condition_SO> CollectConditionsFromTransitionNode(TransitionNode transitionNode)
+        {
+            var conditions = new List<HelloDev.Conditions.Condition_SO>();
+
+            if (transitionNode == null)
+                return conditions;
+
+            var connectedNode = GraphTraversalUtility.GetConnectedInputNode(transitionNode, "ConditionsInput");
+
+            if (connectedNode is ConditionContextNode conditionContext)
+            {
+                foreach (var block in conditionContext.blockNodes.OfType<ConditionBlock>())
+                {
+                    // Resolve condition from port (embedded or connected), fall back to option
+                    var condition = GraphTraversalUtility.ResolveDataPort<HelloDev.Conditions.Condition_SO>(
+                        block, "ConditionAssetInput", null) ?? block.ConditionAsset;
+
+                    if (condition != null)
+                        conditions.Add(condition);
+                }
+            }
+
+            return conditions;
         }
 
         private void AddChoiceTransition(SerializedProperty transitionsProperty, ChoiceNode choice)
@@ -864,6 +1057,63 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
         #region Helper Methods
 
+        /// <summary>
+        /// Collects conditions from a QuestNode's context input port.
+        /// Finds connected ConditionContextNode and extracts Condition_SO from its blocks.
+        /// </summary>
+        private List<HelloDev.Conditions.Condition_SO> CollectConditionsFromQuestNode(QuestNode questNode, string portName)
+        {
+            var conditions = new List<HelloDev.Conditions.Condition_SO>();
+
+            if (questNode == null)
+                return conditions;
+
+            var connectedNode = GraphTraversalUtility.GetConnectedInputNode(questNode, portName);
+
+            if (connectedNode is ConditionContextNode conditionContext)
+            {
+                foreach (var block in conditionContext.blockNodes.OfType<ConditionBlock>())
+                {
+                    // Resolve condition from port (embedded or connected), fall back to option
+                    var condition = GraphTraversalUtility.ResolveDataPort<HelloDev.Conditions.Condition_SO>(
+                        block, "ConditionAssetInput", null) ?? block.ConditionAsset;
+
+                    if (condition != null)
+                        conditions.Add(condition);
+                }
+            }
+
+            return conditions;
+        }
+
+        /// <summary>
+        /// Collects rewards from a QuestNode's RewardsInput context port.
+        /// Finds connected RewardContextNode and extracts RewardInstances from its blocks.
+        /// </summary>
+        private List<RewardInstance> CollectRewardsFromQuestNode(QuestNode questNode)
+        {
+            var rewards = new List<RewardInstance>();
+
+            if (questNode == null)
+                return rewards;
+
+            // Find the RewardContextNode connected to the RewardsInput port
+            var connectedNode = GraphTraversalUtility.GetConnectedInputNode(questNode, "RewardsInput");
+            if (connectedNode is RewardContextNode rewardContext)
+            {
+                // Extract rewards from blocks
+                foreach (var block in rewardContext.blockNodes.OfType<RewardBlock>())
+                {
+                    if (block.IsValid)
+                    {
+                        rewards.Add(block.ToRewardInstance());
+                    }
+                }
+            }
+
+            return rewards;
+        }
+
         private void CopyLocalizedString(SerializedObject so, string propertyName, UnityEngine.Localization.LocalizedString source)
         {
             var prop = so.FindProperty(propertyName);
@@ -876,22 +1126,20 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             CopyLocalizedStringToProperty(prop, source);
         }
 
-        private void CopyLocalizedStringToProperty(SerializedProperty prop, UnityEngine.Localization.LocalizedString source)
+        private void CopyLocalizedStringToProperty(SerializedProperty prop, LocalizedString source)
         {
             if (prop == null || source == null)
                 return;
 
-            // LocalizedString has m_TableReference and m_TableEntryReference
             var tableRef = prop.FindPropertyRelative("m_TableReference");
             var entryRef = prop.FindPropertyRelative("m_TableEntryReference");
 
             if (tableRef != null && source.TableReference.TableCollectionNameGuid != Guid.Empty)
             {
-                var tableGuid = tableRef.FindPropertyRelative("m_TableCollectionNameGuid");
-                if (tableGuid != null)
+                var tableCollectionName = tableRef.FindPropertyRelative("m_TableCollectionName");
+                if (tableCollectionName != null)
                 {
-                    // TableReference uses a serialized GUID string
-                    tableGuid.stringValue = source.TableReference.TableCollectionNameGuid.ToString();
+                    tableCollectionName.stringValue = "GUID:" + source.TableReference.TableCollectionNameGuid.ToString("N");
                 }
             }
 
@@ -951,6 +1199,55 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 if (amountProp != null)
                     amountProp.intValue = reward.Amount;
             }
+        }
+
+        #endregion
+
+        #region Reflection-Based LocalizedString Assignment
+
+        /// <summary>
+        /// Applies LocalizedStrings directly via reflection as a fallback for SerializedProperty issues.
+        /// This bypasses Unity's serialization system entirely by directly setting field values.
+        /// </summary>
+        private void ApplyLocalizedStringsViaReflection(Quest_SO quest)
+        {
+            if (_stageJournalEntries.Count == 0)
+                return;
+
+            var stagesField = typeof(Quest_SO).GetField("stages", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (stagesField == null)
+                return;
+
+            var stagesList = stagesField.GetValue(quest) as System.Collections.IList;
+            if (stagesList == null)
+                return;
+
+            var journalEntryField = typeof(QuestStage).GetField("journalEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (journalEntryField == null)
+                return;
+
+            foreach (var kvp in _stageJournalEntries)
+            {
+                int arrayIndex = kvp.Key;
+                var localizedString = kvp.Value;
+
+                if (arrayIndex < stagesList.Count)
+                {
+                    var stage = stagesList[arrayIndex];
+                    if (stage != null && localizedString != null)
+                    {
+                        bool hasTable = localizedString.TableReference.TableCollectionNameGuid != Guid.Empty;
+                        bool hasKey = localizedString.TableEntryReference.KeyId != 0;
+
+                        if (hasTable || hasKey)
+                        {
+                            journalEntryField.SetValue(stage, localizedString);
+                        }
+                    }
+                }
+            }
+
+            EditorUtility.SetDirty(quest);
         }
 
         #endregion

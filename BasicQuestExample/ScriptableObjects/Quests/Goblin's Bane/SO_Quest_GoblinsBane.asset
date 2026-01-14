@@ -71,7 +71,7 @@ MonoBehaviour:
     - targetStageIndex: 2
       trigger: 0
       conditions:
-      - {fileID: 11400000, guid: f456c35eaafcb0d4fb1a6f79be5411ca, type: 2}
+      - {fileID: 11400000, guid: 67a14bcf1ebfaba448012188c6993d66, type: 2}
       transitionLabel: Skip to Boss (campsite found)
       priority: 1
       isPlayerChoice: 0
@@ -250,9 +250,7 @@ MonoBehaviour:
     isTerminal: 1
   startConditions:
   - {fileID: 11400000, guid: c49ce0457922ab740985a6eab990c1dd, type: 2}
-  - {fileID: 11400000, guid: e1f2a3b4c5d6789012345678abcdef11, type: 2}
-  failureConditions:
-  - {fileID: 11400000, guid: d3a4504bdb0d4d241aa22d692d773d97, type: 2}
+  failureConditions: []
   globalTaskFailureConditions:
   - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
   rewards:
