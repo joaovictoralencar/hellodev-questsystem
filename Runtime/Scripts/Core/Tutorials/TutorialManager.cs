@@ -197,9 +197,9 @@ namespace HelloDev.QuestSystem.Tutorials
         public void Shutdown()
         {
             // Unregister snapshot provider from unified save system
-            if (_snapshotProvider != null && unifiedSaveLocator != null)
+            if (_snapshotProvider != null && unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
             {
-                unifiedSaveLocator.UnregisterSystem(_snapshotProvider);
+                unifiedSaveLocator.Manager.UnregisterSystem(_snapshotProvider);
                 QuestLogger.LogVerbose(LogSubsystem.Tutorial, "TutorialSnapshotProvider unregistered from unified save system");
             }
             _snapshotProvider = null;
@@ -292,14 +292,14 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             _snapshotProvider = new TutorialSnapshotProvider(this);
 
-            if (unifiedSaveLocator != null)
+            if (unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
             {
-                unifiedSaveLocator.RegisterSystem(_snapshotProvider);
+                unifiedSaveLocator.Manager.RegisterSystem(_snapshotProvider);
                 QuestLogger.Log(LogSubsystem.Tutorial, "TutorialSnapshotProvider registered with unified save system");
             }
             else
             {
-                QuestLogger.LogVerbose(LogSubsystem.Tutorial, "No UnifiedSaveLocator assigned - snapshot provider created but not registered");
+                QuestLogger.LogVerbose(LogSubsystem.Tutorial, "No UnifiedSaveLocator assigned or not available - snapshot provider created but not registered");
             }
         }
 

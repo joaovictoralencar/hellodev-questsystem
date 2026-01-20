@@ -462,9 +462,9 @@ namespace HelloDev.QuestSystem
         {
             _snapshotProvider = new QuestSnapshotProvider(this, worldFlagLocator, GetAllWorldFlags);
 
-            if (unifiedSaveLocator != null)
+            if (unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
             {
-                unifiedSaveLocator.RegisterSystem(_snapshotProvider);
+                unifiedSaveLocator.Manager.RegisterSystem(_snapshotProvider);
                 QuestLogger.Log(LogSubsystem.Manager, "QuestSnapshotProvider registered with unified save system");
             }
             else
@@ -548,9 +548,9 @@ namespace HelloDev.QuestSystem
                 return;
 
             // Unregister snapshot provider from unified save system
-            if (_snapshotProvider != null && unifiedSaveLocator != null)
+            if (_snapshotProvider != null && unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
             {
-                unifiedSaveLocator.UnregisterSystem(_snapshotProvider);
+                unifiedSaveLocator.Manager.UnregisterSystem(_snapshotProvider);
                 QuestLogger.LogVerbose(LogSubsystem.Manager, "QuestSnapshotProvider unregistered from unified save system");
             }
             _snapshotProvider = null;

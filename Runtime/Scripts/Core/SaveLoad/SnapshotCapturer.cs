@@ -179,18 +179,19 @@ namespace HelloDev.QuestSystem.SaveLoad
                 return snapshot;
             }
 
-            // Get runtime values from locator
+            // Get runtime values from manager
+            var manager = flagLocator.Manager;
             switch (flag)
             {
                 case WorldFlagBool_SO boolFlag:
                     snapshot.IsBoolFlag = true;
-                    var boolRuntime = flagLocator.GetBoolFlag(boolFlag);
+                    var boolRuntime = manager.GetBoolFlag(boolFlag);
                     snapshot.BoolValue = boolRuntime?.Value ?? boolFlag.DefaultValue;
                     break;
 
                 case WorldFlagInt_SO intFlag:
                     snapshot.IsBoolFlag = false;
-                    var intRuntime = flagLocator.GetIntFlag(intFlag);
+                    var intRuntime = manager.GetIntFlag(intFlag);
                     snapshot.IntValue = intRuntime?.Value ?? intFlag.DefaultValue;
                     break;
             }

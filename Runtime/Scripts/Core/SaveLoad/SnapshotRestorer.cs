@@ -46,18 +46,19 @@ namespace HelloDev.QuestSystem.SaveLoad
                 }
 
                 // Ensure flag is registered
-                flagLocator.RegisterFlag(flag);
+                var manager = flagLocator.Manager;
+                manager.RegisterFlag(flag);
 
-                // Set value via locator
+                // Set value via manager
                 switch (flag)
                 {
                     case WorldFlagBool_SO boolFlag:
-                        flagLocator.SetBoolValue(boolFlag, snapshot.BoolValue);
+                        manager.SetBoolValue(boolFlag, snapshot.BoolValue);
                         QuestLogger.LogVerbose(LogSubsystem.Save, $"Restored bool flag '{boolFlag.FlagName}' = {snapshot.BoolValue}");
                         break;
 
                     case WorldFlagInt_SO intFlag:
-                        flagLocator.SetIntValue(intFlag, snapshot.IntValue);
+                        manager.SetIntValue(intFlag, snapshot.IntValue);
                         QuestLogger.LogVerbose(LogSubsystem.Save, $"Restored int flag '{intFlag.FlagName}' = {snapshot.IntValue}");
                         break;
                 }
