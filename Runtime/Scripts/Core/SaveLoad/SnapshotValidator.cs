@@ -8,7 +8,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 {
     /// <summary>
     /// Utility class for validating quest system snapshots before restoration.
-    /// Extracted from QuestSaveManager for single responsibility.
+    /// Used by QuestSnapshotProvider for save/load validation.
     /// </summary>
     public static class SnapshotValidator
     {

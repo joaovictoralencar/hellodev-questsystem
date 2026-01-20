@@ -1,6 +1,6 @@
- # Quest Graph Editor - Designer Workflow Guide
+# Quest Graph Editor - Designer Workflow Guide
 
-*Version 1.1 | For: Game Designers | Prerequisites: Unity Editor basics*
+*Version 1.2 | For: Game Designers | Prerequisites: Unity Editor basics*
 
 This guide shows how to use the Quest Graph Editor to create complex questlines with branching paths, player choices, and multiple endings - all without writing code.
 
@@ -14,14 +14,15 @@ This guide shows how to use the Quest Graph Editor to create complex questlines 
 4. [Working with Task Groups](#working-with-task-groups)
 5. [Stage Indexing Best Practices](#stage-indexing-best-practices)
 6. [Conditions and Gating](#conditions-and-gating)
-7. [Event Triggers](#event-triggers)
-8. [World Flags and Consequences](#world-flags-and-consequences)
-9. [Rewards](#rewards)
-10. [Creating QuestLines](#creating-questlines)
-11. [Validation and Debugging](#validation-and-debugging)
-12. [Visual Design Tips](#visual-design-tips)
-13. [Complete Example: Building "The Merchant's Dilemma"](#complete-example-building-the-merchants-dilemma)
-14. [Workflow Summary](#workflow-summary)
+7. [TransitionNode (Advanced Stage Transitions)](#transitionnode-advanced-stage-transitions)
+8. [Event Triggers](#event-triggers)
+9. [World Flags and Consequences](#world-flags-and-consequences)
+10. [Rewards](#rewards)
+11. [Creating QuestLines](#creating-questlines)
+12. [Validation and Debugging](#validation-and-debugging)
+13. [Visual Design Tips](#visual-design-tips)
+14. [Complete Example: Building "The Merchant's Dilemma"](#complete-example-building-the-merchants-dilemma)
+15. [Workflow Summary](#workflow-summary)
 
 > **Looking for step-by-step tutorials?**
 > - [Task Creation Tutorial](tutorial-creating-tasks.md) - Creating Bool, Int, Location, and Discovery tasks
@@ -133,7 +134,8 @@ Every graph type has a **Start Node** and specific nodes you can connect.
 | Node | Ports | Connect To |
 |------|-------|------------|
 | **QuestStartNode** | `FirstStage →` | StageNode |
-| **StageNode** | `← In`, `TaskGroups →`, `Then →`, `Else →`, `Choices →` | TaskGroupNode, StageNode, ChoiceNode |
+| **StageNode** | `← In` (multi), `TaskGroups →`, `Then →`, `Else →`, `Choices →` | TaskGroupNode, StageNode, ChoiceNode, TransitionNode |
+| **TransitionNode** | `← In`, `Conditions ←`, `Target →` | StageNode (In port accepts multiple sources) |
 | **ChoiceNode** | `← In`, `Target →` | StageNode |
 | **ConditionGateNode** | `← In`, `Then →`, `Else →` | StageNode, utility nodes |
 | **EventTriggerNode** | `← In`, `Then →` | StageNode, utility nodes |
@@ -341,6 +343,57 @@ ConditionGateNode (HasCompletedTutorial?)
 1. Create a Condition_SO asset
 2. In the ChoiceNode, add it to the **Conditions** list
 3. If conditions aren't met, the choice appears locked in UI
+
+---
+
+## TransitionNode (Advanced Stage Transitions)
+
+Use **TransitionNode** for configurable transitions between stages with trigger conditions and priority ordering.
+
+### When to Use TransitionNode
+
+| Scenario | Use |
+|----------|-----|
+| Simple sequential stages | StageNode's Then port |
+| Automatic transition after task completion | TransitionNode with OnGroupsComplete trigger |
+| Conditional skip (bypass a stage) | TransitionNode with OnConditionsMet trigger |
+| Manual progression (external trigger) | TransitionNode with Manual trigger |
+| Multiple paths to same stage | Multiple TransitionNodes targeting one StageNode |
+
+### TransitionNode Configuration
+
+| Property | Description |
+|----------|-------------|
+| **Trigger** | OnGroupsComplete, OnConditionsMet, or Manual |
+| **Priority** | Higher values evaluated first (default: 0) |
+| **Label** | Developer-friendly name for identification |
+| **Conditions** | Input port for condition checks |
+
+### Example: Conditional Stage Skip
+
+```
+Stage 0: Tutorial Intro
+    │
+    ├── TransitionNode (OnConditionsMet, Priority: 10)
+    │   Condition: HasCompletedTutorialBefore
+    │   Target → Stage 20 (Skip tutorial)
+    │
+    └── Then → Stage 10 (Normal path)
+
+Stage 10: Tutorial Steps
+    │
+    └── Then → Stage 20
+
+Stage 20: Main Quest (Terminal)
+```
+
+When `HasCompletedTutorialBefore` is true, the high-priority TransitionNode fires and skips directly to Stage 20. Otherwise, the normal Then connection proceeds to Stage 10.
+
+### Port Multi-Capacity
+
+StageNode's **In** port accepts multiple connections, allowing:
+- Multiple TransitionNodes targeting the same stage
+- Different sources (Then, Choices, TransitionNodes) converging
 
 ---
 

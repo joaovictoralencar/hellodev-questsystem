@@ -11,6 +11,10 @@ using Unity.GraphToolkit.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.SmartFormat.Extensions;
+using UnityEngine.Localization.SmartFormat.PersistentVariables;
+using IVariable = UnityEngine.Localization.SmartFormat.PersistentVariables.IVariable;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 {
@@ -563,6 +567,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             if (taskBlock == null)
                 return null;
 
+            Debug.Log($"[GraphToQuestConverter] GetTaskAssetFromBlock: {taskBlock.DevName}, IsDefineMode={taskBlock.IsDefineMode}, IsAssetMode={taskBlock.IsAssetMode}");
+
             if (taskBlock.IsDefineMode)
             {
                 // Create Task_SO from inline data
@@ -581,6 +587,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         /// </summary>
         private Task_SO CreateInlineTaskAssetFromBlock(TaskBlockBase taskBlock)
         {
+            Debug.Log($"[GraphToQuestConverter] CreateInlineTaskAssetFromBlock called for: {taskBlock?.DevName ?? "null"}");
+
             if (taskBlock == null)
             {
                 _context.AddWarning($"Task block is null");
@@ -595,11 +603,15 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                     _context.AddWarning($"Task '{taskBlock.DevName}' has invalid configuration for type {taskBlock.TaskTypeName}");
                 }
 
+                Debug.Log($"[GraphToQuestConverter] Calling taskBlock.CreateTaskAsset() for: {taskBlock.DevName}");
+
                 // Create the Task_SO asset using the block's factory method
                 var task = taskBlock.CreateTaskAsset();
 
+                Debug.Log($"[GraphToQuestConverter] Created task asset: {task?.name ?? "null"}");
+
                 // Name the asset for debugging and sub-asset identification
-                task.name = $"InlineTask_{taskBlock.DevName}_{_createdInlineTasks.Count}";
+                task.name = $"{taskBlock.DevName}_{_createdInlineTasks.Count}";
 
                 // Track for sub-asset registration
                 _createdInlineTasks.Add(task);
@@ -609,6 +621,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             catch (Exception ex)
             {
                 _context.AddError($"Failed to create inline task: {ex.Message}");
+                Debug.LogException(ex);
                 return null;
             }
         }
@@ -640,6 +653,8 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         /// </summary>
         private Task_SO CreateInlineTaskAssetFromNode(TaskBaseNode taskNode)
         {
+            Debug.Log($"[GraphToQuestConverter] CreateInlineTaskAssetFromNode called for: {taskNode?.DevName ?? "null"}");
+
             if (taskNode == null)
             {
                 _context.AddWarning($"Task node is null");
@@ -654,11 +669,15 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                     _context.AddWarning($"Task '{taskNode.DevName}' has invalid configuration for type {taskNode.TaskTypeName}");
                 }
 
+                Debug.Log($"[GraphToQuestConverter] Calling taskNode.CreateTaskAsset() for: {taskNode.DevName}");
+
                 // Create the Task_SO asset using the node's factory method
                 var task = taskNode.CreateTaskAsset();
 
+                Debug.Log($"[GraphToQuestConverter] Created task asset from node: {task?.name ?? "null"}");
+
                 // Name the asset for debugging and sub-asset identification
-                task.name = $"InlineTask_{taskNode.DevName}_{_createdInlineTasks.Count}";
+                task.name = $"{taskNode.DevName}_{_createdInlineTasks.Count}";
 
                 // Track for sub-asset registration
                 _createdInlineTasks.Add(task);
@@ -668,6 +687,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             catch (Exception ex)
             {
                 _context.AddError($"Failed to create inline task from node: {ex.Message}");
+                Debug.LogException(ex);
                 return null;
             }
         }
@@ -1113,19 +1133,108 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             return rewards;
         }
+        
+        static readonly FieldInfo VariablesSourceField =
+            typeof(LocalizedString).GetField("m_Variables", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private void CopyLocalizedString(SerializedObject so, string propertyName, UnityEngine.Localization.LocalizedString source)
+        static readonly FieldInfo VariablesDictField =
+            typeof(PersistentVariablesSource).GetField("m_Variables", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+        private void CopyLocalizedString(SerializedObject so, string propertyName, LocalizedString source)
         {
             var prop = so.FindProperty(propertyName);
-            CopyLocalizedStringToProperty(prop, source);
+            if (prop == null || source == null)
+                return;
+
+            so.ApplyModifiedProperties();
+            var target = GetTargetObjectOfProperty(prop) as LocalizedString;
+            if (target == null)
+                return;
+
+            CopyLocalizedStringObject(target, source);
+
+            EditorUtility.SetDirty(so.targetObject);
         }
 
+        private void CopyLocalizedStringObject(LocalizedString target, LocalizedString source)
+        {
+            target.TableReference = source.TableReference;
+            target.TableEntryReference = source.TableEntryReference;
+
+            CopySmartVariables(target, source);
+        }
+
+        private void CopySmartVariables(LocalizedString target, LocalizedString source)
+        {
+            if (target == null || source == null)
+                return;
+
+            if (VariablesSourceField == null || VariablesDictField == null)
+                return;
+
+            var srcSource = VariablesSourceField.GetValue(source) as PersistentVariablesSource;
+            if (srcSource == null)
+                return;
+
+            var srcDict = VariablesDictField.GetValue(srcSource) as Dictionary<string, IVariable>;
+            if (srcDict == null || srcDict.Count == 0)
+                return;
+
+            var formatter = LocalizationSettings.StringDatabase?.SmartFormatter;
+            if (formatter == null)
+                return;
+
+            var dstSource = new PersistentVariablesSource(formatter);
+            var dstDict = new Dictionary<string, IVariable>();
+
+            foreach (var pair in srcDict)
+            {
+                if (pair.Value == null)
+                    continue;
+
+                var clone = CloneVariable(pair.Value);
+                if (clone != null)
+                    dstDict[pair.Key] = clone;
+            }
+
+            VariablesDictField.SetValue(dstSource, dstDict);
+            VariablesSourceField.SetValue(target, dstSource);
+        }
+        
         private void CopyLocalizedStringToProperty(SerializedProperty parent, string propertyName, UnityEngine.Localization.LocalizedString source)
         {
             var prop = parent.FindPropertyRelative(propertyName);
             CopyLocalizedStringToProperty(prop, source);
         }
 
+        private IVariable CloneVariable(IVariable source)
+        {
+            if (source == null)
+                return null;
+
+            var type = source.GetType();
+            var clone = System.Activator.CreateInstance(type);
+
+            foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (field.IsInitOnly)
+                    continue;
+
+                try
+                {
+                    field.SetValue(clone, field.GetValue(source));
+                }
+                catch
+                {
+                    // ignora campos não copiáveis internamente
+                }
+            }
+
+            return clone as IVariable;
+        }
+
+        
         private void CopyLocalizedStringToProperty(SerializedProperty prop, LocalizedString source)
         {
             if (prop == null || source == null)
@@ -1259,6 +1368,59 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
         /// </summary>
         public ConversionContext Context => _context;
 
+        #endregion
+        
+        #region Utilities
+        
+        private static object GetTargetObjectOfProperty(SerializedProperty prop)
+        {
+            var path = prop.propertyPath.Replace(".Array.data[", "[");
+            object obj = prop.serializedObject.targetObject;
+
+            foreach (var element in path.Split('.'))
+            {
+                if (element.Contains("["))
+                {
+                    var name = element.Substring(0, element.IndexOf("["));
+                    var index = Convert.ToInt32(element.Substring(element.IndexOf("[")).Replace("[", "").Replace("]", ""));
+                    obj = GetValue(obj, name, index);
+                }
+                else
+                {
+                    obj = GetValue(obj, element);
+                }
+            }
+
+            return obj;
+        }
+
+        private static object GetValue(object source, string name)
+        {
+            if (source == null)
+                return null;
+
+            var type = source.GetType();
+            var f = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            if (f != null)
+                return f.GetValue(source);
+
+            var p = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            return p?.GetValue(source, null);
+        }
+
+        private static object GetValue(object source, string name, int index)
+        {
+            var enumerable = GetValue(source, name) as System.Collections.IEnumerable;
+            if (enumerable == null)
+                return null;
+
+            var enm = enumerable.GetEnumerator();
+            for (int i = 0; i <= index; i++)
+                if (!enm.MoveNext()) return null;
+
+            return enm.Current;
+        }
+        
         #endregion
     }
 }

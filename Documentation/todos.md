@@ -1,6 +1,6 @@
 # Quest System TODOs & Gaps
 
-*Last Updated: 2026-01-04*
+*Last Updated: 2026-01-14*
 
 ## Overview
 
@@ -251,6 +251,11 @@ QuestRuntime GetFirstActive(Func<QuestRuntime, bool> predicate);
 
 | Feature | Date | Location |
 |---------|------|----------|
+| TransitionNode & Port Multi-Capacity | 2026-01-14 | `Editor/Graphs/Scripts/Nodes/TransitionNode.cs` |
+| PortCapacityHelper utility | 2026-01-14 | `Editor/Graphs/Scripts/Utilities/PortCapacityHelper.cs` |
+| QuestChoiceNode for QuestLine branching | 2026-01-11 | `Editor/Graphs/Scripts/Nodes/QuestChoiceNode.cs` |
+| Graph Node UX Improvements (ports on nodes) | 2026-01-11 | `Editor/Graphs/Scripts/Nodes/` |
+| Native Subgraph Migration | 2026-01-05 | `Editor/Graphs/Scripts/` |
 | Quest Graph Editor v1.4 (Phases 1-7) | 2026-01-04 | `Editor/Graphs/` |
 | Graph Validation System | 2026-01-04 | `Editor/Graphs/Scripts/Validation/` |
 | Graph → ScriptableObject Conversion | 2026-01-04 | `Editor/Graphs/Scripts/Converters/` |
@@ -280,6 +285,10 @@ QuestRuntime GetFirstActive(Func<QuestRuntime, bool> predicate);
 
 | Version | Date | Major Changes |
 |---------|------|---------------|
+| 3.10.0 | 2026-01-14 | TransitionNode, PortCapacityHelper, StageNode multi-capacity input |
+| 3.9.0 | 2026-01-11 | QuestChoiceNode for QuestLine branching |
+| 3.8.0 | 2026-01-11 | Graph Node UX improvements (ports on nodes) |
+| 3.7.0 | 2026-01-05 | Native Subgraph Migration (Graph Variables) |
 | 3.6.0 | 2026-01-04 | Quest Graph Editor v1.4 (Phases 5-7 complete) |
 | 3.5.1 | 2026-01-03 | Logger ScriptableObject configuration |
 | 3.5.0 | 2026-01-02 | Multi-subscriber condition support |

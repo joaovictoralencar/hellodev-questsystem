@@ -34,7 +34,7 @@ MonoBehaviour:
     m_LocalVariables: []
   taskSprite: {fileID: 0}
   conditions:
-  - {fileID: 11400000, guid: cb2178a4910a0b54f87c46f9c2e2918a, type: 2}
-  - {fileID: 11400000, guid: 8d17665bc98f77041a38ebc4d0f4f43c, type: 2}
-  - {fileID: 11400000, guid: 243ecc7bb23fa8a438ea3ed7a1c53bf3, type: 2}
+  - {fileID: 11400000, guid: 30b8bfdcebb08244192bcd8be354912b, type: 2}
+  - {fileID: 11400000, guid: b113bc4ec578a794ab89803e972d9461, type: 2}
+  - {fileID: 11400000, guid: 74fa4f8c8d89a564da56b2b9a8a56df4, type: 2}
   failureConditions: []

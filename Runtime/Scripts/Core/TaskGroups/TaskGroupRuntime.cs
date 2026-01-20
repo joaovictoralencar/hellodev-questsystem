@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
@@ -13,8 +14,9 @@ namespace HelloDev.QuestSystem.TaskGroups
     /// Runtime representation of a task group, managing task state and group completion logic.
     /// Created from a TaskGroup (serialized data) at quest start.
     /// Implements <see cref="ITaskGroup"/> for testability and dependency injection.
+    /// Implements <see cref="IObjectiveGroup"/> for generic objective system compatibility.
     /// </summary>
-    public class TaskGroupRuntime : ITaskGroup
+    public class TaskGroupRuntime : ITaskGroup, IObjectiveGroup
     {
         #region Events
 
@@ -378,6 +380,147 @@ namespace HelloDev.QuestSystem.TaskGroups
                 FailGroup();
             }
             // Otherwise, other tasks continue (for OptionalXofY mode)
+        }
+
+        #endregion
+
+        #region Explicit IObjectiveGroup Implementation
+
+        // Backing fields for Action events
+        private event Action<IObjectiveGroup> _onStarted;
+        private event Action<IObjectiveGroup> _onProgressChanged;
+        private event Action<IObjectiveGroup> _onCompleted;
+        private event Action<IObjectiveGroup> _onFailed;
+        private event Action<IObjectiveGroup, IObjective> _onObjectiveCompleted;
+
+        /// <summary>
+        /// Gets the unique identifier for this group.
+        /// </summary>
+        string IObjectiveGroup.Id => GroupName;
+
+        /// <summary>
+        /// Gets the current state mapped to ObjectiveState.
+        /// </summary>
+        ObjectiveState IObjectiveGroup.State => MapTaskGroupStateToObjectiveState(CurrentState);
+
+        /// <summary>
+        /// Gets the overall progress of this group.
+        /// </summary>
+        float IObjectiveGroup.Progress => Progress;
+
+        /// <summary>
+        /// Gets the list of objectives (tasks) in this group.
+        /// </summary>
+        IReadOnlyList<IObjective> IObjectiveGroup.Objectives => Tasks.Cast<IObjective>().ToList();
+
+        /// <summary>
+        /// Gets the execution mode mapped to ObjectiveExecutionMode.
+        /// </summary>
+        ObjectiveExecutionMode IObjectiveGroup.ExecutionMode => MapTaskExecutionModeToObjectiveExecutionMode(ExecutionMode);
+
+        /// <summary>
+        /// Gets the number of objectives required to complete this group.
+        /// </summary>
+        int IObjectiveGroup.RequiredCount => RequiredCount;
+
+        /// <summary>
+        /// Gets the number of objectives that have been completed.
+        /// </summary>
+        int IObjectiveGroup.CompletedCount => CompletedTaskCount;
+
+        /// <summary>
+        /// Fired when the group starts.
+        /// </summary>
+        event Action<IObjectiveGroup> IObjectiveGroup.OnStarted
+        {
+            add
+            {
+                _onStarted += value;
+                OnGroupStarted.AddListener(_ => value?.Invoke(this));
+            }
+            remove => _onStarted -= value;
+        }
+
+        /// <summary>
+        /// Fired when the group's progress changes.
+        /// </summary>
+        event Action<IObjectiveGroup> IObjectiveGroup.OnProgressChanged
+        {
+            add
+            {
+                _onProgressChanged += value;
+                OnTaskInGroupUpdated.AddListener((_, _) => value?.Invoke(this));
+            }
+            remove => _onProgressChanged -= value;
+        }
+
+        /// <summary>
+        /// Fired when the group is completed.
+        /// </summary>
+        event Action<IObjectiveGroup> IObjectiveGroup.OnCompleted
+        {
+            add
+            {
+                _onCompleted += value;
+                OnGroupCompleted.AddListener(_ => value?.Invoke(this));
+            }
+            remove => _onCompleted -= value;
+        }
+
+        /// <summary>
+        /// Fired when the group fails.
+        /// </summary>
+        event Action<IObjectiveGroup> IObjectiveGroup.OnFailed
+        {
+            add
+            {
+                _onFailed += value;
+                OnGroupFailed.AddListener(_ => value?.Invoke(this));
+            }
+            remove => _onFailed -= value;
+        }
+
+        /// <summary>
+        /// Fired when an individual objective within the group is completed.
+        /// </summary>
+        event Action<IObjectiveGroup, IObjective> IObjectiveGroup.OnObjectiveCompleted
+        {
+            add
+            {
+                _onObjectiveCompleted += value;
+                OnTaskInGroupCompleted.AddListener((_, task) => value?.Invoke(this, task));
+            }
+            remove => _onObjectiveCompleted -= value;
+        }
+
+        /// <summary>
+        /// Maps TaskGroupState to ObjectiveState.
+        /// </summary>
+        private static ObjectiveState MapTaskGroupStateToObjectiveState(TaskGroupState state)
+        {
+            return state switch
+            {
+                TaskGroupState.NotStarted => ObjectiveState.NotStarted,
+                TaskGroupState.InProgress => ObjectiveState.InProgress,
+                TaskGroupState.Completed => ObjectiveState.Completed,
+                TaskGroupState.Failed => ObjectiveState.Failed,
+                _ => ObjectiveState.NotStarted
+            };
+        }
+
+        /// <summary>
+        /// Maps TaskExecutionMode to ObjectiveExecutionMode.
+        /// </summary>
+        private static ObjectiveExecutionMode MapTaskExecutionModeToObjectiveExecutionMode(TaskExecutionMode mode)
+        {
+            return mode switch
+            {
+                TaskExecutionMode.Sequential => ObjectiveExecutionMode.Sequential,
+                TaskExecutionMode.Parallel => ObjectiveExecutionMode.Parallel,
+                TaskExecutionMode.AnyOrder => ObjectiveExecutionMode.AnyOrder,
+                TaskExecutionMode.OptionalXofY => ObjectiveExecutionMode.OptionalXOfY,
+                _ => ObjectiveExecutionMode.Sequential
+            };
         }
 
         #endregion

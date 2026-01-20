@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.TaskGroups;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
@@ -13,8 +14,9 @@ namespace HelloDev.QuestSystem.Stages
     /// <summary>
     /// Runtime representation of a quest stage, managing task group execution and transitions.
     /// Created from a QuestStage (serialized data) at quest start.
+    /// Implements <see cref="IStage"/> for unified objective system compatibility.
     /// </summary>
-    public class QuestStageRuntime
+    public class QuestStageRuntime : IStage
     {
         #region Events
 
@@ -196,12 +198,14 @@ namespace HelloDev.QuestSystem.Stages
                 // Log stage start BEFORE starting the group (correct chronological order)
                 QuestLogger.LogStart(LogSubsystem.Stage, "Stage", StageName);
                 OnStageEntered.SafeInvoke(this);
+                RaiseIStageOnEntered();
                 TaskGroups[0].StartGroup();
             }
             else
             {
                 QuestLogger.LogStart(LogSubsystem.Stage, "Stage", $"{StageName} (no groups)");
                 OnStageEntered.SafeInvoke(this);
+                RaiseIStageOnEntered();
                 // If no task groups, immediately check for transitions
                 CheckAndExecuteTransition();
             }
@@ -219,6 +223,8 @@ namespace HelloDev.QuestSystem.Stages
 
             QuestLogger.LogComplete(LogSubsystem.Stage, "Stage", StageName);
             OnStageCompleted.SafeInvoke(this);
+            RaiseIStageOnCompleted();
+            RaiseIStageOnExited();
         }
 
         /// <summary>
@@ -233,6 +239,8 @@ namespace HelloDev.QuestSystem.Stages
 
             QuestLogger.LogFail(LogSubsystem.Stage, "Stage", StageName);
             OnStageFailed.SafeInvoke(this);
+            RaiseIStageOnFailed();
+            RaiseIStageOnExited();
         }
 
         /// <summary>
@@ -242,11 +250,18 @@ namespace HelloDev.QuestSystem.Stages
         {
             if (CurrentState == StageState.Completed || CurrentState == StageState.Skipped) return;
 
+            bool wasInProgress = CurrentState == StageState.InProgress;
             CurrentState = StageState.Skipped;
             UnsubscribeFromAllEvents();
 
             QuestLogger.LogVerbose(LogSubsystem.Stage, $"'{StageName}' skipped");
             OnStageSkipped.SafeInvoke(this);
+
+            // Raise IStage exited event if the stage was in progress (treated as completed for IStage)
+            if (wasInProgress)
+            {
+                RaiseIStageOnExited();
+            }
         }
 
         /// <summary>
@@ -410,6 +425,7 @@ namespace HelloDev.QuestSystem.Stages
                     TaskGroups[_currentGroupIndex].StartGroup();
                 }
                 OnStageUpdated.SafeInvoke(this);
+                RaiseIStageOnProgressChanged();
             }
         }
 
@@ -426,6 +442,7 @@ namespace HelloDev.QuestSystem.Stages
         {
             OnTaskInStageUpdated.SafeInvoke(this, task);
             OnStageUpdated.SafeInvoke(this);
+            RaiseIStageOnProgressChanged();
         }
 
         private void CheckConditionTransition(StageTransition transition)
@@ -473,6 +490,143 @@ namespace HelloDev.QuestSystem.Stages
                 Complete();
             }
         }
+
+        #endregion
+
+        #region IStage Explicit Implementation
+
+        // Backing fields for IStage events
+        private event Action<IStage> _onEntered;
+        private event Action<IStage> _onProgressChanged;
+        private event Action<IStage> _onCompleted;
+        private event Action<IStage> _onFailed;
+        private event Action<IStage> _onExited;
+
+        /// <summary>
+        /// Gets the index of this stage within its parent mission.
+        /// </summary>
+        int IStage.Index => StageIndex;
+
+        /// <summary>
+        /// Gets the unique identifier for this stage.
+        /// Uses the stage name as the ID since QuestStage doesn't have a separate stageId field.
+        /// </summary>
+        string IStage.Id => StageName;
+
+        /// <summary>
+        /// Gets the current state mapped to ObjectiveState.
+        /// </summary>
+        ObjectiveState IStage.State => CurrentState switch
+        {
+            StageState.NotReached => ObjectiveState.NotStarted,
+            StageState.InProgress => ObjectiveState.InProgress,
+            StageState.Completed => ObjectiveState.Completed,
+            StageState.Failed => ObjectiveState.Failed,
+            StageState.Skipped => ObjectiveState.Completed, // Treat skipped as completed for IStage
+            _ => ObjectiveState.NotStarted
+        };
+
+        /// <summary>
+        /// Gets the progress of this stage (0-1).
+        /// </summary>
+        float IStage.Progress => Progress;
+
+        /// <summary>
+        /// Gets the objective groups contained in this stage.
+        /// Returns TaskGroups cast to IObjectiveGroup (requires TaskGroupRuntime to implement IObjectiveGroup).
+        /// </summary>
+        IReadOnlyList<IObjectiveGroup> IStage.ObjectiveGroups =>
+            TaskGroups.OfType<IObjectiveGroup>().ToList();
+
+        /// <summary>
+        /// Gets whether this stage is a terminal (end) stage.
+        /// </summary>
+        bool IStage.IsTerminal => Data.IsTerminal;
+
+        /// <summary>
+        /// Gets whether this stage is optional.
+        /// </summary>
+        bool IStage.IsOptional => Data.IsOptional;
+
+        /// <summary>
+        /// Gets whether this stage is hidden from the player.
+        /// </summary>
+        bool IStage.IsHidden => Data.IsHidden;
+
+        /// <summary>
+        /// Fired when the stage is entered (becomes active).
+        /// </summary>
+        event Action<IStage> IStage.OnEntered
+        {
+            add => _onEntered += value;
+            remove => _onEntered -= value;
+        }
+
+        /// <summary>
+        /// Fired when the stage's progress changes.
+        /// </summary>
+        event Action<IStage> IStage.OnProgressChanged
+        {
+            add => _onProgressChanged += value;
+            remove => _onProgressChanged -= value;
+        }
+
+        /// <summary>
+        /// Fired when the stage is completed.
+        /// </summary>
+        event Action<IStage> IStage.OnCompleted
+        {
+            add => _onCompleted += value;
+            remove => _onCompleted -= value;
+        }
+
+        /// <summary>
+        /// Fired when the stage fails.
+        /// </summary>
+        event Action<IStage> IStage.OnFailed
+        {
+            add => _onFailed += value;
+            remove => _onFailed -= value;
+        }
+
+        /// <summary>
+        /// Fired when the stage is exited (no longer active).
+        /// </summary>
+        event Action<IStage> IStage.OnExited
+        {
+            add => _onExited += value;
+            remove => _onExited -= value;
+        }
+
+        /// <summary>
+        /// Raises the IStage.OnEntered event.
+        /// Called internally when stage is entered.
+        /// </summary>
+        private void RaiseIStageOnEntered() => _onEntered?.Invoke(this);
+
+        /// <summary>
+        /// Raises the IStage.OnProgressChanged event.
+        /// Called internally when stage progress changes.
+        /// </summary>
+        private void RaiseIStageOnProgressChanged() => _onProgressChanged?.Invoke(this);
+
+        /// <summary>
+        /// Raises the IStage.OnCompleted event.
+        /// Called internally when stage completes.
+        /// </summary>
+        private void RaiseIStageOnCompleted() => _onCompleted?.Invoke(this);
+
+        /// <summary>
+        /// Raises the IStage.OnFailed event.
+        /// Called internally when stage fails.
+        /// </summary>
+        private void RaiseIStageOnFailed() => _onFailed?.Invoke(this);
+
+        /// <summary>
+        /// Raises the IStage.OnExited event.
+        /// Called internally when stage is exited.
+        /// </summary>
+        private void RaiseIStageOnExited() => _onExited?.Invoke(this);
 
         #endregion
     }

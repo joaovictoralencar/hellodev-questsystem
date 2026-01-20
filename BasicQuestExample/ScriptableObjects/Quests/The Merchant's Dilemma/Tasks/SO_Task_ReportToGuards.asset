@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _description: Report the bandit location to the city guards and escort them.
   devName: ReportToGuards
+  taskId: 77771111-aaaa-bbbb-cccc-ddddeeee0002
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
@@ -33,5 +34,9 @@ MonoBehaviour:
     m_WaitForCompletion: 0
     m_LocalVariables: []
   taskSprite: {fileID: 0}
-  conditions: []
+  conditions:
+  - {fileID: 11400000, guid: 74fa4f8c8d89a564da56b2b9a8a56df4, type: 2}
   failureConditions: []
+  references:
+    version: 2
+    RefIds: []

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _description: Negotiate with the bandit leader to peacefully recover the goods.
   devName: NegotiateWithBandits
+  taskId: 77771111-aaaa-bbbb-cccc-ddddeeee0001
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
@@ -33,5 +34,9 @@ MonoBehaviour:
     m_WaitForCompletion: 0
     m_LocalVariables: []
   taskSprite: {fileID: 0}
-  conditions: []
+  conditions:
+  - {fileID: 11400000, guid: b113bc4ec578a794ab89803e972d9461, type: 2}
   failureConditions: []
+  references:
+    version: 2
+    RefIds: []

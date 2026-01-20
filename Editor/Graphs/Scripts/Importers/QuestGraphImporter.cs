@@ -91,7 +91,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Importers
                 var inlineTask = inlineTasks[i];
                 if (inlineTask != null)
                 {
-                    ctx.AddObjectToAsset($"InlineTask_{i}_{inlineTask.name}", inlineTask);
+                    ctx.AddObjectToAsset($"{i}_{inlineTask.name}", inlineTask);
                 }
             }
 

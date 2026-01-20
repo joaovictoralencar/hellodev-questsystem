@@ -4,7 +4,7 @@ This tutorial walks through creating the complete "Goblin's Bane" quest using th
 - 4 stages with sequential flow
 - Conditional stage skipping (Investigation -> Boss Confrontation)
 - Different execution modes (Sequential, Parallel)
-- Multiple task types (Discovery, Location, Int, Bool)
+- Multiple task types (Discovery, Location, Int, Timed)
 
 ---
 
@@ -29,7 +29,7 @@ Stage 10: Tracking & Combat
 Stage 20: Boss Confrontation
     └─> TaskGroup: "Find and Defeat Chief" (Sequential)
         └─> Task: FindGoblinsCampsite (Location)
-        └─> Task: DefeatGoblinChief (Bool)
+        └─> Task: DefeatGoblinChief (Timed, 180 seconds)
     └─> Transitions: Continue to Stage 30
 
 Stage 30: Resolution (Terminal)
@@ -365,8 +365,12 @@ When **Use Task Asset** is `false`, the block shows inline configuration ports:
 
 **Condition Ports (controlled by options):**
 - **Trigger Condition Count** option controls how many `Trigger Condition` ports appear
+  - These are conditions that, when met, complete the task (or increment progress for Int/Discovery tasks)
 - **Failure Condition Count** option controls how many `Fail Condition` ports appear
+  - These are conditions that, when met, cause the task to fail
 - Each condition port accepts a `Condition_SO` reference
+
+**Important:** BoolTask has NO internal completion logic - the `Trigger Condition` list is the ONLY way to complete it. All other task types can complete via internal logic (counter, timer, location match) but can also use conditions as additional triggers.
 
 **Type-Specific Ports:**
 
@@ -398,7 +402,8 @@ Create the TaskGroupContextNode and configure:
    - **Description**: (select from Tasks localization table)
    - **Required Discoveries**: `3`
 4. Set **Trigger Condition Count**: `3`
-5. Connect condition ports:
+5. Set **Failure Condition Count**: `0` (investigation is open-ended, no failure)
+6. Connect condition ports:
    - **Trigger Condition 1** → `SO_Condition_Event_ID_Discover_Footprints`
    - **Trigger Condition 2** → `SO_Condition_Event_ID_Discover_BrokenCart`
    - **Trigger Condition 3** → `SO_Condition_Event_ID_Discover_Witness`
@@ -421,7 +426,11 @@ Create a new TaskGroupContextNode:
    - **Display Name**: (select from localization table)
    - **Description**: (select from localization table)
 4. Set **Trigger Condition Count**: `1`
-5. Connect **Trigger Condition 1** → `SO_Condition_Event_ID_EnterLocation_GoblinCampsite`
+5. Set **Failure Condition Count**: `1` (stealth failure)
+6. Connect trigger condition:
+   - **Trigger Condition 1** → `SO_Condition_Event_ID_EnterLocation_GoblinCampsite`
+7. Connect failure condition:
+   - **Fail Condition 1** → `SO_Condition_Event_ID_Alert_GoblinScout` (goblin scout spotted you!)
 
 **Task 2: Kill_Goblin (Int)**
 
@@ -433,7 +442,11 @@ Create a new TaskGroupContextNode:
    - **Description**: (select from localization table)
    - **Required Count**: `5`
 4. Set **Trigger Condition Count**: `1`
-5. Connect **Trigger Condition 1** → `SO_Condition_Event_ID_Kill_Goblin`
+5. Set **Failure Condition Count**: `1` (too many escapees)
+6. Connect trigger condition:
+   - **Trigger Condition 1** → `SO_Condition_Event_ID_Kill_Goblin`
+7. Connect failure condition:
+   - **Fail Condition 1** → `SO_Condition_Event_Int_GoblinsEscaped` (3+ goblins escaped = task fails)
 
 ### Step 6.8: Stage 20 Task Group - "Find and Defeat Chief"
 
@@ -453,18 +466,26 @@ Create a new TaskGroupContextNode:
    - **Display Name**: (select from localization table)
    - **Description**: (select from localization table)
 4. Set **Trigger Condition Count**: `1`
-5. Connect **Trigger Condition 1** → `SO_Condition_Event_ID_EnterLocation_GoblinCampsite`
+5. Set **Failure Condition Count**: `0` (exploration task, no failure)
+6. Connect trigger condition:
+   - **Trigger Condition 1** → `SO_Condition_Event_ID_EnterLocation_GoblinCampsite`
 
-**Task 2: DefeatGoblinChief (Bool)**
+**Task 2: DefeatGoblinChief (Timed)**
 
-1. Add **Task Bool Block**
+1. Add **Task Timed Block**
 2. Set **Use Task Asset**: `false`
 3. Configure ports:
    - **Dev Name**: `DefeatGoblinChief`
    - **Display Name**: (select from localization table)
    - **Description**: (select from localization table)
+   - **Time Limit**: `180` (3 minutes to defeat the chief)
+   - **Fail Quest On Expire**: `false` (only fails the task, not the entire quest)
 4. Set **Trigger Condition Count**: `1`
-5. Connect **Trigger Condition 1** → `SO_Condition_Event_ID_Defeat_GoblinChief`
+5. Set **Failure Condition Count**: `0` (timer expiration is built-in failure for TimedTask)
+6. Connect trigger condition:
+   - **Trigger Condition 1** → `SO_Condition_Event_ID_Defeat_GoblinChief`
+
+> **Note:** TimedTask has built-in failure when the timer expires. You don't need to add a failure condition for timer expiration. However, you CAN add additional failure conditions (e.g., player death) if desired.
 
 ### Step 6.9: Stage 30 Task Group - "Return to Village"
 
@@ -484,7 +505,9 @@ Create a new TaskGroupContextNode:
    - **Display Name**: (select from localization table)
    - **Description**: (select from localization table)
 4. Set **Trigger Condition Count**: `1`
-5. Connect **Trigger Condition 1** → `SO_Condition_Event_ID_EnterLocation_Village`
+5. Set **Failure Condition Count**: `0` (resolution task, no failure)
+6. Connect trigger condition:
+   - **Trigger Condition 1** → `SO_Condition_Event_ID_EnterLocation_Village`
 
 ---
 
@@ -565,7 +588,7 @@ Connect to the `Reward` port:
 | Sequential    |      | Parallel      |      | Sequential    |      | Sequential    |
 +---------------+      +---------------+      +---------------+      +---------------+
        |                   |      |              |      |                   |
-   [Discovery]        [Location] [Int]      [Location] [Bool]          [Location]
+   [Discovery]        [Location] [Int]      [Location] [Timed]         [Location]
    Task Block         Task Block Task       Task Block Task            Task Block
                                  Block                 Block
 ```
@@ -625,13 +648,53 @@ Creating "Goblin's Bane" in the Graph Editor involves:
 
 For reference, here are the task assets used in this quest:
 
-| Task Asset | Type | Description |
-|------------|------|-------------|
-| `SO_Task_InvestigateAttacks` | Discovery | Examine 3 clues (footprints, cart, witness) |
-| `SO_Task_TrackGoblinCamp` | Location | Find the goblin camp location |
-| `SO_Task_Kill_Goblin` | Int | Defeat 5 goblins (counter task) |
-| `SO_Task_FindGoblinsCampsite` | Location | Locate the chief's tent |
-| `SO_Task_DefeatGoblinChief` | Bool | Defeat the goblin chief (boss fight) |
-| `SO_Task_ReturnToVillage` | Location | Return to the village elder |
+| Task Asset | Type | Description | Trigger Conditions | Failure Conditions |
+|------------|------|-------------|-------------------|-------------------|
+| `SO_Task_InvestigateAttacks` | Discovery | Examine 3 clues (footprints, cart, witness) | 3 (one per clue) | None |
+| `SO_Task_TrackGoblinCamp` | Location | Find the goblin camp location | 1 | 1 (scout alert) |
+| `SO_Task_Kill_Goblin` | Int | Defeat 5 goblins (counter task) | 1 | 1 (goblins escaped) |
+| `SO_Task_FindGoblinsCampsite` | Location | Locate the chief's tent | 1 | None |
+| `SO_Task_DefeatGoblinChief` | Timed | Defeat the goblin chief within time limit (boss fight) | 1 | Built-in (timer) |
+| `SO_Task_ReturnToVillage` | Location | Return to the village elder | 1 | None |
 
 Located in: `BasicQuestExample/ScriptableObjects/Quests/Goblin's Bane/Tasks/`
+
+### Task Condition Summary
+
+| Task Type | Conditions Required? | Failure Behavior |
+|-----------|---------------------|------------------|
+| **BoolTask** | **Yes** (only way to complete) | Via failure conditions |
+| **IntTask** | Optional (internal counter) | Via failure conditions |
+| **LocationTask** | Optional (internal location match) | Via failure conditions |
+| **TimedTask** | Optional (internal timer) | Built-in timer expiration OR failure conditions |
+| **DiscoveryTask** | Optional (internal discovery progress) | Via failure conditions |
+| **StringTask** | Optional (internal string match) | Via failure conditions |
+
+---
+
+## Condition Reference
+
+Each task uses conditions to determine completion and failure. Here are the condition assets referenced:
+
+### Trigger Conditions (Complete Task)
+
+| Task | Condition Asset | Purpose |
+|------|-----------------|---------|
+| InvestigateAttacks | `SO_Condition_Event_ID_Discover_Footprints` | Discovery clue 1 |
+| InvestigateAttacks | `SO_Condition_Event_ID_Discover_BrokenCart` | Discovery clue 2 |
+| InvestigateAttacks | `SO_Condition_Event_ID_Discover_Witness` | Discovery clue 3 |
+| TrackGoblinCamp | `SO_Condition_Event_ID_EnterLocation_GoblinCampsite` | Location reached |
+| Kill_Goblin | `SO_Condition_Event_ID_Kill_Goblin` | Enemy kill counter |
+| FindGoblinsCampsite | `SO_Condition_Event_ID_EnterLocation_GoblinCampsite` | Location reached |
+| DefeatGoblinChief | `SO_Condition_Event_ID_Defeat_GoblinChief` | Boss defeated |
+| ReturnToVillage | `SO_Condition_Event_ID_EnterLocation_Village` | Location reached |
+
+### Failure Conditions (Fail Task)
+
+| Task | Condition Asset | Purpose |
+|------|-----------------|---------|
+| TrackGoblinCamp | `SO_Condition_Event_ID_Alert_GoblinScout` | Stealth failed - goblin scout spotted you |
+| Kill_Goblin | `SO_Condition_Event_Int_GoblinsEscaped` | Too many goblins escaped (>= 3) |
+| DefeatGoblinChief | *(Built-in timer)* | Timer expiration fails the task |
+
+Located in: `BasicQuestExample/ScriptableObjects/Conditions/`

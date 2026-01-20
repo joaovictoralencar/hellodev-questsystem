@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _description: Defeat the bandits and recover the stolen goods by force.
   devName: DefeatBandits
-  taskId:
+  taskId: 77771111-aaaa-bbbb-cccc-ddddeeee0003
   displayName:
     m_TableReference:
       m_TableCollectionName: GUID:59db1f323ac856541907d820639446db
@@ -33,7 +33,11 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  conditions: []
+  conditions:
+  - {fileID: 11400000, guid: 7edcede8296b3444984152f96a3ad2bb, type: 2}
   failureConditions: []
   requiredCount: 5
   currentCount: 0
+  references:
+    version: 2
+    RefIds: []

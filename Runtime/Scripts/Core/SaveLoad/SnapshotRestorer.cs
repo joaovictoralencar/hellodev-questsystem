@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions.WorldFlags;
@@ -12,7 +13,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 {
     /// <summary>
     /// Utility class for restoring quest system state from snapshots.
-    /// Extracted from QuestSaveManager for single responsibility.
+    /// Used by QuestSnapshotProvider to restore saved game state.
     /// </summary>
     public static class SnapshotRestorer
     {
@@ -355,5 +356,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 QuestLogger.Log(LogSubsystem.Save, $"Restored {restored} questlines");
             }
         }
+
+        // Tutorial restore is now handled by TutorialManager.RestoreSnapshot()
     }
 }

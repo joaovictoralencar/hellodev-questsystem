@@ -35,7 +35,7 @@ MonoBehaviour:
     m_WaitForCompletion: 0
     m_LocalVariables: []
   conditions:
-  - {fileID: 11400000, guid: a513c1c8db62fcd418bd76ec675e04e9, type: 2}
+  - {fileID: 11400000, guid: e1754c590f2d3ff459fa062bfd3d89dd, type: 2}
   failureConditions: []
   timeLimit: 120
   failQuestOnExpire: 0

@@ -1,13 +1,13 @@
 # HelloDev Quest System: Implementation Plan
 
-**Last Updated:** 2026-01-08
-**Current Version:** 3.6.0
+**Last Updated:** 2026-01-14
+**Current Version:** 3.10.0
 
 ---
 
 ## Executive Summary
 
-This document tracks the implementation status of the HelloDev Quest System. Phase 7 core features (Stages, Branching, World State, Save/Load) and Phase 8.1 Quest Graph Tool are complete. The next priorities are Dialogue Integration and Quest Categories/Filtering API.
+This document tracks the implementation status of the HelloDev Quest System. Phase 7 core features (Stages, Branching, World State, Save/Load) and Phase 8.1 Quest Graph Tool are complete. Recent additions include TransitionNode for configurable stage transitions (3.10.0), QuestChoiceNode for questline branching (3.9.0), and Graph Node UX improvements (3.8.0). The next priorities are Dialogue Integration, Quest Categories/Filtering API, and an extensible architecture for tutorials/achievements.
 
 ---
 
@@ -222,8 +222,13 @@ Add `Locked` and `Hidden` to `QuestState` enum.
 | 7.3 World State Flags | ✅ Complete | 2025-12-28 |
 | 7.4 Save/Load System | ✅ Complete | 2025-12-29 |
 | 8.1 Quest Graph Tool | ✅ Complete | 2026-01-04 |
+| 8.1.1 Native Subgraph Migration | ✅ Complete | 2026-01-05 |
+| 8.1.2 Graph Node UX Improvements | ✅ Complete | 2026-01-11 |
+| 8.1.3 QuestChoiceNode | ✅ Complete | 2026-01-11 |
+| 8.1.4 TransitionNode & Port Capacity | ✅ Complete | 2026-01-14 |
 | 8.2 Dialogue Integration | 🔲 Not Started | - |
 | 8.3 Quest Categories API | 🔲 Not Started | - |
+| 8.4 Extensible Architecture | 🔲 Not Started | - |
 
 ---
 
@@ -237,11 +242,17 @@ Add `Locked` and `Hidden` to `QuestState` enum.
    - `GetQuestsByType(QuestType_SO type)`
    - `GetActiveQuestsByType(QuestType_SO type)`
 
-3. **Unit Tests** - Implement actual test code (currently stubs)
+3. **Extensible Architecture (8.4)** - AAA-quality modular design for reuse
+   - Abstract "Objective System" usable for quests, tutorials, achievements
+   - Generic "Progress Tracker" pattern
+   - Plugin architecture for custom task types
+   - Decoupled UI layer with clear contracts
+
+4. **Unit Tests** - Implement actual test code (currently stubs)
    - Quest creation and state transitions
    - Task progression
    - Save/Load snapshots
 
 ---
 
-*Implementation plan maintained since 2025-12-28. Updated 2026-01-08.*
+*Implementation plan maintained since 2025-12-28. Updated 2026-01-14.*

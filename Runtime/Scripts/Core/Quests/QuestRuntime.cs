@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Stages;
@@ -18,8 +19,9 @@ namespace HelloDev.QuestSystem.Quests
     /// state management for all quests. Supports both legacy (flat task groups) and
     /// stage-based quests (Skyrim-style multi-phase).
     /// Implements <see cref="IQuest"/> for testability and dependency injection.
+    /// Implements <see cref="IMission"/> for unified objective system compatibility.
     /// </summary>
-    public class QuestRuntime : IQuest
+    public class QuestRuntime : IQuest, IMission
     {
         #region Events - Quest Lifecycle
 
@@ -385,6 +387,9 @@ namespace HelloDev.QuestSystem.Quests
                     {
                         if (group.CurrentState == TaskGroupState.InProgress)
                         {
+                            // Set up task event subscriptions for this group
+                            // (normally done when group starts, but after load we need to reconnect)
+                            HandleGroupInStageStarted(stage, group);
                             group.ResumeGroup();
                         }
 
@@ -1144,6 +1149,141 @@ namespace HelloDev.QuestSystem.Quests
         public override int GetHashCode()
         {
             return QuestId.GetHashCode();
+        }
+
+        #endregion
+
+        #region IMission Explicit Implementation
+
+        /// <summary>
+        /// Maps QuestState to ObjectiveState.
+        /// </summary>
+        private static ObjectiveState MapQuestStateToObjectiveState(QuestState questState)
+        {
+            return questState switch
+            {
+                QuestState.NotStarted => ObjectiveState.NotStarted,
+                QuestState.InProgress => ObjectiveState.InProgress,
+                QuestState.Completed => ObjectiveState.Completed,
+                QuestState.Failed => ObjectiveState.Failed,
+                _ => ObjectiveState.NotStarted
+            };
+        }
+
+        // IMission.MissionId => QuestId
+        Guid IMission.MissionId => QuestId;
+
+        // IMission.DisplayName => localized display name from data
+        string IMission.DisplayName => QuestData.DisplayName?.GetLocalizedString() ?? QuestData.DevName;
+
+        // IMission.State => mapped QuestState
+        ObjectiveState IMission.State => MapQuestStateToObjectiveState(CurrentState);
+
+        // IMission.Progress => CurrentProgress
+        float IMission.Progress => CurrentProgress;
+
+        // IMission.Stages => cast QuestStageRuntime to IStage
+        // Note: Requires QuestStageRuntime to implement IStage for this to return valid results
+        IReadOnlyList<IStage> IMission.Stages => Stages.OfType<IStage>().ToList();
+
+        // IMission.CurrentStage => CurrentStage as IStage
+        // Note: Requires QuestStageRuntime to implement IStage for this to return non-null
+        IStage IMission.CurrentStage => CurrentStage as IStage;
+
+        // IMission.CurrentStageIndex => CurrentStageIndex (already matching)
+        int IMission.CurrentStageIndex => CurrentStageIndex;
+
+        // IMission lifecycle methods - delegate to existing methods
+        void IMission.Start() => StartQuest();
+        void IMission.Complete() => CompleteQuest();
+        void IMission.Fail() => FailQuest();
+        void IMission.Reset() => ResetQuest();
+
+        // IMission events - backing fields for Action events
+        private event Action<IMission> _onMissionStarted;
+        private event Action<IMission> _onMissionProgressChanged;
+        private event Action<IMission> _onMissionCompleted;
+        private event Action<IMission> _onMissionFailed;
+        private event Action<IMission, IStage> _onMissionStageEntered;
+        private event Action<IMission, IStage> _onMissionStageCompleted;
+
+        event Action<IMission> IMission.OnStarted
+        {
+            add
+            {
+                _onMissionStarted += value;
+                // Also subscribe to the UnityEvent to forward it
+                if (value != null)
+                {
+                    OnQuestStarted.AddListener(_ => value(this));
+                }
+            }
+            remove => _onMissionStarted -= value;
+        }
+
+        event Action<IMission> IMission.OnProgressChanged
+        {
+            add
+            {
+                _onMissionProgressChanged += value;
+                if (value != null)
+                {
+                    OnQuestUpdated.AddListener(_ => value(this));
+                }
+            }
+            remove => _onMissionProgressChanged -= value;
+        }
+
+        event Action<IMission> IMission.OnCompleted
+        {
+            add
+            {
+                _onMissionCompleted += value;
+                if (value != null)
+                {
+                    OnQuestCompleted.AddListener(_ => value(this));
+                }
+            }
+            remove => _onMissionCompleted -= value;
+        }
+
+        event Action<IMission> IMission.OnFailed
+        {
+            add
+            {
+                _onMissionFailed += value;
+                if (value != null)
+                {
+                    OnQuestFailed.AddListener(_ => value(this));
+                }
+            }
+            remove => _onMissionFailed -= value;
+        }
+
+        event Action<IMission, IStage> IMission.OnStageEntered
+        {
+            add
+            {
+                _onMissionStageEntered += value;
+                if (value != null)
+                {
+                    OnStageEntered.AddListener((_, stage) => value(this, stage as IStage));
+                }
+            }
+            remove => _onMissionStageEntered -= value;
+        }
+
+        event Action<IMission, IStage> IMission.OnStageCompleted
+        {
+            add
+            {
+                _onMissionStageCompleted += value;
+                if (value != null)
+                {
+                    OnStageCompleted.AddListener((_, stage) => value(this, stage as IStage));
+                }
+            }
+            remove => _onMissionStageCompleted -= value;
         }
 
         #endregion

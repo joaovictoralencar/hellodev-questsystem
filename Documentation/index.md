@@ -1,6 +1,6 @@
 # Quest System Documentation
 
-*Last Updated: 2026-01-14*
+*Last Updated: 2026-01-18*
 
 ## Getting Started
 
@@ -15,6 +15,11 @@
 - [Quest Manager](quest-manager.md) - Central manager documentation
 - [Rewards](rewards.md) - Reward system
 - [Choice Patterns](choice-patterns.md) - Branching and player choices
+
+## Extended Systems
+
+- [Tutorial System](tutorials.md) - Guided player tutorials with steps and conditions
+- [Achievement System](achievements.md) - Player accomplishment tracking
 
 ## Tutorials
 
@@ -36,5 +41,6 @@
 - [Code Quality Audit](code-quality-audit.md) - SOLID principles and architecture review
 - [Dependency Diagram](quest-dependency-diagram.md)
 - [Implementation Plan](implementation-plan.md) - Feature roadmap and history
+- [Extensible Architecture Design](extensible-architecture-design.md) - Objective System for tutorials, achievements
 - [Testing Guide](testing.md)
 - [Known Issues & Backlog](todos.md)

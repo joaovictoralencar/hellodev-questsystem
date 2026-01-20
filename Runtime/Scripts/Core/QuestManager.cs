@@ -5,12 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using HelloDev.Bootstrap;
 using HelloDev.Conditions;
+using HelloDev.Conditions.WorldFlags;
 using HelloDev.QuestSystem.Internal;
 using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Saving;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Events;
@@ -141,6 +143,40 @@ namespace HelloDev.QuestSystem
         [SerializeField]
         private bool requireQuestInDatabase = true;
 
+#if ODIN_INSPECTOR
+        [TitleGroup("Save System")]
+        [PropertyOrder(20)]
+#else
+        [Header("Save System")]
+#endif
+        [Tooltip("The unified save locator for registering the snapshot provider. Optional - if not set, snapshot provider won't auto-register.")]
+        [SerializeField]
+        private UnifiedSaveLocator_SO unifiedSaveLocator;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Save System")]
+        [PropertyOrder(21)]
+#endif
+        [Tooltip("All WorldFlag assets in the game. Required for save/load of world state.")]
+        [SerializeField]
+        private List<WorldFlagBase_SO> worldFlagRegistry = new();
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Save System")]
+        [PropertyOrder(22)]
+#endif
+        [Tooltip("Optional: Use a WorldFlagRegistry_SO for easier management of world flags.")]
+        [SerializeField]
+        private WorldFlagRegistry_SO worldFlagRegistryAsset;
+
+#if ODIN_INSPECTOR
+        [TitleGroup("Save System")]
+        [PropertyOrder(23)]
+#endif
+        [Tooltip("The WorldFlagLocator_SO for accessing flag runtime values during save/load.")]
+        [SerializeField]
+        private WorldFlagLocator_SO worldFlagLocator;
+
         #endregion
 
         #region Internal Registries
@@ -154,6 +190,11 @@ namespace HelloDev.QuestSystem
         /// and operations like Load should be deferred to prevent invalid state.
         /// </summary>
         private int _eventProcessingDepth;
+
+        /// <summary>
+        /// The snapshot provider for unified save system integration.
+        /// </summary>
+        private QuestSnapshotProvider _snapshotProvider;
 
         #endregion
 
@@ -307,6 +348,9 @@ namespace HelloDev.QuestSystem
         /// <summary>Gets the count of completed questlines.</summary>
         public int CompletedQuestLineCount => _questLineRegistry.CompletedCount;
 
+        /// <summary>Gets the snapshot provider for unified save system integration.</summary>
+        public QuestSnapshotProvider SnapshotProvider => _snapshotProvider;
+
         #endregion
 
         #region Unity Lifecycle
@@ -403,9 +447,50 @@ namespace HelloDev.QuestSystem
                 }
             }
 
+            // Create and register snapshot provider for unified save system
+            CreateAndRegisterSnapshotProvider();
+
             _isInitialized = true;
 
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Creates the QuestSnapshotProvider and registers it with the unified save system.
+        /// </summary>
+        private void CreateAndRegisterSnapshotProvider()
+        {
+            _snapshotProvider = new QuestSnapshotProvider(this, worldFlagLocator, GetAllWorldFlags);
+
+            if (unifiedSaveLocator != null)
+            {
+                unifiedSaveLocator.RegisterSystem(_snapshotProvider);
+                QuestLogger.Log(LogSubsystem.Manager, "QuestSnapshotProvider registered with unified save system");
+            }
+            else
+            {
+                QuestLogger.LogVerbose(LogSubsystem.Manager, "No UnifiedSaveLocator assigned - snapshot provider created but not registered");
+            }
+        }
+
+        /// <summary>
+        /// Gets all world flags from the registry and registry asset.
+        /// </summary>
+        private List<WorldFlagBase_SO> GetAllWorldFlags()
+        {
+            var allFlags = new List<WorldFlagBase_SO>(worldFlagRegistry);
+
+            // Add flags from registry asset
+            if (worldFlagRegistryAsset != null)
+            {
+                foreach (var flag in worldFlagRegistryAsset.AllFlags)
+                {
+                    if (flag != null && !allFlags.Contains(flag))
+                        allFlags.Add(flag);
+                }
+            }
+
+            return allFlags;
         }
 
         /// <summary>
@@ -461,6 +546,14 @@ namespace HelloDev.QuestSystem
         {
             if (!_isInitialized)
                 return;
+
+            // Unregister snapshot provider from unified save system
+            if (_snapshotProvider != null && unifiedSaveLocator != null)
+            {
+                unifiedSaveLocator.UnregisterSystem(_snapshotProvider);
+                QuestLogger.LogVerbose(LogSubsystem.Manager, "QuestSnapshotProvider unregistered from unified save system");
+            }
+            _snapshotProvider = null;
 
             ShutdownManager();
             _isInitialized = false;

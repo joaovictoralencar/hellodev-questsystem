@@ -10,7 +10,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 {
     /// <summary>
     /// Utility class for capturing quest system state into snapshots.
-    /// Extracted from QuestSaveManager for single responsibility.
+    /// Used by QuestSnapshotProvider to capture game state for saving.
     /// </summary>
     public static class SnapshotCapturer
     {
@@ -197,5 +197,7 @@ namespace HelloDev.QuestSystem.SaveLoad
 
             return snapshot;
         }
+
+        // Tutorial capture is now handled by TutorialManager.CaptureSnapshot()
     }
 }

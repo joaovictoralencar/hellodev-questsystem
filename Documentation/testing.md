@@ -1,6 +1,6 @@
 # Quest System Manual Test Scenarios
 
-*Last Updated: 2026-01-04*
+*Last Updated: 2026-01-14*
 
 These tests use the debug buttons in UI_QuestDetails (requires Odin Inspector for quick action buttons).
 
@@ -291,3 +291,69 @@ These tests use the debug buttons in UI_QuestDetails (requires Odin Inspector fo
 10. Verify rewards distributed
 11. Verify QuestLine updated
 12. **Pass:** All systems work together
+
+---
+
+## TransitionNode Tests (Graph Editor)
+
+### Test 26: TransitionNode OnGroupsComplete
+**Quest:** Graph with TransitionNode using OnGroupsComplete trigger
+
+1. Create quest graph with Stage 0 → TransitionNode → Stage 10
+2. Set TransitionNode trigger to OnGroupsComplete
+3. Add task group to Stage 0
+4. Start quest, complete Stage 0's tasks
+5. Verify transition fires and advances to Stage 10
+6. **Pass:** OnGroupsComplete trigger works correctly
+
+### Test 27: TransitionNode OnConditionsMet (Conditional Skip)
+**Quest:** Graph with conditional skip path
+
+1. Create quest graph:
+   - Stage 0 → TransitionNode (Priority 10, OnConditionsMet) → Stage 20
+   - Stage 0 → Then → Stage 10 → Then → Stage 20
+2. Add condition `HasCompletedTutorialBefore` to TransitionNode
+3. Set world flag `HasCompletedTutorialBefore = false`
+4. Start quest → Should proceed to Stage 10 (normal path)
+5. Reset quest, set `HasCompletedTutorialBefore = true`
+6. Start quest → Should skip directly to Stage 20
+7. **Pass:** Conditional skip path works with priority
+
+### Test 28: TransitionNode Priority Ordering
+**Quest:** Multiple TransitionNodes targeting same stage
+
+1. Create quest graph:
+   - Stage 0 → TransitionNode A (Priority 5, ConditionA) → Stage 10
+   - Stage 0 → TransitionNode B (Priority 10, ConditionB) → Stage 20
+   - Stage 0 → Then → Stage 30
+2. Set both ConditionA and ConditionB to true
+3. Start quest and complete Stage 0
+4. Verify Stage 20 is reached (TransitionNode B has higher priority)
+5. Reset, set only ConditionA to true
+6. Verify Stage 10 is reached
+7. Reset, set both conditions to false
+8. Verify Stage 30 is reached (default Then path)
+9. **Pass:** Priority ordering works correctly
+
+### Test 29: Multiple Sources to Same Stage (Port Multi-Capacity)
+**Quest:** Multiple paths converging on one stage
+
+1. Create quest graph:
+   - Stage 0 → Then → Stage 10
+   - Stage 0 → TransitionNode → Stage 10 (same target)
+   - Stage 5 → Then → Stage 10 (another source)
+2. Verify graph validates without errors
+3. Start from Stage 0, complete normally → reaches Stage 10
+4. Test TransitionNode path → reaches Stage 10
+5. **Pass:** StageNode In port accepts multiple connections
+
+### Test 30: TransitionNode Manual Trigger
+**Quest:** Graph with manual transition
+
+1. Create quest graph with TransitionNode using Manual trigger
+2. Start quest at Stage 0
+3. Complete Stage 0's tasks
+4. Verify transition does NOT fire automatically
+5. Trigger transition manually via code/event
+6. Verify stage advances
+7. **Pass:** Manual trigger requires explicit activation

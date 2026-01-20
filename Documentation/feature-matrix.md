@@ -1,7 +1,7 @@
 # Feature Matrix: HelloDev Quest System vs AAA Standards
 
-**Version:** 3.6.0
-**Last Updated:** 2026-01-08
+**Version:** 3.10.0
+**Last Updated:** 2026-01-14
 
 This document compares the HelloDev Quest System features against industry-standard quest systems from AAA games like The Witcher 3, Skyrim, Cyberpunk 2077, and Baldur's Gate 3.
 
@@ -203,7 +203,11 @@ This document compares the HelloDev Quest System features against industry-stand
 | 3.0.0 | Stages, branching, world flags |
 | 3.1.0 | Save/Load system |
 | 3.6.0 | Quest Graph Editor |
+| 3.7.0 | Native Subgraph Migration |
+| 3.8.0 | Graph Node UX improvements |
+| 3.9.0 | QuestChoiceNode for QuestLine branching |
+| 3.10.0 | TransitionNode, port multi-capacity |
 
 ---
 
-*Feature matrix maintained for HelloDev Quest System. Last updated 2026-01-08.*
+*Feature matrix maintained for HelloDev Quest System. Last updated 2026-01-14.*

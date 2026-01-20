@@ -85,9 +85,18 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         }
 
         /// <summary>
-        /// The dev name for this task (Define mode only).
+        /// The dev name for this task.
+        /// Reads from port in Define mode, from TaskAsset in Asset mode.
         /// </summary>
-        public new string DevName => GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "New Task");
+        public override string DevName
+        {
+            get
+            {
+                if (IsAssetMode)
+                    return TaskAsset?.DevName ?? "No Task Assigned";
+                return GraphTraversalUtility.ResolveDataPort<string>(this, PORT_DEV_NAME, "New Task");
+            }
+        }
 
         /// <summary>
         /// Gets the inline task data constructed from options/ports.
@@ -248,7 +257,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// <inheritdoc/>
         public sealed override Task_SO CreateTaskAsset()
         {
-            return InlineData.CreateTaskAsset<TTaskSO>();
+            return InlineData.CreateTaskAsset<TTaskSO>(PersistentTaskId);
         }
 
         #endregion

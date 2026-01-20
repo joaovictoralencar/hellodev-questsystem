@@ -30,9 +30,11 @@ namespace HelloDev.QuestSystem.Utils
         Group,       // Task group execution
         QuestLine,   // QuestLine progress
         Save,        // Save/Load operations
-        SaveManager, // QuestSaveManager operations
+        SaveManager, // QuestSnapshotProvider operations
         Choice,      // Player choice events
-        UI           // UI components
+        UI,          // UI components
+        Tutorial,    // Tutorial system operations
+        Achievement  // Achievement system operations
     }
 
     /// <summary>
@@ -81,6 +83,8 @@ namespace HelloDev.QuestSystem.Utils
                 LogSubsystem.SaveManager => "Quest.SaveManager",
                 LogSubsystem.Choice => "Quest.Choice",
                 LogSubsystem.UI => "Quest.UI",
+                LogSubsystem.Tutorial => "Quest.Tutorial",
+                LogSubsystem.Achievement => "Quest.Achievement",
                 _ => "Quest.Manager"
             };
         }

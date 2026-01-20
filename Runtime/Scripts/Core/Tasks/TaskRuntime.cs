@@ -1,5 +1,6 @@
 using System;
 using HelloDev.Conditions;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -14,8 +15,9 @@ namespace HelloDev.QuestSystem.Tasks
     /// Represents a single objective within a quest. This abstract class provides the
     /// core functionality for all task types. Specific tasks must inherit from it.
     /// Implements <see cref="ITask"/> for testability and dependency injection.
+    /// Implements <see cref="IObjective"/> for the unified objectives interface.
     /// </summary>
-    public abstract class TaskRuntime : ITask
+    public abstract class TaskRuntime : ITask, IObjective
     {
         #region Events
 
@@ -38,6 +40,86 @@ namespace HelloDev.QuestSystem.Tasks
         /// Fired specifically when the task fails.
         /// </summary>
         public UnityEvent<TaskRuntime> OnTaskFailed = new();
+
+        #endregion
+
+        #region IObjective Explicit Implementation
+
+        // Backing fields for IObjective Action events
+        private event Action<IObjective> _onStarted;
+        private event Action<IObjective> _onProgressChanged;
+        private event Action<IObjective> _onCompleted;
+        private event Action<IObjective> _onFailed;
+
+        /// <inheritdoc />
+        string IObjective.Id => Data.TaskId.ToString();
+
+        /// <inheritdoc />
+        ObjectiveState IObjective.State => MapTaskStateToObjectiveState(CurrentState);
+
+        /// <inheritdoc />
+        float IObjective.Progress => Progress;
+
+        /// <inheritdoc />
+        bool IObjective.IsComplete => CurrentState == TaskState.Completed;
+
+        /// <inheritdoc />
+        bool IObjective.IsFailed => CurrentState == TaskState.Failed;
+
+        /// <inheritdoc />
+        void IObjective.Start() => StartTask();
+
+        /// <inheritdoc />
+        void IObjective.Complete() => CompleteTask();
+
+        /// <inheritdoc />
+        void IObjective.Fail() => FailTask();
+
+        /// <inheritdoc />
+        void IObjective.Reset() => ResetTask();
+
+        /// <inheritdoc />
+        event Action<IObjective> IObjective.OnStarted
+        {
+            add => _onStarted += value;
+            remove => _onStarted -= value;
+        }
+
+        /// <inheritdoc />
+        event Action<IObjective> IObjective.OnProgressChanged
+        {
+            add => _onProgressChanged += value;
+            remove => _onProgressChanged -= value;
+        }
+
+        /// <inheritdoc />
+        event Action<IObjective> IObjective.OnCompleted
+        {
+            add => _onCompleted += value;
+            remove => _onCompleted -= value;
+        }
+
+        /// <inheritdoc />
+        event Action<IObjective> IObjective.OnFailed
+        {
+            add => _onFailed += value;
+            remove => _onFailed -= value;
+        }
+
+        /// <summary>
+        /// Maps TaskState to ObjectiveState for IObjective interface compatibility.
+        /// </summary>
+        private static ObjectiveState MapTaskStateToObjectiveState(TaskState taskState)
+        {
+            return taskState switch
+            {
+                TaskState.NotStarted => ObjectiveState.NotStarted,
+                TaskState.InProgress => ObjectiveState.InProgress,
+                TaskState.Completed => ObjectiveState.Completed,
+                TaskState.Failed => ObjectiveState.Failed,
+                _ => ObjectiveState.NotStarted
+            };
+        }
 
         #endregion
 
@@ -103,6 +185,7 @@ namespace HelloDev.QuestSystem.Tasks
                 SubscribeToEvents();
 
                 OnTaskStarted?.SafeInvoke(this);
+                _onStarted?.Invoke(this);
             }
         }
 
@@ -120,6 +203,8 @@ namespace HelloDev.QuestSystem.Tasks
 
                 OnTaskUpdated?.SafeInvoke(this);
                 OnTaskCompleted?.SafeInvoke(this);
+                _onProgressChanged?.Invoke(this);
+                _onCompleted?.Invoke(this);
             }
         }
 
@@ -189,6 +274,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (OnIncrementStep() && CurrentState == TaskState.InProgress)
             {
                 OnTaskUpdated.SafeInvoke(this);
+                _onProgressChanged?.Invoke(this);
             }
         }
 
@@ -200,6 +286,7 @@ namespace HelloDev.QuestSystem.Tasks
             if (OnDecrementStep() && CurrentState == TaskState.InProgress)
             {
                 OnTaskUpdated.SafeInvoke(this);
+                _onProgressChanged?.Invoke(this);
             }
         }
 
@@ -215,6 +302,7 @@ namespace HelloDev.QuestSystem.Tasks
                 UnsubscribeFromEvents();
 
                 OnTaskFailed?.SafeInvoke(this);
+                _onFailed?.Invoke(this);
             }
         }
 

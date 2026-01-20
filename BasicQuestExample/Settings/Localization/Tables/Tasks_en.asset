@@ -50,8 +50,7 @@ MonoBehaviour:
       with goblins. You'll need to clear them out before their numbers become a real
       threat.
     m_Metadata:
-      m_Items:
-      - rid: 8674111653083349234
+      m_Items: []
   - m_Id: 3825140356923392
     m_Localized: Find the {object} in {location}
     m_Metadata:
@@ -316,7 +315,6 @@ MonoBehaviour:
         - id: 269231374337
         - id: 269231374338
         - id: 3834205569073152
-        - id: 3443382889267200
         - id: 3825140356923392
         - id: 1815936309968896
         - id: 269231374339

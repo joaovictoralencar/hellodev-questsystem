@@ -65,8 +65,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
         /// <summary>
         /// Dev name for display (works for both modes).
+        /// Override in subclasses to read from ports instead of options.
         /// </summary>
-        public string DevName
+        public virtual string DevName
         {
             get
             {

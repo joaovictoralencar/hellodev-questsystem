@@ -1,6 +1,6 @@
 # Quest System Architecture
 
-*Last Updated: 2026-01-04*
+*Last Updated: 2026-01-14*
 
 ## Hierarchy Overview
 
@@ -209,22 +209,25 @@ QuestManager ─────► QuestRuntime ─────► QuestStage ─�
 
 **Data Fields:**
 - `targetStageIndex` - Stage to transition to
-- `trigger` - TransitionTrigger enum (OnComplete, OnFail, OnCondition, PlayerChoice)
+- `trigger` - TransitionTrigger enum (OnGroupsComplete, OnConditionsMet, Manual, PlayerChoice)
 - `conditions` - List of conditions that must be met
+- `transitionLabel` - Optional developer-friendly label
+- `priority` - Higher priority evaluated first (default: 0)
 - `isPlayerChoice` - Whether this is a choice the player makes
 - `choiceId` - Unique identifier for this choice
-- `choiceDisplayName` - Localized name for UI
+- `choiceText` - Localized text for UI
+- `choiceIcon` - Optional icon for this choice
+- `choiceTooltip` - Optional tooltip/description
 - `worldFlagsOnSelect` - WorldFlagModifications to apply when selected
 
 **TransitionTrigger Enum:**
 ```csharp
 public enum TransitionTrigger
 {
-    OnAllGroupsComplete,   // All task groups in stage complete
-    OnAnyGroupComplete,    // Any task group completes
-    OnConditionMet,        // External condition becomes true
-    PlayerChoice,          // Player explicitly selects this path
-    OnStageFailed          // Stage fails (e.g., timer expired)
+    OnGroupsComplete,   // All task groups in stage complete (default)
+    OnConditionsMet,    // Transition when conditions are met
+    Manual,             // Transition only via explicit API call
+    PlayerChoice        // Player explicitly selects this path
 }
 ```
 
@@ -369,7 +372,7 @@ Dictionary<string, string> BranchDecisions { get; }
 
 **File:** `Runtime/Scripts/Core/SaveLoad/QuestSaveManager.cs`
 
-**Ownership:** Top-level, manages persistence
+**Ownership:** Top-level, manages persistence for quests
 
 **Single Responsibility:** Save and load quest system state
 
@@ -379,6 +382,8 @@ Dictionary<string, string> BranchDecisions { get; }
 - Interface with ISaveProvider for storage
 - Manage save slots and metadata
 - Handle autosave if configured
+
+**Note:** Tutorial state is managed separately by `TutorialSaveManager` (for persistent storage via SaveService.Provider) or `TutorialManager.CaptureSnapshot()` / `RestoreSnapshot()` (for manual serialization). Both `TutorialManager` and `TutorialSaveManager` implement `IBootstrapInitializable` for coordinated initialization.
 
 **Events to FIRE:**
 | Event | When Fired | Who Listens |
@@ -533,6 +538,11 @@ All Subscribe/Unsubscribe pairs verified:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.10.0 | 2026-01-14 | TransitionNode, PortCapacityHelper, StageNode multi-capacity input |
+| 3.9.0 | 2026-01-11 | QuestChoiceNode for QuestLine branching |
+| 3.8.0 | 2026-01-11 | Graph Node UX improvements (ports on nodes) |
+| 3.7.0 | 2026-01-05 | Native Subgraph Migration (Graph Variables) |
+| 3.6.0 | 2026-01-04 | Quest Graph Editor v1.4 (Phases 5-7) |
 | 3.5.0 | 2026-01-02 | Multi-subscriber condition support |
 | 3.1.0 | 2025-12-29 | QuestSaveManager, snapshot system |
 | 3.0.0 | 2025-12-28 | QuestStage, StageTransition, branching events |

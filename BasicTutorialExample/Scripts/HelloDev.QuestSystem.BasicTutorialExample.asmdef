@@ -1,0 +1,25 @@
+{
+    "name": "HelloDev.QuestSystem.BasicTutorialExample",
+    "rootNamespace": "HelloDev.QuestSystem.BasicTutorialExample",
+    "references": [
+        "HelloDev.Utils",
+        "HelloDev.QuestSystem",
+        "HelloDev.UI.Default",
+        "Unity.TextMeshPro",
+        "PrimeTween.Runtime",
+        "Unity.Localization",
+        "QuestSystem.Utils",
+        "HelloDev.Events",
+        "Unity.InputSystem",
+        "HelloDev.Conditions"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

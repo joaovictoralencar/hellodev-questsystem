@@ -25,6 +25,33 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
     [Serializable]
     public abstract class TaskBaseNode : QuestBaseNode
     {
+        #region Persistent Task ID
+
+        /// <summary>
+        /// Persistent task ID that stays constant across graph exports.
+        /// This ensures save/load works correctly by maintaining stable GUIDs.
+        /// </summary>
+        [SerializeField]
+        private string persistentTaskId;
+
+        /// <summary>
+        /// Gets the persistent task ID, generating one if needed.
+        /// Once generated, this ID is serialized with the graph and remains stable.
+        /// </summary>
+        public string PersistentTaskId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(persistentTaskId))
+                {
+                    persistentTaskId = Guid.NewGuid().ToString();
+                }
+                return persistentTaskId;
+            }
+        }
+
+        #endregion
+
         #region Option Names
 
         protected const string OPT_TASK_ASSET = "TaskAsset";
@@ -72,8 +99,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 
         /// <summary>
         /// Dev name for display (works for both modes).
+        /// Override in subclasses to read from ports instead of options.
         /// </summary>
-        public string DevName
+        public virtual string DevName
         {
             get
             {

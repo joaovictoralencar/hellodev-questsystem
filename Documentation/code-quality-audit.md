@@ -1,7 +1,7 @@
-# Code Quality Audit: Quest System v3.6.0
+# Code Quality Audit: Quest System v3.10.0
 
-**Date**: 2026-01-08
-**Version**: 3.6.0
+**Date**: 2026-01-14
+**Version**: 3.10.0
 
 ## Executive Summary
 
@@ -66,10 +66,10 @@ public enum TaskExecutionMode
 ```csharp
 public enum TransitionTrigger
 {
-    OnComplete,      // Automatic on stage complete
-    OnFail,          // Automatic on stage fail
-    OnCondition,     // When condition becomes true
-    PlayerChoice     // Manual player selection
+    OnGroupsComplete,   // All task groups complete (default)
+    OnConditionsMet,    // When conditions become true
+    Manual,             // Via explicit API call
+    PlayerChoice        // Player selection
 }
 ```
 

@@ -49,6 +49,9 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// All world flag snapshots.
         /// </summary>
         public List<WorldFlagSnapshot> WorldFlags = new();
+
+        // Tutorial state is now managed separately by TutorialManager.CaptureSnapshot/RestoreSnapshot
+        // using TutorialSystemSnapshot in TutorialSnapshot.cs
     }
 
     /// <summary>
@@ -220,4 +223,6 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// </summary>
         public int IntValue;
     }
+
+    // TutorialSnapshot and TutorialStepSnapshot are in TutorialSnapshot.cs
 }

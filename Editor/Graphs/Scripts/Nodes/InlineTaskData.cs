@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using HelloDev.Conditions;
 using HelloDev.QuestSystem;
 using HelloDev.QuestSystem.ScriptableObjects;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.SmartFormat.Extensions;
+using UnityEngine.Localization.SmartFormat.PersistentVariables;
+using IVariable = UnityEngine.Localization.SmartFormat.PersistentVariables.IVariable;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 {
@@ -101,25 +106,36 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         /// Uses SerializedObject to set private fields.
         /// </summary>
         /// <typeparam name="TTask">The Task_SO subclass to create.</typeparam>
+        /// <param name="persistentTaskId">Optional persistent task ID. If provided, uses this ID instead of generating a new one.</param>
         /// <returns>A new Task_SO instance with data from this inline definition.</returns>
-        public TTask CreateTaskAsset<TTask>() where TTask : Task_SO
+        public TTask CreateTaskAsset<TTask>(string persistentTaskId = null) where TTask : Task_SO
         {
             var task = ScriptableObject.CreateInstance<TTask>();
-            SetFieldsViaSerializedObject(task);
+            SetFieldsViaSerializedObject(task, persistentTaskId);
             return task;
         }
 
-        private void SetFieldsViaSerializedObject(Task_SO task)
+        // Track pending LocalizedString copies that need smart variables applied after serialization
+        [NonSerialized]
+        private List<(string propertyPath, LocalizedString source)> _pendingLocalizedStringCopies = new();
+
+        private void SetFieldsViaSerializedObject(Task_SO task, string persistentTaskId = null)
         {
+            // Clear any pending copies from previous calls
+            _pendingLocalizedStringCopies.Clear();
+
             var so = new SerializedObject(task);
 
             // Common fields
             so.FindProperty("devName").stringValue = devName;
-            so.FindProperty("taskId").stringValue = Guid.NewGuid().ToString();
+            // Use persistent ID if provided, otherwise generate a new one (for backward compatibility)
+            so.FindProperty("taskId").stringValue = !string.IsNullOrEmpty(persistentTaskId)
+                ? persistentTaskId
+                : Guid.NewGuid().ToString();
 
             // Localization: Copy LocalizedString references
-            CopyLocalizedString(so.FindProperty("displayName"), displayName);
-            CopyLocalizedString(so.FindProperty("taskDescription"), taskDescription);
+            CopyLocalizedString(so, so.FindProperty("displayName"), displayName);
+            CopyLocalizedString(so, so.FindProperty("taskDescription"), taskDescription);
 
             // Conditions lists
             CopyConditionList(so.FindProperty("conditions"), conditions);
@@ -149,24 +165,24 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            // Apply smart/local variables after serialization is applied
+            ApplyPendingSmartVariables(so);
         }
 
-        private void CopyLocalizedString(SerializedProperty prop, LocalizedString source)
+        private void CopyLocalizedString(SerializedObject so, SerializedProperty prop, LocalizedString source)
         {
             if (prop == null || source == null || source.IsEmpty)
                 return;
 
-            // LocalizedString has m_TableReference and m_TableEntryReference
             var tableRef = prop.FindPropertyRelative("m_TableReference");
             var entryRef = prop.FindPropertyRelative("m_TableEntryReference");
 
             if (tableRef != null && source.TableReference.TableCollectionNameGuid != Guid.Empty)
             {
-                // Unity.Localization serializes as m_TableCollectionName with format "GUID:xxxxx"
                 var tableCollectionName = tableRef.FindPropertyRelative("m_TableCollectionName");
                 if (tableCollectionName != null)
                 {
-                    // Format: "GUID:" + GUID without dashes (e.g., "GUID:05b8775364730764ab5bf1891aa1cb86")
                     tableCollectionName.stringValue = "GUID:" + source.TableReference.TableCollectionNameGuid.ToString("N");
                 }
             }
@@ -179,6 +195,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                     keyId.longValue = source.TableEntryReference.KeyId;
                 }
             }
+
+            // Store for later application of smart variables after ApplyModifiedProperties
+            _pendingLocalizedStringCopies.Add((prop.propertyPath, source));
         }
 
         private void CopyConditionList(SerializedProperty prop, ConditionList sourceConditions)
@@ -199,6 +218,226 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                     prop.GetArrayElementAtIndex(prop.arraySize - 1).objectReferenceValue = condition;
                 }
             }
+        }
+
+        #endregion
+
+        #region LocalizedString Smart Variables
+
+        // Use lazy initialization to ensure reflection happens at the right time
+        private static FieldInfo _variablesSourceField;
+        private static FieldInfo _variablesDictField;
+        private static bool _reflectionInitialized;
+
+        // Reset reflection on domain reload
+        [UnityEditor.InitializeOnLoadMethod]
+        private static void ResetReflectionOnDomainReload()
+        {
+            _reflectionInitialized = false;
+            _variablesSourceField = null;
+            _variablesDictField = null;
+        }
+
+        private static FieldInfo VariablesSourceField
+        {
+            get
+            {
+                EnsureReflectionInitialized();
+                return _variablesSourceField;
+            }
+        }
+
+        private static FieldInfo VariablesDictField
+        {
+            get
+            {
+                EnsureReflectionInitialized();
+                return _variablesDictField;
+            }
+        }
+
+        private static void EnsureReflectionInitialized()
+        {
+            if (_reflectionInitialized) return;
+            _reflectionInitialized = true;
+
+            // Try new Unity Localization field names first (m_LocalVariables), then fall back to old (m_Variables)
+            _variablesSourceField = typeof(LocalizedString).GetField("m_LocalVariables", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (_variablesSourceField == null)
+                _variablesSourceField = typeof(LocalizedString).GetField("m_Variables", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            // For PersistentVariablesSource, try m_Variables (old) - new versions may not use this class the same way
+            _variablesDictField = typeof(PersistentVariablesSource).GetField("m_Variables", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        /// <summary>
+        /// Applies smart variables to LocalizedStrings after serialization.
+        /// Must be called after so.ApplyModifiedPropertiesWithoutUndo().
+        /// </summary>
+        private void ApplyPendingSmartVariables(SerializedObject so)
+        {
+            so.Update();
+
+            foreach (var (propertyPath, source) in _pendingLocalizedStringCopies)
+            {
+                // Get the target LocalizedString via reflection (search base classes too)
+                var fieldInfo = GetFieldIncludingBaseClasses(so.targetObject?.GetType(), propertyPath);
+                if (fieldInfo?.GetValue(so.targetObject) is LocalizedString target)
+                {
+                    CopySmartVariables(target, source);
+                }
+            }
+            _pendingLocalizedStringCopies.Clear();
+
+            EditorUtility.SetDirty(so.targetObject);
+        }
+
+        /// <summary>
+        /// Copies smart/local variables from source to target LocalizedString.
+        /// Handles both old (PersistentVariablesSource) and new (List) Unity Localization APIs.
+        /// </summary>
+        private static void CopySmartVariables(LocalizedString target, LocalizedString source)
+        {
+            if (target == null || source == null || VariablesSourceField == null)
+                return;
+
+            var srcValue = VariablesSourceField.GetValue(source);
+            if (srcValue == null)
+                return;
+
+            // Handle new Unity Localization API: m_LocalVariables is a List<LocalVariable>
+            if (srcValue is System.Collections.IList srcList)
+            {
+                if (srcList.Count == 0)
+                    return;
+
+                var dstValue = VariablesSourceField.GetValue(target);
+                var dstList = dstValue as System.Collections.IList
+                    ?? Activator.CreateInstance(srcValue.GetType()) as System.Collections.IList;
+
+                if (dstList == null)
+                    return;
+
+                dstList.Clear();
+                foreach (var item in srcList)
+                {
+                    if (item == null) continue;
+                    var clone = CloneLocalVariable(item);
+                    if (clone != null)
+                        dstList.Add(clone);
+                }
+
+                VariablesSourceField.SetValue(target, dstList);
+                return;
+            }
+
+            // Handle old Unity Localization API: m_Variables is a PersistentVariablesSource
+            if (srcValue is PersistentVariablesSource srcSource && VariablesDictField != null)
+            {
+                var srcDict = VariablesDictField.GetValue(srcSource) as Dictionary<string, IVariable>;
+                if (srcDict == null || srcDict.Count == 0)
+                    return;
+
+                var formatter = LocalizationSettings.StringDatabase?.SmartFormatter;
+                if (formatter == null)
+                    return;
+
+                var dstSource = new PersistentVariablesSource(formatter);
+                var dstDict = new Dictionary<string, IVariable>();
+
+                foreach (var pair in srcDict)
+                {
+                    if (pair.Value == null) continue;
+                    var clone = CloneVariable(pair.Value);
+                    if (clone != null)
+                        dstDict[pair.Key] = clone;
+                }
+
+                VariablesDictField.SetValue(dstSource, dstDict);
+                VariablesSourceField.SetValue(target, dstSource);
+            }
+        }
+
+        /// <summary>
+        /// Clones a LocalVariable object (new Unity Localization API).
+        /// Traverses the full type hierarchy to ensure all fields are copied.
+        /// </summary>
+        private static object CloneLocalVariable(object source)
+        {
+            if (source == null) return null;
+
+            var type = source.GetType();
+            var clone = Activator.CreateInstance(type);
+
+            // Traverse the type hierarchy to get all fields including base classes
+            var currentType = type;
+            while (currentType != null && currentType != typeof(object))
+            {
+                foreach (var field in currentType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                {
+                    if (field.IsInitOnly) continue;
+                    try
+                    {
+                        var value = field.GetValue(source);
+                        // Deep clone IVariable values
+                        if (value is IVariable variable)
+                            value = CloneVariable(variable);
+                        field.SetValue(clone, value);
+                    }
+                    catch { /* Ignore non-copyable fields */ }
+                }
+                currentType = currentType.BaseType;
+            }
+
+            return clone;
+        }
+
+        /// <summary>
+        /// Clones an IVariable instance via reflection.
+        /// Traverses the full type hierarchy to ensure base class fields (like m_Value) are copied.
+        /// </summary>
+        private static IVariable CloneVariable(IVariable source)
+        {
+            if (source == null)
+                return null;
+
+            var type = source.GetType();
+            var clone = Activator.CreateInstance(type);
+
+            // Traverse the type hierarchy to get all fields including base classes
+            var currentType = type;
+            while (currentType != null && currentType != typeof(object))
+            {
+                foreach (var field in currentType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                {
+                    if (field.IsInitOnly)
+                        continue;
+
+                    try
+                    {
+                        field.SetValue(clone, field.GetValue(source));
+                    }
+                    catch { /* Ignore non-copyable fields */ }
+                }
+                currentType = currentType.BaseType;
+            }
+
+            return clone as IVariable;
+        }
+
+        /// <summary>
+        /// Gets a field by name, searching through the type hierarchy (base classes).
+        /// </summary>
+        private static FieldInfo GetFieldIncludingBaseClasses(Type type, string fieldName)
+        {
+            while (type != null)
+            {
+                var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+                if (field != null)
+                    return field;
+                type = type.BaseType;
+            }
+            return null;
         }
 
         #endregion

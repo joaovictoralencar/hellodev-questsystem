@@ -167,14 +167,20 @@ Right-click > Create > HelloDev > Quest System > Scriptable Objects > Tasks > [T
 ```
 
 **Available types:**
-| Type | Description | Use Case |
-|------|-------------|----------|
-| Int Task | Counter-based | Kill X, Collect Y |
-| Bool Task | Binary state | Find item, Talk to NPC |
-| String Task | Text matching | Enter password |
-| Location Task | Reach location (uses ID_SO) | Go to waypoint |
-| Timed Task | Time limit | Survive, Escape |
-| Discovery Task | Find items (uses List\<ID_SO\>) | Find all clues |
+| Type | Description | Use Case | Conditions Required? |
+|------|-------------|----------|---------------------|
+| Int Task | Counter-based | Kill X, Collect Y | Optional (internal counter) |
+| Bool Task | Binary state | Find item, Talk to NPC | **Required** (only way to complete) |
+| String Task | Text matching | Enter password | Optional (internal string match) |
+| Location Task | Reach location (uses ID_SO) | Go to waypoint | Optional (internal location match) |
+| Timed Task | Time limit | Survive, Escape | Optional (internal timer + built-in failure) |
+| Discovery Task | Find items (uses List\<ID_SO\>) | Find all clues | Optional (internal discovery progress) |
+
+**Task Conditions:**
+- **Trigger Conditions** (`conditions` field): Event-driven conditions that complete the task (or increment progress for Int/Discovery tasks)
+- **Failure Conditions** (`failureConditions` field): Event-driven conditions that fail the task when met
+
+> **Important:** BoolTask has NO internal completion logic - the `conditions` list is the ONLY way to complete it. All other task types can complete via internal logic but can also use conditions as additional triggers.
 
 ### 2. Create Quest Asset
 
@@ -187,9 +193,29 @@ Configure:
 - Set Quest Type for categorization
 - Add Start Conditions (optional)
 - Add Failure Conditions (optional)
+- Add Global Task Failure Conditions (optional - fails ANY active task)
 - Add Rewards (optional)
 
-### 3. Add to QuestManager
+### 3. Configure Task Conditions (Inspector)
+
+For each Task_SO asset, you can configure:
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| `conditions` | Event-driven conditions that complete the task | `SO_Condition_Event_ID_EnterLocation_Village` |
+| `failureConditions` | Event-driven conditions that fail the task | `SO_Condition_Event_Bool_GoblinScoutAlert` |
+
+**Example: Goblin's Bane Tasks**
+| Task | Trigger Conditions | Failure Conditions |
+|------|-------------------|-------------------|
+| `SO_Task_InvestigateAttacks` | 3 discovery conditions | None |
+| `SO_Task_TrackGoblinCamp` | 1 location condition | 1 (scout alert) |
+| `SO_Task_Kill_Goblin` | 1 kill condition | 1 (goblins escaped) |
+| `SO_Task_FindGoblinsCampsite` | 1 location condition | None |
+| `SO_Task_DefeatGoblinChief` | 1 boss defeat condition | Built-in timer |
+| `SO_Task_ReturnToVillage` | 1 location condition | None |
+
+### 4. Add to QuestManager
 
 Reference the Quest_SO in QuestManager's database.
 
