@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.Localization;
 using Unity.GraphToolkit.Editor;
 using HelloDev.Conditions;
-using HelloDev.Conditions.WorldFlags;
 using HelloDev.QuestSystem.QuestGraph.Editor.Ports;
+using HelloDev.QuestSystem.Stages;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 {
@@ -30,7 +30,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         private const string OPT_CHOICE_ID = "ChoiceId";
         private const string OPT_CHOICE_NAME = "ChoiceName";
         private const string OPT_CONDITIONS = "Conditions";
-        private const string OPT_WORLD_FLAGS = "WorldFlagsOnSelect";
+        private const string OPT_EFFECTS = "EffectsOnSelect";
         private const string OPT_OUTPUT_COUNT = "OutputCount";
         private const string OPT_OUTPUT_CONDITIONS = "OutputConditions";
 
@@ -61,9 +61,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public List<Condition_SO> Conditions => GetOptionValue<List<Condition_SO>>(OPT_CONDITIONS) ?? new List<Condition_SO>();
 
         /// <summary>
-        /// World flags to set when this branch is taken.
+        /// Effects to apply when this branch is taken.
         /// </summary>
-        public List<WorldFlagModification> WorldFlagsOnSelect => GetOptionValue<List<WorldFlagModification>>(OPT_WORLD_FLAGS) ?? new List<WorldFlagModification>();
+        public List<TransitionEffect_SO> EffectsOnSelect => GetOptionValue<List<TransitionEffect_SO>>(OPT_EFFECTS) ?? new List<TransitionEffect_SO>();
 
         /// <summary>
         /// Number of output paths for conditional routing.
@@ -120,9 +120,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithTooltip("Conditions required for this branch to be evaluated")
                 .ShowInInspectorOnly();
 
-            context.AddOption<List<WorldFlagModification>>(OPT_WORLD_FLAGS)
-                .WithDisplayName("World Flags On Branch")
-                .WithTooltip("World flags to set when this branch is taken")
+            context.AddOption<List<TransitionEffect_SO>>(OPT_EFFECTS)
+                .WithDisplayName("Effects On Branch")
+                .WithTooltip("Effects to apply when this branch is taken (e.g., world flags)")
                 .ShowInInspectorOnly();
 
             // Dynamic output configuration

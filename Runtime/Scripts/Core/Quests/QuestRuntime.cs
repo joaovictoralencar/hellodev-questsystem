@@ -587,8 +587,8 @@ namespace HelloDev.QuestSystem.Quests
                 }
             }
 
-            // Apply world flag modifications (consequences of the choice)
-            choice.ApplyWorldFlagModifications();
+            // Apply transition effects (consequences of the choice)
+            choice.ApplyEffects();
 
             // Fire event before transition
             OnChoiceMade.SafeInvoke(this, choice);
@@ -1027,6 +1027,7 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>
         /// Force completes all remaining tasks and the quest.
         /// Useful for debugging or skip functionality.
+        /// Ensures all world flags are applied via CompleteQuest().
         /// </summary>
         public void ForceComplete()
         {
@@ -1036,6 +1037,12 @@ namespace HelloDev.QuestSystem.Quests
                 {
                     task.CompleteTask();
                 }
+            }
+
+            // Ensure quest is properly completed
+            if (CurrentState == QuestState.InProgress)
+            {
+                CompleteQuest();
             }
         }
 

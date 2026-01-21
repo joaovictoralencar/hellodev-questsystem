@@ -95,7 +95,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     - targetStageIndex: 1
       trigger: 0
       conditions: []
@@ -122,7 +122,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -172,7 +172,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -183,7 +183,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478219
-        m_Key: 
+        m_Key:
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -199,30 +199,31 @@ MonoBehaviour:
     - targetStageIndex: 3
       trigger: 0
       conditions: []
-      transitionLabel: 
+      transitionLabel:
       priority: 0
       isPlayerChoice: 0
-      choiceId: 
+      choiceId:
       choiceText:
         m_TableReference:
-          m_TableCollectionName: 
+          m_TableCollectionName:
         m_TableEntryReference:
           m_KeyId: 0
-          m_Key: 
+          m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
       choiceIcon: {fileID: 0}
       choiceTooltip:
         m_TableReference:
-          m_TableCollectionName: 
+          m_TableCollectionName:
         m_TableEntryReference:
           m_KeyId: 0
-          m_Key: 
+          m_Key:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect:
+      - {fileID: 11400000, guid: 0aef0fa8e41bd2e428f8bc6cfff4dc8e, type: 2}
     isOptional: 0
     isHidden: 0
     isTerminal: 0

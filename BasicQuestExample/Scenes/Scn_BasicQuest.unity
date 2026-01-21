@@ -359,7 +359,6 @@ GameObject:
   m_Component:
   - component: {fileID: 865515512}
   - component: {fileID: 865515513}
-  - component: {fileID: 865515515}
   m_Layer: 0
   m_Name: Quests
   m_TagString: Untagged
@@ -451,23 +450,6 @@ MonoBehaviour:
   OnQuestDataChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &865515515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 865515511}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6049404e9f898347929eb865dec7006, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HelloDev.Conditions::HelloDev.Conditions.WorldFlags.WorldFlagManager
-  locator: {fileID: 11400000, guid: b02d4b10f4a960d40acefb08a8a46d11, type: 2}
-  flagAssets: []
-  flagRegistry: {fileID: 11400000, guid: ec478686367b3a248ac724568e2aea65, type: 2}
-  persistent: 1
-  selfInitialize: 0
 --- !u!1 &1820333530
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.Localization;
 using Unity.GraphToolkit.Editor;
 using HelloDev.Conditions;
-using HelloDev.Conditions.WorldFlags;
 using HelloDev.QuestSystem.QuestGraph.Editor.Ports;
+using HelloDev.QuestSystem.Stages;
 
 namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
 {
@@ -29,7 +29,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         private const string OPT_CHOICE_TOOLTIP = "ChoiceTooltip";
         private const string OPT_CHOICE_ICON = "ChoiceIcon";
         private const string OPT_CONDITIONS = "Conditions";
-        private const string OPT_WORLD_FLAGS = "WorldFlagsOnSelect";
+        private const string OPT_EFFECTS = "EffectsOnSelect";
         private const string OPT_OUTPUT_COUNT = "OutputCount";
         private const string OPT_OUTPUT_CONDITIONS = "OutputConditions";
 
@@ -50,7 +50,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
         public LocalizedString ChoiceTooltip => GetOptionValue<LocalizedString>(OPT_CHOICE_TOOLTIP);
         public Sprite ChoiceIcon => GetOptionValue<Sprite>(OPT_CHOICE_ICON);
         public List<Condition_SO> Conditions => GetOptionValue<List<Condition_SO>>(OPT_CONDITIONS) ?? new List<Condition_SO>();
-        public List<WorldFlagModification> WorldFlagsOnSelect => GetOptionValue<List<WorldFlagModification>>(OPT_WORLD_FLAGS) ?? new List<WorldFlagModification>();
+        public List<TransitionEffect_SO> EffectsOnSelect => GetOptionValue<List<TransitionEffect_SO>>(OPT_EFFECTS) ?? new List<TransitionEffect_SO>();
 
         /// <summary>
         /// Number of output paths for conditional routing.
@@ -108,9 +108,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Nodes
                 .WithTooltip("Conditions required for this choice to be available")
                 .ShowInInspectorOnly();
 
-            context.AddOption<List<WorldFlagModification>>(OPT_WORLD_FLAGS)
-                .WithDisplayName("World Flags On Select")
-                .WithTooltip("World flags to set when this choice is selected")
+            context.AddOption<List<TransitionEffect_SO>>(OPT_EFFECTS)
+                .WithDisplayName("Effects On Select")
+                .WithTooltip("Effects to apply when this transition is executed (e.g., world flags)")
                 .ShowInInspectorOnly();
 
             // Dynamic output configuration

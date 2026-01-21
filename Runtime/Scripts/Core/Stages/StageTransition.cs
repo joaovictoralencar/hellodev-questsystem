@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using HelloDev.Conditions;
-using HelloDev.Conditions.WorldFlags;
 using UnityEngine;
 using UnityEngine.Localization;
 #if ODIN_INSPECTOR
@@ -82,13 +81,13 @@ namespace HelloDev.QuestSystem.Stages
 
         #endregion
 
-        #region Consequences (World State)
+        #region Consequences
 
 #if ODIN_INSPECTOR
-        [BoxGroup("Consequences"), PropertyOrder(20), ShowIf(nameof(isPlayerChoice)), ListDrawerSettings(ShowFoldout = true)]
+        [BoxGroup("Consequences"), PropertyOrder(20), ListDrawerSettings(ShowFoldout = true)]
 #endif
-        [SerializeField, Tooltip("World flags to modify when this choice is selected.")]
-        private List<WorldFlagModification> worldFlagsOnSelect = new();
+        [SerializeField, Tooltip("Effects to apply when this transition is executed (e.g., world flags, achievements).")]
+        private List<TransitionEffect_SO> effectsOnSelect = new();
 
         #endregion
 
@@ -163,33 +162,33 @@ namespace HelloDev.QuestSystem.Stages
         public bool IsChoiceAvailable => !isPlayerChoice || EvaluateConditions();
 
         /// <summary>
-        /// Gets the world flag modifications to apply when this choice is selected.
+        /// Gets the effects to apply when this transition is executed.
         /// </summary>
-        public List<WorldFlagModification> WorldFlagsOnSelect => worldFlagsOnSelect;
+        public List<TransitionEffect_SO> EffectsOnSelect => effectsOnSelect;
 
         /// <summary>
-        /// Returns true if this transition has world flag modifications.
+        /// Returns true if this transition has effects to apply.
         /// </summary>
-        public bool HasWorldFlagModifications => worldFlagsOnSelect != null && worldFlagsOnSelect.Count > 0;
+        public bool HasEffects => effectsOnSelect != null && effectsOnSelect.Count > 0;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Applies all world flag modifications for this transition.
-        /// Called when the choice is selected.
+        /// Applies all effects for this transition.
+        /// Called when the transition is executed.
         /// </summary>
-        public void ApplyWorldFlagModifications()
+        public void ApplyEffects()
         {
-            if (worldFlagsOnSelect == null || worldFlagsOnSelect.Count == 0)
+            if (effectsOnSelect == null || effectsOnSelect.Count == 0)
                 return;
 
-            foreach (var modification in worldFlagsOnSelect)
+            foreach (var effect in effectsOnSelect)
             {
-                if (modification != null && modification.IsValid)
+                if (effect != null && effect.IsValid)
                 {
-                    modification.Apply();
+                    effect.Apply();
                 }
             }
         }

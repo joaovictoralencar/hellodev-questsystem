@@ -1015,59 +1015,17 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 }
             }
 
-            // World flag modifications
-            var flagsProperty = transProperty.FindPropertyRelative("worldFlagsOnSelect");
-            flagsProperty.ClearArray();
-            if (choice.WorldFlagsOnSelect != null)
+            // Transition effects (ScriptableObject references)
+            var effectsProperty = transProperty.FindPropertyRelative("effectsOnSelect");
+            effectsProperty.ClearArray();
+            if (choice.EffectsOnSelect != null)
             {
-                for (int i = 0; i < choice.WorldFlagsOnSelect.Count; i++)
+                foreach (var effect in choice.EffectsOnSelect)
                 {
-                    flagsProperty.InsertArrayElementAtIndex(flagsProperty.arraySize);
-                    // WorldFlagModification is a class, copy its fields
-                    var flagModProp = flagsProperty.GetArrayElementAtIndex(flagsProperty.arraySize - 1);
-                    var sourceMod = choice.WorldFlagsOnSelect[i];
-
-                    // Copy WorldFlagModification fields using actual field names
-                    try
+                    if (effect != null)
                     {
-                        // Locator reference
-                        var locatorProp = flagModProp.FindPropertyRelative("flagLocator");
-                        if (locatorProp != null && sourceMod.HasLocator)
-                        {
-                            // Note: We can't easily access the private flagLocator field
-                            // The source modification should have its locator set already
-                        }
-
-                        // Flag type
-                        var isBoolProp = flagModProp.FindPropertyRelative("isBoolFlag");
-                        if (isBoolProp != null)
-                            isBoolProp.boolValue = sourceMod.IsBoolFlag;
-
-                        // Boolean flag fields
-                        var boolFlagProp = flagModProp.FindPropertyRelative("boolFlag");
-                        if (boolFlagProp != null)
-                            boolFlagProp.objectReferenceValue = sourceMod.BoolFlag;
-
-                        var boolValueProp = flagModProp.FindPropertyRelative("boolValue");
-                        if (boolValueProp != null)
-                            boolValueProp.boolValue = sourceMod.BoolValue;
-
-                        // Integer flag fields
-                        var intFlagProp = flagModProp.FindPropertyRelative("intFlag");
-                        if (intFlagProp != null)
-                            intFlagProp.objectReferenceValue = sourceMod.IntFlag;
-
-                        var intOpProp = flagModProp.FindPropertyRelative("intOperation");
-                        if (intOpProp != null)
-                            intOpProp.enumValueIndex = (int)sourceMod.IntOperation;
-
-                        var intValueProp = flagModProp.FindPropertyRelative("intValue");
-                        if (intValueProp != null)
-                            intValueProp.intValue = sourceMod.IntValue;
-                    }
-                    catch
-                    {
-                        _context.AddWarning($"Could not fully copy WorldFlagModification for choice '{choice.ChoiceId}'");
+                        effectsProperty.InsertArrayElementAtIndex(effectsProperty.arraySize);
+                        effectsProperty.GetArrayElementAtIndex(effectsProperty.arraySize - 1).objectReferenceValue = effect;
                     }
                 }
             }

@@ -49,16 +49,16 @@ namespace HelloDev.QuestSystem.SaveLoad
                 var manager = flagLocator.Manager;
                 manager.RegisterFlag(flag);
 
-                // Set value via manager
+                // Set value via typed runtime
                 switch (flag)
                 {
                     case WorldFlagBool_SO boolFlag:
-                        manager.SetBoolValue(boolFlag, snapshot.BoolValue);
+                        manager.GetBoolFlag(boolFlag)?.SetValue(snapshot.BoolValue);
                         QuestLogger.LogVerbose(LogSubsystem.Save, $"Restored bool flag '{boolFlag.FlagName}' = {snapshot.BoolValue}");
                         break;
 
                     case WorldFlagInt_SO intFlag:
-                        manager.SetIntValue(intFlag, snapshot.IntValue);
+                        manager.GetIntFlag(intFlag)?.SetValue(snapshot.IntValue);
                         QuestLogger.LogVerbose(LogSubsystem.Save, $"Restored int flag '{intFlag.FlagName}' = {snapshot.IntValue}");
                         break;
                 }

@@ -668,7 +668,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                     {
                         bool isChoice = transition.IsPlayerChoice;
                         bool hasConditions = transition.Conditions != null && transition.Conditions.Count > 0;
-                        bool hasWorldFlags = transition.HasWorldFlagModifications;
+                        bool hasWorldFlags = transition.HasEffects;
 
                         // Taller card for choices with extra info
                         float transitionHeight = isChoice && (hasConditions || hasWorldFlags) ? 42f : 24f;
@@ -763,7 +763,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                             if (hasWorldFlags)
                             {
                                 var flagRect = new Rect(detailX, detailY, 75, 14);
-                                DrawMiniTag(flagRect, $"Flags ({transition.WorldFlagsOnSelect.Count})", worldFlagColor);
+                                DrawMiniTag(flagRect, $"Flags ({transition.EffectsOnSelect.Count})", worldFlagColor);
                             }
                         }
                     }
@@ -1118,8 +1118,8 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                             choiceCount++;
                             stageHasChoice = true;
                             allChoices.Add((stage, transition));
-                            if (transition.HasWorldFlagModifications)
-                                worldFlagModCount += transition.WorldFlagsOnSelect.Count;
+                            if (transition.HasEffects)
+                                worldFlagModCount += transition.EffectsOnSelect.Count;
                             if (transition.Conditions != null && transition.Conditions.Count > 0)
                                 gatedChoiceCount++;
                         }
@@ -1164,7 +1164,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             foreach (var (stage, choice) in allChoices)
             {
                 bool hasConditions = choice.Conditions != null && choice.Conditions.Count > 0;
-                bool hasFlags = choice.HasWorldFlagModifications;
+                bool hasFlags = choice.HasEffects;
 
                 float rowHeight = 32f;
                 var rowRect = GUILayoutUtility.GetRect(0, rowHeight, GUILayout.ExpandWidth(true));
@@ -1545,11 +1545,11 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                             }
 
                             // Check for null world flag modifications
-                            if (transition.WorldFlagsOnSelect != null)
+                            if (transition.EffectsOnSelect != null)
                             {
-                                for (int w = 0; w < transition.WorldFlagsOnSelect.Count; w++)
+                                for (int w = 0; w < transition.EffectsOnSelect.Count; w++)
                                 {
-                                    var mod = transition.WorldFlagsOnSelect[w];
+                                    var mod = transition.EffectsOnSelect[w];
                                     if (mod != null && !mod.IsValid)
                                     {
                                         issues.Add($"Stage '{stage.StageName}': Choice '{transition.ChoiceId}' has invalid world flag modification at index {w}");
@@ -1635,7 +1635,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                         {
                             choiceCount++;
                             stageHasChoices = true;
-                            if (transition.HasWorldFlagModifications)
+                            if (transition.HasEffects)
                                 choicesWithFlags++;
 
                             // Warn if choice has no transition label

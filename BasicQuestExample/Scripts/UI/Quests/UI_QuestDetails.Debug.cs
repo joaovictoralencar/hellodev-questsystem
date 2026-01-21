@@ -319,9 +319,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugCompleteQuest()
         {
-            if (_currentQuest == null) return;
-            foreach (TaskRuntime task in _currentQuest.Tasks)
-                task.CompleteTask();
+            _currentQuest?.ForceComplete();
         }
 
         private void DebugFailQuest() => _currentQuest?.FailQuest();

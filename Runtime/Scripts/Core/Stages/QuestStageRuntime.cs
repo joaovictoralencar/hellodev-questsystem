@@ -451,6 +451,9 @@ namespace HelloDev.QuestSystem.Stages
 
             if (transition.EvaluateConditions())
             {
+                // Apply transition effects before transitioning
+                transition.ApplyEffects();
+
                 QuestLogger.LogTransition(LogSubsystem.Stage, StageName, $"Stage {transition.TargetStageIndex}");
                 OnTransitionReady.SafeInvoke(this, transition.TargetStageIndex);
             }
@@ -478,11 +481,14 @@ namespace HelloDev.QuestSystem.Stages
             }
 
             // Check for OnGroupsComplete transition
-            int nextStage = GetNextStageOnGroupsComplete();
-            if (nextStage >= 0)
+            var transition = Data.GetValidTransition(TransitionTrigger.OnGroupsComplete);
+            if (transition != null)
             {
+                // Apply transition effects before transitioning
+                transition.ApplyEffects();
+
                 Complete();
-                OnTransitionReady.SafeInvoke(this, nextStage);
+                OnTransitionReady.SafeInvoke(this, transition.TargetStageIndex);
             }
             else
             {
