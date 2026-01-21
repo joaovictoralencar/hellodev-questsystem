@@ -4,6 +4,7 @@
     "references": [
         "HelloDev.Utils",
         "HelloDev.QuestSystem",
+        "HelloDev.QuestSystem.Tutorials",
         "HelloDev.UI.Default",
         "Unity.TextMeshPro",
         "PrimeTween.Runtime",

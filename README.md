@@ -2,6 +2,18 @@
 
 A data-driven quest system for Unity games. Designers assemble quests from reusable components; programmers extend the system with new task types and conditions.
 
+## Assembly Structure
+
+The package is organized into modular assemblies:
+
+| Assembly | Description | Optional |
+|----------|-------------|----------|
+| `HelloDev.QuestSystem` | Core quest system (Quests, Tasks, Stages, QuestLines, SaveLoad) | No |
+| `HelloDev.QuestSystem.Tutorials` | Tutorial system with steps and sequencing | Yes |
+| `HelloDev.QuestSystem.Achievements` | Achievement tracking and unlocking | Yes |
+
+**Optional assemblies** can be excluded if you don't need them. Simply don't reference them in your assembly definitions.
+
 ## Getting Started
 
 ### 1. Install the Package
@@ -13,6 +25,7 @@ A data-driven quest system for Unity games. Designers assemble quests from reusa
 
 **Dependencies:**
 - `com.hellodev.utils`
+- `com.hellodev.saving`
 - `com.hellodev.events`
 - `com.hellodev.conditions`
 - `com.hellodev.ids`

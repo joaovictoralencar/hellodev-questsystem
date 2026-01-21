@@ -1,18 +1,13 @@
 {
-    "name": "HelloDev.QuestSystem",
-    "rootNamespace": "HelloDev.QuestSystem",
+    "name": "HelloDev.QuestSystem.Tutorials",
+    "rootNamespace": "HelloDev.QuestSystem.Tutorials",
     "references": [
+        "HelloDev.QuestSystem",
         "HelloDev.Utils",
         "HelloDev.Saving",
-        "HelloDev.Conditions",
-        "HelloDev.Conditions.WorldFlags",
-        "HelloDev.Events",
-        "HelloDev.IDs",
-        "Unity.Localization",
         "QuestSystem.Utils",
-        "HelloDev.Conditions.Types",
-        "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
-        "HelloDev.Bootstrap"
+        "Unity.Localization",
+        "HelloDev.Conditions"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

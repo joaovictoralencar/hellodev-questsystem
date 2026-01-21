@@ -1,0 +1,20 @@
+{
+    "name": "HelloDev.QuestSystem.Achievements",
+    "rootNamespace": "HelloDev.QuestSystem.Achievements",
+    "references": [
+        "HelloDev.QuestSystem",
+        "HelloDev.Utils",
+        "QuestSystem.Utils",
+        "HelloDev.Conditions",
+        "Unity.Localization"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

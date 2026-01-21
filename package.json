@@ -1,8 +1,8 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "displayName": "Quest System",
-  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, save/load persistence, and a visual Quest Graph Editor using Unity Graph Toolkit.",
+  "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, save/load persistence, and a visual Quest Graph Editor using Unity Graph Toolkit. Includes optional Tutorial and Achievement systems.",
   "unity": "6000.1",
   "unityRelease": "1f1",
   "documentationUrl": "https://github.com/joaovictoralencar/unity-quest-system#readme",
@@ -26,8 +26,18 @@
     "graph",
     "visual editor",
     "node editor",
-    "graph toolkit"
+    "graph toolkit",
+    "tutorials",
+    "achievements"
   ],
+  "dependencies": {
+    "com.hellodev.utils": "1.4.0",
+    "com.hellodev.saving": "1.0.0",
+    "com.hellodev.events": "1.1.0",
+    "com.hellodev.conditions": "1.6.0",
+    "com.hellodev.ids": "1.1.0",
+    "com.unity.localization": "1.5.2"
+  },
   "author": {
     "name": "João Victor de Alencar Pascoal",
     "email": "your.email@example.com",

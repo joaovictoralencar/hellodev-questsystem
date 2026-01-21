@@ -6,6 +6,7 @@
     "Unity.GraphToolkit.Common.Editor",
     "HelloDev.QuestSystem",
     "HelloDev.Conditions",
+    "HelloDev.Conditions.WorldFlags",
     "HelloDev.Events",
     "HelloDev.IDs",
     "HelloDev.Utils",

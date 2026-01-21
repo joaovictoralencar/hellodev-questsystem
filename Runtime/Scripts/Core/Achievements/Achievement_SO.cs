@@ -66,7 +66,7 @@ namespace HelloDev.QuestSystem.Achievements
         private LocalizedString achievementDescription;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Display"), PropertyOrder(12)]
+        [TitleGroup("Display"), PropertyOrder(12)] 
 #endif
         [SerializeField, Tooltip("The localized description shown when hidden (before unlock).")]
         private LocalizedString hiddenDescription;

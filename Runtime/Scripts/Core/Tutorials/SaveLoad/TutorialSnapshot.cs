@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HelloDev.QuestSystem.SaveLoad
+namespace HelloDev.QuestSystem.Tutorials.SaveLoad
 {
     /// <summary>
     /// Complete snapshot of tutorial system state for save/load functionality.
