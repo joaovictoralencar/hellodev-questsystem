@@ -164,6 +164,7 @@ A visual node-based editor for designing quests using Unity's Graph Toolkit.
 - **WorldFlagInt_SO** - Integer flags for numeric state (reputation, kill_count)
 - **ConditionWorldFlagBool_SO** - Check boolean flags in conditions
 - **ConditionWorldFlagInt_SO** - Check integer flags with comparisons (>=, <, ==, etc.)
+- **Event Modifiers** - Set flags when events fire (see `com.hellodev.conditions` for `WorldFlagEventModifier*_SO` classes)
 
 ### Conditions
 - Start conditions - Control when quests become available
@@ -1063,7 +1064,7 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 ### Required
 - com.hellodev.utils (1.1.0+)
 - com.hellodev.events (1.1.0+)
-- com.hellodev.conditions (1.1.0+)
+- com.hellodev.conditions (1.6.0+) - Includes world flag event modifiers
 - com.hellodev.ids (1.1.0+)
 - com.unity.localization
 

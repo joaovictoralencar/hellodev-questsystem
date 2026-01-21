@@ -1,7 +1,7 @@
 # Feature Matrix: HelloDev Quest System vs AAA Standards
 
 **Version:** 3.10.0
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-01-21
 
 This document compares the HelloDev Quest System features against industry-standard quest systems from AAA games like The Witcher 3, Skyrim, Cyberpunk 2077, and Baldur's Gate 3.
 
@@ -83,6 +83,7 @@ This document compares the HelloDev Quest System features against industry-stand
 | Boolean flags | BG3 (thousands) | `WorldFlagBool_SO` | ✅ |
 | Integer flags | Reputation systems | `WorldFlagInt_SO` with min/max | ✅ |
 | Flag modifications on choice | Consequence tracking | `WorldFlagsOnSelect` | ✅ |
+| Event-driven flag modifiers | Auto-set flags on events | `WorldFlagEventModifier*_SO` | ✅ |
 | Condition-based unlocks | Quest chains | `ConditionWorldFlagBool_SO` | ✅ |
 | Quest state conditions | Prerequisite quests | `ConditionQuestState_SO` | ✅ |
 | QuestLine conditions | Arc prerequisites | `ConditionQuestLineState_SO` | ✅ |
@@ -210,4 +211,4 @@ This document compares the HelloDev Quest System features against industry-stand
 
 ---
 
-*Feature matrix maintained for HelloDev Quest System. Last updated 2026-01-14.*
+*Feature matrix maintained for HelloDev Quest System. Last updated 2026-01-21.*

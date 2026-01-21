@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ca1f640b98ac784c9687fbd5058727e, type: 3}
+  m_Name: SO_Effect_MerchantDilemma_ChoseDiplomacy
+  m_EditorClassIdentifier:
+  flagLocator: {fileID: 11400000, guid: b02d4b10f4a960d40acefb08a8a46d11, type: 2}
+  isBoolFlag: 1
+  boolFlag: {fileID: 11400000, guid: 6943833d92ae6a647b3245de78020ae0, type: 2}
+  boolValue: 1
+  intFlag: {fileID: 0}
+  intOperation: 0
+  intValue: 0
