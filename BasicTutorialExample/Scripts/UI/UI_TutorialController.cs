@@ -259,6 +259,18 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             TutorialManager.Instance.OnTutorialCompleted.SafeSubscribe(HandleTutorialCompleted);
             TutorialManager.Instance.OnStepStarted.SafeSubscribe(HandleStepStarted);
             TutorialManager.Instance.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
+
+            // Handle case where tutorial was restored from save before UI subscribed
+            var currentTutorial = TutorialManager.Instance.CurrentTutorial;
+            if (currentTutorial != null && currentTutorial.CurrentState == HelloDev.Objectives.ObjectiveState.InProgress)
+            {
+                QuestLogger.Log(LogSubsystem.Tutorial, "[UI_TutorialController] Found active tutorial on subscribe, showing UI");
+                HandleTutorialStarted(currentTutorial);
+                if (currentTutorial.CurrentStep != null)
+                {
+                    HandleStepStarted(currentTutorial, currentTutorial.CurrentStep);
+                }
+            }
         }
 
         private void UnsubscribeFromManagerEvents()

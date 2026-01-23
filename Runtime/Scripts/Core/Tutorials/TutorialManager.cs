@@ -142,8 +142,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Gets whether a tutorial is currently playing.
         /// </summary>
-        public bool IsTutorialActive => _currentTutorial != null &&
-            _currentTutorial.CurrentState == ObjectiveState.InProgress;
+        public bool IsTutorialActive => _currentTutorial is { CurrentState: ObjectiveState.InProgress };
 
         /// <summary>
         /// Gets the IDs of all completed tutorials.
@@ -162,7 +161,11 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Whether this manager should self-initialize.
         /// </summary>
-        public bool SelfInitialize => selfInitialize;
+        public bool SelfInitialize
+        {
+            get => selfInitialize;
+            set => selfInitialize = value;
+        }
 
         /// <summary>
         /// Priority 105 - Core phase. Runs after QuestManager (100).
@@ -413,6 +416,28 @@ namespace HelloDev.QuestSystem.Tutorials
         }
 
         /// <summary>
+        /// Checks if a specific tutorial is currently active (in progress or queued).
+        /// Use this before calling StartTutorial to prevent duplicates after save/load.
+        /// </summary>
+        /// <param name="tutorialId">The tutorial ID.</param>
+        /// <returns>True if the tutorial is currently active.</returns>
+        public bool GetIsTutorialActive(Guid tutorialId)
+        {
+            return _activeTutorials.ContainsKey(tutorialId);
+        }
+
+        /// <summary>
+        /// Checks if a specific tutorial is currently active (in progress or queued).
+        /// Use this before calling StartTutorial to prevent duplicates after save/load.
+        /// </summary>
+        /// <param name="tutorialData">The tutorial ScriptableObject.</param>
+        /// <returns>True if the tutorial is currently active.</returns>
+        public bool GetIsTutorialActive(Tutorial_SO tutorialData)
+        {
+            return tutorialData != null && _activeTutorials.ContainsKey(tutorialData.TutorialId);
+        }
+
+        /// <summary>
         /// Marks a tutorial as completed (for save/load restoration).
         /// </summary>
         /// <param name="tutorialId">The tutorial ID.</param>
@@ -622,10 +647,11 @@ namespace HelloDev.QuestSystem.Tutorials
             // Restore step states
             RestoreTutorialSteps(tutorial, tutorialSnapshot);
 
-            // Restore tutorial state
+            // Restore tutorial state and fire events so UI can display current state
             tutorial.RestoreTutorialState(
                 (ObjectiveState)tutorialSnapshot.State,
-                tutorialSnapshot.CurrentStepIndex
+                tutorialSnapshot.CurrentStepIndex,
+                fireEvents: true
             );
 
             QuestLogger.LogVerbose(LogSubsystem.Tutorial, $"Restored active tutorial '{tutorialData.DevName}' at step {tutorialSnapshot.CurrentStepIndex}");

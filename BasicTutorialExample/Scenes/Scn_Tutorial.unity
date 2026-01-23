@@ -489,6 +489,77 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7482696878301787831, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
   m_PrefabInstance: {fileID: 591770014}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &703210587
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 703210588}
+  - component: {fileID: 703210589}
+  m_Layer: 0
+  m_Name: Save
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &703210588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 703210587}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.66895, y: 2.56634, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &703210589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 703210587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44bdecb616a5a9d4a82ef65c371487f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HelloDev.Saving::HelloDev.Saving.UnifiedSaveManager
+  settings: {fileID: 11400000, guid: 074d37a4a43372440b4e59a41dff30df, type: 2}
+  locator: {fileID: 11400000, guid: 511570dc688d35b45bad7e0408c36bc7, type: 2}
+  selfInitialize: 0
+  persistent: 1
+  defaultSlotKey: autosave
+  autoLoadOnStart: 1
+  autoSaveOnQuit: 1
+  autoSaveOnPause: 0
+  autoSaveInterval: 0
+  OnBeforeSave:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAfterSave:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBeforeLoad:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAfterLoad:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSystemRegistered:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSystemUnregistered:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &813643705
 GameObject:
   m_ObjectHideFlags: 0
@@ -533,10 +604,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 041fb0c87c8f5b747909ae367beb422e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HelloDev.Bootstrap::HelloDev.Bootstrap.GameBootstrap
-  config: {fileID: 11400000, guid: f439b099a3853154db8d7f21b090ba04, type: 2}
+  groups:
+  - enabled: 1
+    groupName: Essentials
+    systems:
+    - {fileID: 703210589}
+    - {fileID: 1369441332}
+  enableDebugLogging: 1
+  initializationTimeout: 1
   persistent: 1
-  autoDiscoverSystems: 1
-  manualSystems: []
+  autoDiscoverIfConfigEmpty: 1
 --- !u!1 &843014853
 GameObject:
   m_ObjectHideFlags: 0
@@ -993,7 +1070,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f55512fd699cd284f9f614a0ebfd3903, type: 2}
   enableDebugLogging: 1
   allowTutorialQueue: 1
-  selfInitialize: 1
+  selfInitialize: 0
   unifiedSaveLocator: {fileID: 11400000, guid: 511570dc688d35b45bad7e0408c36bc7, type: 2}
   OnTutorialStarted:
     m_PersistentCalls:
@@ -2139,3 +2216,4 @@ SceneRoots:
   - {fileID: 843014854}
   - {fileID: 1732745929}
   - {fileID: 1957606002}
+  - {fileID: 703210588}

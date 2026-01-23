@@ -368,7 +368,8 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         /// <param name="state">The state to restore to.</param>
         /// <param name="currentStepIndex">The step index to restore to.</param>
-        public void RestoreTutorialState(ObjectiveState state, int currentStepIndex)
+        /// <param name="fireEvents">If true, fires OnTutorialStarted and OnStepStarted events so UI can update.</param>
+        public void RestoreTutorialState(ObjectiveState state, int currentStepIndex, bool fireEvents = true)
         {
             CurrentState = state;
             CurrentStepIndex = currentStepIndex;
@@ -385,6 +386,20 @@ namespace HelloDev.QuestSystem.Tutorials
                 if (CurrentStep != null && CurrentStep.CurrentState == ObjectiveState.InProgress)
                 {
                     CurrentStep.ResumeStep();
+
+                    // Fire events so UI can display current state
+                    if (fireEvents)
+                    {
+                        QuestLogger.Log(LogSubsystem.Tutorial, $"Firing restore events for '{DevName}' step '{CurrentStep.DevName}'");
+                        OnTutorialStarted?.Invoke(this);
+                        _onStarted?.Invoke(this);
+                        OnStepStarted?.Invoke(this, CurrentStep);
+                        _onStageEntered?.Invoke(this, CurrentStep);
+                    }
+                }
+                else
+                {
+                    QuestLogger.LogWarning(LogSubsystem.Tutorial, $"Cannot fire restore events: CurrentStep={CurrentStep?.DevName ?? "null"}, State={CurrentStep?.CurrentState.ToString() ?? "N/A"}");
                 }
             }
 

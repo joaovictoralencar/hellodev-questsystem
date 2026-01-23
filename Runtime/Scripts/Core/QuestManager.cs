@@ -252,7 +252,11 @@ namespace HelloDev.QuestSystem
         #region IBootstrapInitializable
 
         /// <inheritdoc />
-        public bool SelfInitialize => initializeOnAwake;
+        public bool SelfInitialize
+        {
+            get => initializeOnAwake;
+            set => initializeOnAwake = value;
+        }
 
         /// <inheritdoc />
         public int InitializationPriority => 150; // Game systems layer
