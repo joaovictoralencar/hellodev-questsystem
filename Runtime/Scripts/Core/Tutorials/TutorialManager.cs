@@ -81,15 +81,6 @@ namespace HelloDev.QuestSystem.Tutorials
         [Tooltip("If true, self-initializes in Awake. Disable when using GameBootstrap.")]
         private bool selfInitialize = true;
 
-#if ODIN_INSPECTOR
-        [TitleGroup("Save System")]
-#else
-        [Header("Save System")]
-#endif
-        [SerializeField]
-        [Tooltip("The unified save locator for registering the snapshot provider. Optional - if not set, snapshot provider won't auto-register.")]
-        private UnifiedSaveLocator_SO unifiedSaveLocator;
-
         #endregion
 
         #region Events
@@ -122,6 +113,7 @@ namespace HelloDev.QuestSystem.Tutorials
         private readonly HashSet<Guid> _completedTutorialIds = new();
         private readonly Queue<TutorialRuntime> _tutorialQueue = new();
         private TutorialRuntime _currentTutorial;
+        private GameContext _context;
         private bool _isInitialized;
         private TutorialSnapshotProvider _snapshotProvider;
 
@@ -149,11 +141,6 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public IReadOnlyCollection<Guid> CompletedTutorialIds => _completedTutorialIds;
 
-        /// <summary>
-        /// Gets the snapshot provider for unified save system integration.
-        /// </summary>
-        public TutorialSnapshotProvider SnapshotProvider => _snapshotProvider;
-
         #endregion
 
         #region IBootstrapInitializable
@@ -178,6 +165,15 @@ namespace HelloDev.QuestSystem.Tutorials
         bool IBootstrapInitializable.IsInitialized => _isInitialized;
 
         /// <summary>
+        /// Receives the game context from GameBootstrap.
+        /// </summary>
+        /// <param name="context">The game context for service registration.</param>
+        public void ReceiveContext(GameContext context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
         /// Initializes the tutorial manager.
         /// </summary>
         public Task InitializeAsync()
@@ -199,9 +195,9 @@ namespace HelloDev.QuestSystem.Tutorials
         public void Shutdown()
         {
             // Unregister snapshot provider from unified save system
-            if (_snapshotProvider != null && unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
+            if (_snapshotProvider != null && _context != null && _context.TryGet<UnifiedSaveManager>(out var saveManager))
             {
-                unifiedSaveLocator.Manager.UnregisterSystem(_snapshotProvider);
+                saveManager.UnregisterSystem(_snapshotProvider);
                 QuestLogger.LogVerbose(LogSubsystem.Tutorial, "TutorialSnapshotProvider unregistered from unified save system");
             }
             _snapshotProvider = null;
@@ -294,14 +290,14 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             _snapshotProvider = new TutorialSnapshotProvider(this);
 
-            if (unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
+            if (_context != null && _context.TryGet<UnifiedSaveManager>(out var saveManager))
             {
-                unifiedSaveLocator.Manager.RegisterSystem(_snapshotProvider);
+                saveManager.RegisterSystem(_snapshotProvider);
                 QuestLogger.Log(LogSubsystem.Tutorial, "TutorialSnapshotProvider registered with unified save system");
             }
             else
             {
-                QuestLogger.LogVerbose(LogSubsystem.Tutorial, "No UnifiedSaveLocator assigned or not available - snapshot provider created but not registered");
+                QuestLogger.LogVerbose(LogSubsystem.Tutorial, "No UnifiedSaveManager in context - snapshot provider created but not registered");
             }
         }
 

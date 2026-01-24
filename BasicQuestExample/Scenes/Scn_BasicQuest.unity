@@ -119,51 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &107406531
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 107406532}
-  - component: {fileID: 107406533}
-  m_Layer: 0
-  m_Name: LogSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &107406532
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 107406531}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1159.3119, y: 881.1438, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &107406533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 107406531}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3167231a3af3ec4191e1185e220573e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HelloDev.Utils::HelloDev.Logging.LoggerInitializer
-  settings: {fileID: 11400000, guid: d6013fbd5ae4db84a95372eb1bde508f, type: 2}
 --- !u!1 &127246513
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,10 +163,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 041fb0c87c8f5b747909ae367beb422e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HelloDev.Bootstrap::HelloDev.Bootstrap.GameBootstrap
-  config: {fileID: 11400000, guid: f439b099a3853154db8d7f21b090ba04, type: 2}
+  groups:
+  - enabled: 1
+    groupName: Essentials
+    systems:
+    - {fileID: 1583650963}
+    - {fileID: 865515513}
+  enableDebugLogging: 1
+  initializationTimeout: 10
   persistent: 1
-  autoDiscoverSystems: 1
-  manualSystems: []
+  autoDiscoverIfConfigEmpty: 1
+  loggerSettings: {fileID: 11400000, guid: d6013fbd5ae4db84a95372eb1bde508f, type: 2}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,7 +356,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   questsDatabase:
-  - {fileID: 7203267250277760873, guid: 750401e5b82b4d64a829f0d09754395c, type: 3}
+  - {fileID: 11400000, guid: 3cac897ba4197f042a40a8fd3f026926, type: 2}
+  - {fileID: 11400000, guid: 34567890abcd0001020304ab01023456, type: 2}
+  - {fileID: 11400000, guid: ad58925db22c21747b172b41f834c8e5, type: 2}
+  - {fileID: 11400000, guid: d89730124d6bb154ca47e80972743d2f, type: 2}
+  - {fileID: 11400000, guid: 83624a944c2469049b51864d56669cff, type: 2}
   questLinesDatabase:
   - {fileID: 11400000, guid: 6aeda53d6019a2848ba68c170192e469, type: 2}
   - {fileID: 11400000, guid: de83b0c1cd7ca5b489e03aaa0bfe2fa0, type: 2}
@@ -404,7 +370,6 @@ MonoBehaviour:
   allowMultipleActiveQuests: 1
   allowReplayingCompletedQuests: 1
   requireQuestInDatabase: 1
-  unifiedSaveLocator: {fileID: 11400000, guid: 511570dc688d35b45bad7e0408c36bc7, type: 2}
   worldFlagRegistry: []
   worldFlagRegistryAsset: {fileID: 11400000, guid: ec478686367b3a248ac724568e2aea65, type: 2}
   worldFlagLocator: {fileID: 11400000, guid: b02d4b10f4a960d40acefb08a8a46d11, type: 2}
@@ -448,6 +413,76 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnQuestDataChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!1 &1583650961
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1583650962}
+  - component: {fileID: 1583650963}
+  m_Layer: 0
+  m_Name: SaveMananger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1583650962
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1583650961}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.66895, y: 2.56634, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1583650963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1583650961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44bdecb616a5a9d4a82ef65c371487f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HelloDev.Saving::HelloDev.Saving.UnifiedSaveManager
+  settings: {fileID: 11400000, guid: 074d37a4a43372440b4e59a41dff30df, type: 2}
+  selfInitialize: 0
+  persistent: 1
+  defaultSlotKey: autosave
+  autoLoadOnStart: 1
+  autoSaveOnQuit: 1
+  autoSaveOnPause: 0
+  autoSaveInterval: 0
+  OnBeforeSave:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAfterSave:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBeforeLoad:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAfterLoad:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSystemRegistered:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSystemUnregistered:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &1820333530
@@ -3757,9 +3792,9 @@ PrefabInstance:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 107406532}
   - {fileID: 865515512}
   - {fileID: 127246514}
   - {fileID: 1820333534}
   - {fileID: 1985634747}
   - {fileID: 330585546}
+  - {fileID: 1583650962}

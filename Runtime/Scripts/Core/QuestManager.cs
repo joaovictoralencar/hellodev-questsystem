@@ -145,17 +145,9 @@ namespace HelloDev.QuestSystem
 
 #if ODIN_INSPECTOR
         [TitleGroup("Save System")]
-        [PropertyOrder(20)]
+        [PropertyOrder(21)]
 #else
         [Header("Save System")]
-#endif
-        [Tooltip("The unified save locator for registering the snapshot provider. Optional - if not set, snapshot provider won't auto-register.")]
-        [SerializeField]
-        private UnifiedSaveLocator_SO unifiedSaveLocator;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Save System")]
-        [PropertyOrder(21)]
 #endif
         [Tooltip("All WorldFlag assets in the game. Required for save/load of world state.")]
         [SerializeField]
@@ -183,6 +175,7 @@ namespace HelloDev.QuestSystem
 
         private readonly QuestRegistry _questRegistry = new();
         private readonly QuestLineRegistry _questLineRegistry = new();
+        private GameContext _context;
         private bool _isInitialized;
 
         /// <summary>
@@ -264,6 +257,15 @@ namespace HelloDev.QuestSystem
         /// <inheritdoc />
         public bool IsInitialized => _isInitialized;
 
+        /// <summary>
+        /// Receives the game context from GameBootstrap.
+        /// </summary>
+        /// <param name="context">The game context for service registration.</param>
+        public void ReceiveContext(GameContext context)
+        {
+            _context = context;
+        }
+
         #endregion
 
         #region Events
@@ -334,15 +336,6 @@ namespace HelloDev.QuestSystem
         /// <summary>Gets the count of failed quests.</summary>
         public int FailedQuestCount => _questRegistry.FailedCount;
 
-        /// <summary>Configuration: Whether multiple quests can be active simultaneously.</summary>
-        public bool AllowMultipleActiveQuests => allowMultipleActiveQuests;
-
-        /// <summary>Configuration: Whether completed quests can be replayed.</summary>
-        public bool AllowReplayingCompletedQuests => allowReplayingCompletedQuests;
-
-        /// <summary>Configuration: Whether quests must be in the database to be added.</summary>
-        public bool RequireQuestInDatabase => requireQuestInDatabase;
-
         /// <summary>Read-only access to the questline database.</summary>
         public IReadOnlyList<QuestLine_SO> QuestLinesDatabase => questLinesDatabase;
 
@@ -351,9 +344,6 @@ namespace HelloDev.QuestSystem
 
         /// <summary>Gets the count of completed questlines.</summary>
         public int CompletedQuestLineCount => _questLineRegistry.CompletedCount;
-
-        /// <summary>Gets the snapshot provider for unified save system integration.</summary>
-        public QuestSnapshotProvider SnapshotProvider => _snapshotProvider;
 
         #endregion
 
@@ -466,14 +456,14 @@ namespace HelloDev.QuestSystem
         {
             _snapshotProvider = new QuestSnapshotProvider(this, worldFlagLocator, GetAllWorldFlags);
 
-            if (unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
+            if (_context != null && _context.TryGet<UnifiedSaveManager>(out var saveManager))
             {
-                unifiedSaveLocator.Manager.RegisterSystem(_snapshotProvider);
+                saveManager.RegisterSystem(_snapshotProvider);
                 QuestLogger.Log(LogSubsystem.Manager, "QuestSnapshotProvider registered with unified save system");
             }
             else
             {
-                QuestLogger.LogVerbose(LogSubsystem.Manager, "No UnifiedSaveLocator assigned - snapshot provider created but not registered");
+                QuestLogger.LogVerbose(LogSubsystem.Manager, "No UnifiedSaveManager in context - snapshot provider created but not registered");
             }
         }
 
@@ -552,9 +542,9 @@ namespace HelloDev.QuestSystem
                 return;
 
             // Unregister snapshot provider from unified save system
-            if (_snapshotProvider != null && unifiedSaveLocator != null && unifiedSaveLocator.IsAvailable)
+            if (_snapshotProvider != null && _context != null && _context.TryGet<UnifiedSaveManager>(out var saveManager))
             {
-                unifiedSaveLocator.Manager.UnregisterSystem(_snapshotProvider);
+                saveManager.UnregisterSystem(_snapshotProvider);
                 QuestLogger.LogVerbose(LogSubsystem.Manager, "QuestSnapshotProvider unregistered from unified save system");
             }
             _snapshotProvider = null;
@@ -1456,65 +1446,6 @@ namespace HelloDev.QuestSystem
                         $"DUPLICATE TASK GUID: '{kvp.Key}' shared by: {string.Join(", ", kvp.Value)}. " +
                         "Use 'Generate New ID' button in the Inspector to fix.");
                     isValid = false;
-                }
-            }
-
-            return isValid;
-        }
-
-        /// <summary>
-        /// Validates GUIDs for a specific quest and its tasks.
-        /// Use this after adding a quest to check for conflicts with existing quests.
-        /// </summary>
-        /// <param name="questData">The quest to validate.</param>
-        /// <returns>True if no duplicates found.</returns>
-        public bool ValidateQuestGUIDs(Quest_SO questData)
-        {
-            if (questData == null) return true;
-
-            bool isValid = true;
-            string questGuid = questData.QuestId.ToString();
-
-            // Check quest GUID against database
-            foreach (var other in questsDatabase)
-            {
-                if (other == null || other == questData) continue;
-
-                if (other.QuestId.ToString() == questGuid)
-                {
-                    QuestLogger.LogError(LogSubsystem.Manager,
-                        $"DUPLICATE QUEST GUID: '{questData.DevName}' has same GUID as '{other.DevName}'");
-                    isValid = false;
-                }
-            }
-
-            // Check task GUIDs against all tasks in database
-            var allTaskGuids = new Dictionary<string, string>(); // guid -> questName/taskName
-            foreach (var quest in questsDatabase)
-            {
-                if (quest == null) continue;
-
-                foreach (var task in quest.AllTasks)
-                {
-                    if (task == null) continue;
-                    allTaskGuids[task.TaskId.ToString()] = $"{quest.DevName}/{task.DevName}";
-                }
-            }
-
-            foreach (var task in questData.AllTasks)
-            {
-                if (task == null) continue;
-
-                string taskGuid = task.TaskId.ToString();
-                if (allTaskGuids.TryGetValue(taskGuid, out string existingTask))
-                {
-                    string currentTask = $"{questData.DevName}/{task.DevName}";
-                    if (existingTask != currentTask)
-                    {
-                        QuestLogger.LogError(LogSubsystem.Manager,
-                            $"DUPLICATE TASK GUID: '{currentTask}' has same GUID as '{existingTask}'");
-                        isValid = false;
-                    }
                 }
             }
 

@@ -534,7 +534,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HelloDev.Saving::HelloDev.Saving.UnifiedSaveManager
   settings: {fileID: 11400000, guid: 074d37a4a43372440b4e59a41dff30df, type: 2}
-  locator: {fileID: 11400000, guid: 511570dc688d35b45bad7e0408c36bc7, type: 2}
   selfInitialize: 0
   persistent: 1
   defaultSlotKey: autosave
@@ -614,6 +613,7 @@ MonoBehaviour:
   initializationTimeout: 1
   persistent: 1
   autoDiscoverIfConfigEmpty: 1
+  loggerSettings: {fileID: 11400000, guid: d6013fbd5ae4db84a95372eb1bde508f, type: 2}
 --- !u!1 &843014853
 GameObject:
   m_ObjectHideFlags: 0
@@ -1071,7 +1071,6 @@ MonoBehaviour:
   enableDebugLogging: 1
   allowTutorialQueue: 1
   selfInitialize: 0
-  unifiedSaveLocator: {fileID: 11400000, guid: 511570dc688d35b45bad7e0408c36bc7, type: 2}
   OnTutorialStarted:
     m_PersistentCalls:
       m_Calls: []

@@ -18,8 +18,6 @@ The central singleton managing all quest lifecycle, state, and event delegation.
 | `questsDatabase` | `List<Quest_SO>` | All available quest data |
 | `InitializeOnAwake` | `bool` | Auto-initialize on Awake |
 | `EnableDebugLogging` | `bool` | Enable QuestLogger output |
-| `AllowMultipleActiveQuests` | `bool` | Allow concurrent quests |
-| `AllowPlayingCompletedQuests` | `bool` | Allow replaying completed |
 
 ## Properties
 

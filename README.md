@@ -877,9 +877,6 @@ The QuestManager is the entry point for all quest operations. It manages quest l
 | `FailedQuestCount` | Number of failed quests |
 | `ActiveQuestLineCount` | Number of currently active questlines |
 | `CompletedQuestLineCount` | Number of completed questlines |
-| `AllowMultipleActiveQuests` | Whether multiple quests can be active |
-| `AllowReplayingCompletedQuests` | Whether completed quests can be replayed |
-| `RequireQuestInDatabase` | Whether quests must be in database to be added |
 
 #### Quest Lifecycle Methods
 | Method | Description |
@@ -1075,9 +1072,10 @@ An event-driven condition for questline prerequisites. Checks if a questline is 
 ## Dependencies
 
 ### Required
-- com.hellodev.utils (1.1.0+)
+- com.hellodev.utils (1.5.0+) - Includes GameContext for bootstrap integration
+- com.hellodev.saving (1.1.0+) - Unified save system
 - com.hellodev.events (1.1.0+)
-- com.hellodev.conditions (1.6.0+) - Includes world flag event modifiers
+- com.hellodev.conditions (1.7.0+) - Includes world flag event modifiers
 - com.hellodev.ids (1.1.0+)
 - com.unity.localization
 
