@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74fd7d407246a7d4d937ce121cd3f23c, type: 3}
+  m_Name: SO_Substep_MoveBackward
+  m_EditorClassIdentifier:
+  devName: Move Backward
+  substepId: f1a2b3c4-d5e6-7890-abcd-100000000004
+  instruction:
+    m_TableReference:
+      m_TableCollectionName:
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key:
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  completionCondition: {fileID: 11400000, guid: 6c1f0b9659e42d449a92c5ef0b891f05, type: 2}

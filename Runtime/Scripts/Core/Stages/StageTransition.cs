@@ -49,7 +49,7 @@ namespace HelloDev.QuestSystem.Stages
 
         #region Player Choice Fields
 
-#if ODIN_INSPECTOR
+#if ODIN_INSPECTOR && UNITY_EDITOR
         [BoxGroup("Player Choice"), PropertyOrder(10), OnValueChanged(nameof(OnIsPlayerChoiceChanged))]
 #endif
         [SerializeField, Tooltip("When true, this transition requires player selection (shows in choice UI).")]

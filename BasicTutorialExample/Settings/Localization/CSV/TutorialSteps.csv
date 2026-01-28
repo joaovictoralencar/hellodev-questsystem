@@ -1,0 +1,5 @@
+Key,Id,English(en),Portuguese (Brazil)(pt-BR)
+"TutorialStep_Instruction_Welcome",0,"Welcome! Let's learn the basic controls.","Bem-vindo! Vamos aprender os controles básicos."
+"TutorialStep_Instruction_LookAround",0,"Move your mouse to look around.","Mova o mouse para olhar ao redor."
+"TutorialStep_Instruction_Movement",0,"Use WASD to move in different directions.","Use WASD para se mover em diferentes direções."
+"TutorialStep_Instruction_Jump",0,"Press Space to jump. ({current}/{required})","Pressione Espaço para pular. ({current}/{required})"

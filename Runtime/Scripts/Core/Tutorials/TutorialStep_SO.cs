@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HelloDev.Conditions;
 using HelloDev.Utils;
 using UnityEngine;
@@ -69,22 +70,24 @@ namespace HelloDev.QuestSystem.Tutorials
 #if ODIN_INSPECTOR
         [TitleGroup("Behavior"), PropertyOrder(23)]
 #endif
-        [SerializeField, Tooltip("Optional condition that triggers step completion when satisfied.")]
+        [SerializeField, Tooltip("Optional condition that triggers step completion when satisfied. Used for simple steps without substeps.")]
         private Condition_SO completionCondition;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("UI Highlight"), PropertyOrder(30)]
+        [TitleGroup("Multi-Step"), PropertyOrder(30)]
 #else
-        [Header("UI Highlight")]
+        [Header("Multi-Step")]
 #endif
-        [SerializeField, Tooltip("Optional UI element tag to highlight during this step.")]
-        private string highlightTarget;
+        [SerializeField, Tooltip("Optional substeps for multi-step tutorials. When present, all substeps must be completed.")]
+        private List<TutorialSubstep_SO> substeps = new();
 
 #if ODIN_INSPECTOR
-        [TitleGroup("UI Highlight"), PropertyOrder(31)]
+        [TitleGroup("Count-Based"), PropertyOrder(40)]
+#else
+        [Header("Count-Based")]
 #endif
-        [SerializeField, Tooltip("Position offset for the tutorial popup relative to the highlight target.")]
-        private Vector2 popupOffset;
+        [SerializeField, Tooltip("Number of times the condition must be satisfied. Set to 0 or 1 for single completion.")]
+        private int requiredCount = 1;
 
         #endregion
 
@@ -112,7 +115,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
         /// <summary>
         /// Gets whether this step is time-based.
-        /// </summary>
+        /// </summary>gra
         public bool IsTimedStep => isTimedStep;
 
         /// <summary>
@@ -131,14 +134,29 @@ namespace HelloDev.QuestSystem.Tutorials
         public Condition_SO CompletionCondition => completionCondition;
 
         /// <summary>
-        /// Gets the UI element tag to highlight.
+        /// Gets the list of substeps for multi-step tutorials.
         /// </summary>
-        public string HighlightTarget => highlightTarget;
+        public IReadOnlyList<TutorialSubstep_SO> Substeps => substeps;
 
         /// <summary>
-        /// Gets the popup position offset.
+        /// Gets whether this step has substeps.
         /// </summary>
-        public Vector2 PopupOffset => popupOffset;
+        public bool HasSubsteps => substeps != null && substeps.Count > 0;
+
+        /// <summary>
+        /// Gets the number of substeps.
+        /// </summary>
+        public int SubstepCount => substeps?.Count ?? 0;
+
+        /// <summary>
+        /// Gets the required count for count-based steps.
+        /// </summary>
+        public int RequiredCount => requiredCount > 0 ? requiredCount : 1;
+
+        /// <summary>
+        /// Gets whether this is a count-based step (requires multiple completions).
+        /// </summary>
+        public bool IsCountBased => requiredCount > 1;
 
         #endregion
 

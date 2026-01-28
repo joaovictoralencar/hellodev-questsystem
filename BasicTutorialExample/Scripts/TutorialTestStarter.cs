@@ -1,3 +1,4 @@
+using System;
 using HelloDev.QuestSystem.Tutorials;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,7 +14,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
         #region Serialized Fields
 
         [Header("Tutorial")]
-        [SerializeField, Tooltip("The tutorial to start when the key is pressed.")]
+        [SerializeField, Tooltip("The tutorial to start when t key is pressed.")]
         private Tutorial_SO tutorial;
 
         [Header("Debug")]
@@ -23,6 +24,12 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
         #endregion
 
         #region Unity Lifecycle
+
+        private void Start()
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = false;
+        }
 
         private void Update()
         {

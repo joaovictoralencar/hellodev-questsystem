@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HelloDev.Conditions;
 using HelloDev.Objectives;
 using HelloDev.QuestSystem.Utils;
@@ -10,6 +11,7 @@ namespace HelloDev.QuestSystem.Tutorials
     /// <summary>
     /// Runtime representation of a tutorial step.
     /// Implements IStage for unified objective system compatibility.
+    /// Supports simple steps, multi-step (substeps), and count-based steps.
     /// </summary>
     public class TutorialStepRuntime : IStage
     {
@@ -30,6 +32,16 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public UnityEvent<TutorialStepRuntime> OnStepSkipped = new();
 
+        /// <summary>
+        /// Fired when a substep is completed.
+        /// </summary>
+        public UnityEvent<TutorialStepRuntime, TutorialSubstep_SO> OnSubstepCompleted = new();
+
+        /// <summary>
+        /// Fired when count progress changes for count-based steps.
+        /// </summary>
+        public UnityEvent<TutorialStepRuntime, int, int> OnCountProgressChanged = new();
+
         #endregion
 
         #region IStage Backing Fields
@@ -39,6 +51,14 @@ namespace HelloDev.QuestSystem.Tutorials
         private event Action<IStage> _onCompleted;
         private event Action<IStage> _onFailed;
         private event Action<IStage> _onExited;
+
+        #endregion
+
+        #region Private Fields
+
+        private readonly HashSet<Guid> _completedSubstepIds = new();
+        private readonly Dictionary<Guid, Action> _substepCallbacks = new();
+        private int _currentCount;
 
         #endregion
 
@@ -80,16 +100,96 @@ namespace HelloDev.QuestSystem.Tutorials
         public int StepIndex { get; internal set; } = -1;
 
         /// <summary>
+        /// Gets the current count for count-based steps.
+        /// </summary>
+        public int CurrentCount => _currentCount;
+
+        /// <summary>
+        /// Gets the required count for count-based steps.
+        /// </summary>
+        public int RequiredCount => Data.RequiredCount;
+
+        /// <summary>
+        /// Gets the number of completed substeps.
+        /// </summary>
+        public int CompletedSubstepCount => _completedSubstepIds.Count;
+
+        /// <summary>
+        /// Gets the total number of substeps.
+        /// </summary>
+        public int TotalSubstepCount => Data.SubstepCount;
+
+        /// <summary>
+        /// Gets whether this step has substeps.
+        /// </summary>
+        public bool HasSubsteps => Data.HasSubsteps;
+
+        /// <summary>
+        /// Gets whether this is a count-based step.
+        /// </summary>
+        public bool IsCountBased => Data.IsCountBased;
+
+        /// <summary>
+        /// Gets the currently active substep (the first incomplete one), or null if all complete.
+        /// </summary>
+        public TutorialSubstep_SO CurrentSubstep
+        {
+            get
+            {
+                if (!HasSubsteps) return null;
+                return Data.Substeps.FirstOrDefault(s => !_completedSubstepIds.Contains(s.SubstepId));
+            }
+        }
+
+        /// <summary>
+        /// Gets the index of the current substep (0-based), or -1 if no substeps or all complete.
+        /// </summary>
+        public int CurrentSubstepIndex
+        {
+            get
+            {
+                if (!HasSubsteps) return -1;
+                for (int i = 0; i < Data.Substeps.Count; i++)
+                {
+                    if (!_completedSubstepIds.Contains(Data.Substeps[i].SubstepId))
+                        return i;
+                }
+                return -1;
+            }
+        }
+
+        /// <summary>
         /// Gets the progress of this step (0-1).
         /// </summary>
-        public float Progress => CurrentState switch
+        public float Progress
         {
-            ObjectiveState.Completed => 1f,
-            ObjectiveState.InProgress when Data.IsTimedStep && Data.Duration > 0 =>
-                Math.Min(1f, ElapsedTime / Data.Duration),
-            ObjectiveState.InProgress => 0.5f,
-            _ => 0f
-        };
+            get
+            {
+                if (CurrentState == ObjectiveState.Completed) return 1f;
+                if (CurrentState != ObjectiveState.InProgress) return 0f;
+
+                // Substep-based progress
+                if (HasSubsteps)
+                {
+                    return TotalSubstepCount == 0 ? 1f : (float)CompletedSubstepCount / TotalSubstepCount;
+                }
+
+                // Count-based progress
+                if (IsCountBased)
+                {
+                    return RequiredCount == 0 ? 1f : (float)_currentCount / RequiredCount;
+                }
+
+                // Timer-based progress
+                if (Data.IsTimedStep && Data.Duration > 0)
+                {
+                    return Math.Min(1f, ElapsedTime / Data.Duration);
+                }
+
+                // Simple step - 50% when in progress
+                return 0.5f;
+            }
+        }
 
         #endregion
 
@@ -168,6 +268,7 @@ namespace HelloDev.QuestSystem.Tutorials
             CurrentState = ObjectiveState.NotStarted;
             WasSkipped = false;
             ElapsedTime = 0f;
+            _currentCount = 0;
         }
 
         #endregion
@@ -183,9 +284,18 @@ namespace HelloDev.QuestSystem.Tutorials
 
             CurrentState = ObjectiveState.InProgress;
 
-            // Subscribe to completion condition if available
-            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
+            // Subscribe based on step type
+            if (HasSubsteps)
             {
+                SubscribeToSubsteps();
+            }
+            else if (IsCountBased)
+            {
+                SubscribeToCountCondition();
+            }
+            else if (Data.CompletionCondition is IConditionEventDriven eventCondition)
+            {
+                // Simple step with condition
                 eventCondition.SubscribeToEvent(CompleteStep);
             }
 
@@ -202,11 +312,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (CurrentState != ObjectiveState.InProgress) return;
 
-            // Unsubscribe from condition
-            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
-            {
-                eventCondition.UnsubscribeFromEvent(CompleteStep);
-            }
+            UnsubscribeFromAllConditions();
 
             CurrentState = ObjectiveState.Completed;
             QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial step '{DevName}' completed.");
@@ -226,11 +332,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (CurrentState != ObjectiveState.InProgress) return false;
             if (!Data.CanSkip) return false;
 
-            // Unsubscribe from condition
-            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
-            {
-                eventCondition.UnsubscribeFromEvent(CompleteStep);
-            }
+            UnsubscribeFromAllConditions();
 
             WasSkipped = true;
             CurrentState = ObjectiveState.Completed;
@@ -241,6 +343,70 @@ namespace HelloDev.QuestSystem.Tutorials
             OnStepCompleted?.Invoke(this);
             _onCompleted?.Invoke(this);
             _onExited?.Invoke(this);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Skips the current substep (if the step has substeps and allows skipping).
+        /// </summary>
+        /// <returns>True if a substep was skipped, false if not applicable or not allowed.</returns>
+        public bool SkipCurrentSubstep()
+        {
+            if (CurrentState != ObjectiveState.InProgress) return false;
+            if (!Data.CanSkip) return false;
+            if (!HasSubsteps) return false;
+
+            var currentSubstep = CurrentSubstep;
+            if (currentSubstep == null) return false;
+
+            // Mark the substep as completed
+            _completedSubstepIds.Add(currentSubstep.SubstepId);
+
+            // Unsubscribe from this substep's condition
+            if (currentSubstep.CompletionCondition is IConditionEventDriven eventCondition &&
+                _substepCallbacks.TryGetValue(currentSubstep.SubstepId, out var callback))
+            {
+                eventCondition.UnsubscribeFromEvent(callback);
+                _substepCallbacks.Remove(currentSubstep.SubstepId);
+            }
+
+            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial step '{DevName}' substep '{currentSubstep.DevName}' skipped ({CompletedSubstepCount}/{TotalSubstepCount}).");
+
+            OnSubstepCompleted?.Invoke(this, currentSubstep);
+            _onProgressChanged?.Invoke(this);
+
+            // Check if all substeps are complete
+            if (CompletedSubstepCount >= TotalSubstepCount)
+            {
+                CompleteStep();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Increments the count for count-based steps (if the step allows skipping).
+        /// </summary>
+        /// <returns>True if the count was incremented, false if not applicable or not allowed.</returns>
+        public bool IncrementCount()
+        {
+            if (CurrentState != ObjectiveState.InProgress) return false;
+            if (!Data.CanSkip) return false;
+            if (!IsCountBased) return false;
+            if (_currentCount >= RequiredCount) return false;
+
+            _currentCount++;
+            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial step '{DevName}' count manually incremented: {_currentCount}/{RequiredCount}.");
+
+            OnCountProgressChanged?.Invoke(this, _currentCount, RequiredCount);
+            _onProgressChanged?.Invoke(this);
+
+            // Check if count requirement is met
+            if (_currentCount >= RequiredCount)
+            {
+                CompleteStep();
+            }
 
             return true;
         }
@@ -270,11 +436,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (CurrentState != ObjectiveState.InProgress) return;
 
-            // Unsubscribe from condition
-            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
-            {
-                eventCondition.UnsubscribeFromEvent(CompleteStep);
-            }
+            UnsubscribeFromAllConditions();
 
             CurrentState = ObjectiveState.Failed;
             QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial step '{DevName}' failed.");
@@ -289,15 +451,132 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void ResetStep()
         {
-            // Unsubscribe from condition if we were in progress
-            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
-            {
-                eventCondition.UnsubscribeFromEvent(CompleteStep);
-            }
+            UnsubscribeFromAllConditions();
 
             CurrentState = ObjectiveState.NotStarted;
             WasSkipped = false;
             ElapsedTime = 0f;
+            _currentCount = 0;
+            _completedSubstepIds.Clear();
+            _substepCallbacks.Clear();
+        }
+
+        /// <summary>
+        /// Checks if a specific substep is completed.
+        /// </summary>
+        /// <param name="substep">The substep to check.</param>
+        /// <returns>True if the substep is completed.</returns>
+        public bool IsSubstepCompleted(TutorialSubstep_SO substep)
+        {
+            return substep != null && _completedSubstepIds.Contains(substep.SubstepId);
+        }
+
+        /// <summary>
+        /// Gets a list of completed substep IDs.
+        /// </summary>
+        public IReadOnlyCollection<Guid> GetCompletedSubstepIds()
+        {
+            return _completedSubstepIds;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void SubscribeToSubsteps()
+        {
+            foreach (var substep in Data.Substeps)
+            {
+                if (substep?.CompletionCondition is IConditionEventDriven eventCondition)
+                {
+                    // Create a callback that captures this specific substep
+                    Action callback = () => OnSubstepConditionMet(substep);
+                    _substepCallbacks[substep.SubstepId] = callback;
+                    eventCondition.SubscribeToEvent(callback);
+                }
+            }
+        }
+
+        private void SubscribeToCountCondition()
+        {
+            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
+            {
+                eventCondition.SubscribeToEvent(OnCountConditionMet);
+            }
+        }
+
+        private void UnsubscribeFromAllConditions()
+        {
+            // Unsubscribe from substep conditions
+            if (HasSubsteps)
+            {
+                foreach (var substep in Data.Substeps)
+                {
+                    if (substep?.CompletionCondition is IConditionEventDriven eventCondition &&
+                        _substepCallbacks.TryGetValue(substep.SubstepId, out var callback))
+                    {
+                        eventCondition.UnsubscribeFromEvent(callback);
+                    }
+                }
+                _substepCallbacks.Clear();
+            }
+            // Unsubscribe from count-based or simple condition
+            else if (Data.CompletionCondition is IConditionEventDriven eventCondition)
+            {
+                if (IsCountBased)
+                {
+                    eventCondition.UnsubscribeFromEvent(OnCountConditionMet);
+                }
+                else
+                {
+                    eventCondition.UnsubscribeFromEvent(CompleteStep);
+                }
+            }
+        }
+
+        private void OnSubstepConditionMet(TutorialSubstep_SO substep)
+        {
+            if (CurrentState != ObjectiveState.InProgress) return;
+            if (_completedSubstepIds.Contains(substep.SubstepId)) return;
+
+            _completedSubstepIds.Add(substep.SubstepId);
+
+            // Unsubscribe from this substep's condition
+            if (substep.CompletionCondition is IConditionEventDriven eventCondition &&
+                _substepCallbacks.TryGetValue(substep.SubstepId, out var callback))
+            {
+                eventCondition.UnsubscribeFromEvent(callback);
+                _substepCallbacks.Remove(substep.SubstepId);
+            }
+
+            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial step '{DevName}' substep '{substep.DevName}' completed ({CompletedSubstepCount}/{TotalSubstepCount}).");
+
+            OnSubstepCompleted?.Invoke(this, substep);
+            _onProgressChanged?.Invoke(this);
+
+            // Check if all substeps are complete
+            if (CompletedSubstepCount >= TotalSubstepCount)
+            {
+                CompleteStep();
+            }
+        }
+
+        private void OnCountConditionMet()
+        {
+            if (CurrentState != ObjectiveState.InProgress) return;
+            if (_currentCount >= RequiredCount) return;
+
+            _currentCount++;
+            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial step '{DevName}' count progress: {_currentCount}/{RequiredCount}.");
+
+            OnCountProgressChanged?.Invoke(this, _currentCount, RequiredCount);
+            _onProgressChanged?.Invoke(this);
+
+            // Check if count requirement is met
+            if (_currentCount >= RequiredCount)
+            {
+                CompleteStep();
+            }
         }
 
         #endregion
@@ -310,12 +589,32 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         /// <param name="state">The state to restore to.</param>
         /// <param name="elapsedTime">The elapsed time to restore (for timed steps).</param>
-        public void RestoreStepState(ObjectiveState state, float elapsedTime)
+        /// <param name="currentCount">The current count to restore (for count-based steps).</param>
+        /// <param name="completedSubstepIds">The completed substep IDs to restore.</param>
+        public void RestoreStepState(ObjectiveState state, float elapsedTime, int currentCount = 0, IEnumerable<Guid> completedSubstepIds = null)
         {
             CurrentState = state;
             ElapsedTime = elapsedTime;
+            _currentCount = currentCount;
 
-            QuestLogger.LogVerbose(LogSubsystem.Tutorial, $"Step '{DevName}' state restored: {state}, elapsed={elapsedTime}");
+            _completedSubstepIds.Clear();
+            if (completedSubstepIds != null)
+            {
+                foreach (var id in completedSubstepIds)
+                {
+                    _completedSubstepIds.Add(id);
+                }
+            }
+
+            QuestLogger.LogVerbose(LogSubsystem.Tutorial, $"Step '{DevName}' state restored: {state}, elapsed={elapsedTime}, count={currentCount}, substeps={_completedSubstepIds.Count}");
+        }
+
+        /// <summary>
+        /// Overload for backward compatibility.
+        /// </summary>
+        public void RestoreStepState(ObjectiveState state, float elapsedTime)
+        {
+            RestoreStepState(state, elapsedTime, 0, null);
         }
 
         /// <summary>
@@ -326,10 +625,31 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (CurrentState != ObjectiveState.InProgress) return;
 
-            // Re-subscribe to completion condition if available
-            if (Data.CompletionCondition is IConditionEventDriven eventCondition)
+            if (HasSubsteps)
             {
-                eventCondition.SubscribeToEvent(CompleteStep);
+                // Only subscribe to incomplete substeps
+                foreach (var substep in Data.Substeps)
+                {
+                    if (!_completedSubstepIds.Contains(substep.SubstepId) &&
+                        substep?.CompletionCondition is IConditionEventDriven eventCondition)
+                    {
+                        Action callback = () => OnSubstepConditionMet(substep);
+                        _substepCallbacks[substep.SubstepId] = callback;
+                        eventCondition.SubscribeToEvent(callback);
+                    }
+                }
+                QuestLogger.LogVerbose(LogSubsystem.Tutorial, $"Step '{DevName}' resumed substep subscriptions ({TotalSubstepCount - CompletedSubstepCount} remaining).");
+            }
+            else if (Data.CompletionCondition is IConditionEventDriven eventCondition)
+            {
+                if (IsCountBased)
+                {
+                    eventCondition.SubscribeToEvent(OnCountConditionMet);
+                }
+                else
+                {
+                    eventCondition.SubscribeToEvent(CompleteStep);
+                }
                 QuestLogger.LogVerbose(LogSubsystem.Tutorial, $"Step '{DevName}' resumed condition subscription.");
             }
         }

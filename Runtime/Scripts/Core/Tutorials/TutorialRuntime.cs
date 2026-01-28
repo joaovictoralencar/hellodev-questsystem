@@ -106,9 +106,27 @@ namespace HelloDev.QuestSystem.Tutorials
 
         /// <summary>
         /// Gets the progress of this tutorial (0-1).
+        /// Includes partial progress from the current step (substeps, count-based, timed).
         /// </summary>
-        public float Progress => Steps.Count == 0 ? 1f :
-            (float)Steps.Count(s => s.CurrentState == ObjectiveState.Completed) / Steps.Count;
+        public float Progress
+        {
+            get
+            {
+                if (Steps.Count == 0) return 1f;
+
+                // Count completed steps
+                int completedSteps = Steps.Count(s => s.CurrentState == ObjectiveState.Completed);
+
+                // Add partial progress from current step (if in progress)
+                float currentStepProgress = 0f;
+                if (CurrentStep != null && CurrentStep.CurrentState == ObjectiveState.InProgress)
+                {
+                    currentStepProgress = CurrentStep.Progress;
+                }
+
+                return (completedSteps + currentStepProgress) / Steps.Count;
+            }
+        }
 
         #endregion
 

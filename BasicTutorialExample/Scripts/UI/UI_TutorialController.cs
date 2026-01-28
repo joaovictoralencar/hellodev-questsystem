@@ -3,10 +3,8 @@ using HelloDev.QuestSystem.Utils;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using PrimeTween;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Localization.Components;
-using UnityEngine.UI;
+
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -39,44 +37,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         [SerializeField] private RectTransform panelContentRoot;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Content")]
+        [TitleGroup("Step Display")]
         [PropertyOrder(10)]
+        [Required("Step display component is required.")]
 #else
-        [Header("Content")]
+        [Header("Step Display")]
 #endif
-        [SerializeField] private LocalizeStringEvent instructionText;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Content")]
-        [PropertyOrder(11)]
-#endif
-        [SerializeField] private TextMeshProUGUI instructionTextFallback;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Content")]
-        [PropertyOrder(12)]
-#endif
-        [SerializeField] private Image stepIcon;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Content")]
-        [PropertyOrder(13)]
-#endif
-        [SerializeField] private TextMeshProUGUI stepCounterText;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Progress")]
-        [PropertyOrder(20)]
-#else
-        [Header("Progress")]
-#endif
-        [SerializeField] private Slider progressBar;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Progress")]
-        [PropertyOrder(21)]
-#endif
-        [SerializeField] private TextMeshProUGUI progressText;
+        [SerializeField] private UI_TutorialStep stepDisplay;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Buttons")]
@@ -118,23 +85,17 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Animation")]
 #endif
-        [SerializeField] private float textFadeDuration = 0.25f;
+        [SerializeField] private bool useUnscaledTime = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Animation")]
         [PropertyOrder(51)]
 #endif
-        [SerializeField] private bool useUnscaledTime = true;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Animation")]
-        [PropertyOrder(52)]
-#endif
         [SerializeField] private bool useScaleAnimation = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Animation")]
-        [PropertyOrder(53)]
+        [PropertyOrder(52)]
         [ShowIf("useScaleAnimation")]
 #endif
         [SerializeField] private float scaleAnimationDuration = 0.25f;
@@ -191,6 +152,11 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (panelContainer == null)
             {
                 Debug.LogError($"[UI_TutorialController] UIContainer reference is required on '{gameObject.name}'. Panel animations will not work.", this);
+            }
+
+            if (stepDisplay == null)
+            {
+                Debug.LogError($"[UI_TutorialController] UI_TutorialStep reference is required on '{gameObject.name}'. Step display will not work.", this);
             }
         }
 
@@ -285,10 +251,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void CleanupTweens()
         {
-            if (instructionTextFallback != null)
-                Tween.StopAll(instructionTextFallback);
-            if (stepCounterText != null)
-                Tween.StopAll(stepCounterText);
             if (panelContentRoot != null)
                 Tween.StopAll(panelContentRoot);
             if (skipButton != null)
@@ -326,7 +288,17 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Step started: {step.DevName}");
 
-            UpdateStepDisplay(step);
+            // Subscribe to substep/count events for this step
+            step.OnSubstepCompleted.AddListener(HandleSubstepCompleted);
+            step.OnCountProgressChanged.AddListener(HandleCountProgressChanged);
+
+            // Update step display
+            if (stepDisplay != null)
+            {
+                stepDisplay.DisplayStep(step);
+                stepDisplay.SetStepCounter(step.StepIndex + 1, tutorial.Steps.Count);
+            }
+
             UpdateProgress();
             UpdateButtonStates(step);
         }
@@ -335,6 +307,36 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Step completed: {step.DevName}");
 
+            // Unsubscribe from step events
+            step.OnSubstepCompleted.RemoveListener(HandleSubstepCompleted);
+            step.OnCountProgressChanged.RemoveListener(HandleCountProgressChanged);
+
+            UpdateProgress();
+        }
+
+        private void HandleSubstepCompleted(TutorialStepRuntime step, TutorialSubstep_SO substep)
+        {
+            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Substep completed: {substep.DevName} ({step.CompletedSubstepCount}/{step.TotalSubstepCount})");
+
+            // Update display to show next substep
+            if (stepDisplay != null)
+            {
+                stepDisplay.UpdateSubstepProgress(step);
+            }
+
+            UpdateProgress();
+        }
+
+        private void HandleCountProgressChanged(TutorialStepRuntime step, int current, int required)
+        {
+            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Count progress: {current}/{required}");
+
+            // Update display to show count progress
+            if (stepDisplay != null)
+            {
+                stepDisplay.UpdateCountProgress(current, required);
+            }
+
             UpdateProgress();
         }
 
@@ -342,95 +344,56 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         #region Private Methods - UI Updates
 
-        private void UpdateStepDisplay(TutorialStepRuntime step)
-        {
-            if (step == null) return;
-
-            if (instructionText != null && step.Data.Instruction != null && !step.Data.Instruction.IsEmpty)
-            {
-                instructionText.StringReference = step.Data.Instruction;
-                instructionText.RefreshString();
-
-                if (instructionTextFallback != null)
-                    instructionTextFallback.gameObject.SetActive(false);
-
-                var localizedTextMesh = instructionText.GetComponent<TextMeshProUGUI>();
-                if (localizedTextMesh != null)
-                    AnimateTextFadeIn(localizedTextMesh);
-            }
-            else if (instructionTextFallback != null)
-            {
-                instructionTextFallback.text = step.DevName;
-                instructionTextFallback.gameObject.SetActive(true);
-                AnimateTextFadeIn(instructionTextFallback);
-            }
-
-            if (stepIcon != null)
-            {
-                bool hasIcon = step.Data.StepIcon != null;
-                stepIcon.gameObject.SetActive(hasIcon);
-                if (hasIcon)
-                {
-                    stepIcon.sprite = step.Data.StepIcon;
-                    Tween.Alpha(stepIcon, 0f, 1f, textFadeDuration, Ease.OutQuad, useUnscaledTime: useUnscaledTime);
-                }
-            }
-
-            if (stepCounterText != null && _currentTutorial != null)
-            {
-                int current = step.StepIndex + 1;
-                int total = _currentTutorial.Steps.Count;
-                stepCounterText.text = $"{current}/{total}";
-                AnimateTextFadeIn(stepCounterText);
-            }
-        }
-
-        private void AnimateTextFadeIn(TextMeshProUGUI textMesh)
-        {
-            if (textMesh == null) return;
-
-            Tween.StopAll(textMesh);
-            Tween.Alpha(textMesh, 0f, 1f, textFadeDuration, Ease.OutQuad, useUnscaledTime: useUnscaledTime);
-        }
-
         private void UpdateProgress()
         {
-            if (_currentTutorial == null) return;
+            if (_currentTutorial == null || stepDisplay == null) return;
 
             float progress = _currentTutorial.Progress;
-
-            if (progressBar != null)
-                progressBar.value = progress;
-
-            if (progressText != null)
-                progressText.text = $"{Mathf.RoundToInt(progress * 100)}%";
+            stepDisplay.SetProgress(progress);
         }
 
         private void UpdateButtonStates(TutorialStepRuntime step)
         {
             if (step == null) return;
 
-            bool showContinue = !step.Data.IsTimedStep && step.Data.CompletionCondition == null;
+            // Show Continue button for:
+            // 1. Simple manual steps (no timer, no condition, no substeps, not count-based), OR
+            // 2. Steps that allow skipping (CanSkip = true) - allows manual progression even with conditions
+            bool isSimpleManualStep = !step.Data.IsTimedStep
+                && step.Data.CompletionCondition == null
+                && !step.HasSubsteps
+                && !step.IsCountBased;
+            bool showContinue = isSimpleManualStep || step.Data.CanSkip;
             SetButtonVisible(continueButton, showContinue);
 
-            if (skipButton != null)
-                skipButton.SetInteractable(step.Data.CanSkip);
+            // Show Skip button based on step's CanSkip setting
+            SetButtonVisible(skipButton, step.Data.CanSkip);
         }
 
         private void SetButtonVisible(UIButton button, bool visible)
         {
             if (button == null) return;
 
-            if (visible && !button.gameObject.activeSelf)
+            var buttonTransform = button.transform;
+
+            // Stop any running animations to prevent conflicts
+            Tween.StopAll(buttonTransform);
+
+            if (visible)
             {
-                button.gameObject.SetActive(true);
-                var buttonTransform = button.transform;
-                buttonTransform.localScale = Vector3.zero;
-                Tween.Scale(buttonTransform, Vector3.one, 0.2f, Ease.OutBack, useUnscaledTime: useUnscaledTime);
+                if (!button.gameObject.activeSelf)
+                {
+                    button.gameObject.SetActive(true);
+                    buttonTransform.localScale = Vector3.zero;
+                }
+                // Animate to full scale (handles both newly activated and interrupted hide animations)
+                if (buttonTransform.localScale != Vector3.one)
+                {
+                    Tween.Scale(buttonTransform, Vector3.one, 0.2f, Ease.OutBack, useUnscaledTime: useUnscaledTime);
+                }
             }
-            else if (!visible && button.gameObject.activeSelf)
+            else if (button.gameObject.activeSelf)
             {
-                var buttonTransform = button.transform;
                 Tween.Scale(buttonTransform, Vector3.zero, 0.15f, Ease.InBack, useUnscaledTime: useUnscaledTime)
                     .OnComplete(() => button.gameObject.SetActive(false));
             }
@@ -449,6 +412,29 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         private void HandleContinueClicked()
         {
             QuestLogger.Log(LogSubsystem.Tutorial, "[UI_TutorialController] Continue button clicked");
+
+            var currentStep = _currentTutorial?.CurrentStep;
+            if (currentStep == null)
+            {
+                TutorialManager.Instance?.CompleteCurrentStep();
+                return;
+            }
+
+            // For substep-based steps, skip the current substep
+            if (currentStep.HasSubsteps)
+            {
+                currentStep.SkipCurrentSubstep();
+                return;
+            }
+
+            // For count-based steps, increment the count
+            if (currentStep.IsCountBased)
+            {
+                currentStep.IncrementCount();
+                return;
+            }
+
+            // For simple steps, complete the step
             TutorialManager.Instance?.CompleteCurrentStep();
         }
 

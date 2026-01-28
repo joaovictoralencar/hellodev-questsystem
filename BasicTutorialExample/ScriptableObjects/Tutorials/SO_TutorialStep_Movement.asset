@@ -28,8 +28,9 @@ MonoBehaviour:
   duration: 3
   canSkip: 1
   completionCondition: {fileID: 0}
-  highlightTarget:
-  popupOffset: {x: 0, y: 0}
-  references:
-    version: 2
-    RefIds: []
+  substeps:
+  - {fileID: 11400000, guid: 8209b9b158812454993fd468cf6210f2, type: 2}
+  - {fileID: 11400000, guid: 27f14d999fcede0439e604591736ac08, type: 2}
+  - {fileID: 11400000, guid: c846f1f2b77bc8745afd23c3a00dca9a, type: 2}
+  - {fileID: 11400000, guid: 8d640639802455845b838f2d98d4a3cd, type: 2}
+  requiredCount: 1
