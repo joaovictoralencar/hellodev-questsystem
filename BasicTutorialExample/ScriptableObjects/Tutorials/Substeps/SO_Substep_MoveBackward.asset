@@ -11,16 +11,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74fd7d407246a7d4d937ce121cd3f23c, type: 3}
   m_Name: SO_Substep_MoveBackward
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   devName: Move Backward
   substepId: f1a2b3c4-d5e6-7890-abcd-100000000004
   instruction:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:0636a639f58939b4990e6786a2e22a77
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 94123376641
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   completionCondition: {fileID: 11400000, guid: 6c1f0b9659e42d449a92c5ef0b891f05, type: 2}
+  references:
+    version: 2
+    RefIds: []

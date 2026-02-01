@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Objectives;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 #if ODIN_INSPECTOR
@@ -147,8 +148,8 @@ namespace HelloDev.QuestSystem.Achievements
             // Unsubscribe from all achievement events
             foreach (var achievement in _achievements.Values)
             {
-                achievement.OnAchievementUnlocked.RemoveListener(HandleAchievementUnlocked);
-                achievement.OnProgressUpdated.RemoveListener(HandleProgressUpdated);
+                achievement.OnAchievementUnlocked.SafeUnsubscribe(HandleAchievementUnlocked);
+                achievement.OnProgressUpdated.SafeUnsubscribe(HandleProgressUpdated);
             }
         }
 
@@ -171,8 +172,8 @@ namespace HelloDev.QuestSystem.Achievements
                 _achievements[achievementData.AchievementId] = runtime;
 
                 // Subscribe to events
-                runtime.OnAchievementUnlocked.AddListener(HandleAchievementUnlocked);
-                runtime.OnProgressUpdated.AddListener(HandleProgressUpdated);
+                runtime.OnAchievementUnlocked.SafeSubscribe(HandleAchievementUnlocked);
+                runtime.OnProgressUpdated.SafeSubscribe(HandleProgressUpdated);
 
                 // Auto-start tracking if enabled
                 if (autoStartTracking)

@@ -11,24 +11,25 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f22489f7d3feda649b34639bebd94653, type: 3}
   m_Name: SO_Tutorial_BasicMovement
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   devName: Basic Movement Tutorial
   tutorialId: d4e5f6a7-b8c9-0123-def4-567890123456
   displayName:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:9ba5a0cc69c04bd4d849fe6066f53488
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 545757642752
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   tutorialDescription:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:9ba5a0cc69c04bd4d849fe6066f53488
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 545778614272
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -37,6 +38,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 673164c789fbfbd46bb796ca3c79e4e7, type: 2}
   - {fileID: 11400000, guid: aacdf8ed1b2eca64887456d0a4071038, type: 2}
   - {fileID: 11400000, guid: 572618032ddbb8c4d82f4774b0b1e35a, type: 2}
+  - {fileID: 11400000, guid: e421e5860bc6b9849b0d553d8affd552, type: 2}
+  - {fileID: 11400000, guid: d7f160fadeb156740bd1f81bee65d355, type: 2}
   playOnce: 1
   canSkip: 1
   priority: 100

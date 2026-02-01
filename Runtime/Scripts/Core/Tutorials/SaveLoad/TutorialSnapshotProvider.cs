@@ -1,4 +1,5 @@
 using System;
+using HelloDev.Logging;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Saving;
@@ -46,12 +47,19 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         public object CaptureSnapshot()
         {
             if (_tutorialManager == null)
-            {
-                QuestLogger.LogWarning(LogSubsystem.Tutorial, "TutorialManager not available, cannot capture snapshot.");
+            { 
+                Logger.LogWarning(LogSystems.Tutorial, "TutorialManager not available, cannot capture snapshot.");
                 return null;
             }
 
-            return _tutorialManager.CaptureSnapshot();
+            TutorialSystemSnapshot tutorialSystemSnapshot = _tutorialManager.CaptureSnapshot();
+            Logger.Log(LogSystems.Save,$"Saved tutorial snapshot: {tutorialSystemSnapshot}");
+            foreach (var step in tutorialSystemSnapshot.ActiveTutorial.Steps)
+            {
+                Logger.Log(LogSystems.Save,$"Step state: {step.State}");
+
+            }
+            return tutorialSystemSnapshot;
         }
 
         /// <inheritdoc />
@@ -59,7 +67,7 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         {
             if (_tutorialManager == null)
             {
-                QuestLogger.LogWarning(LogSubsystem.Tutorial, "TutorialManager not available, cannot restore snapshot.");
+                Logger.LogWarning(LogSystems.Tutorial, "TutorialManager not available, cannot restore snapshot.");
                 return false;
             }
 
@@ -72,12 +80,12 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
                 }
                 catch (Exception ex)
                 {
-                    QuestLogger.LogError(LogSubsystem.Tutorial, $"Failed to restore tutorial snapshot: {ex.Message}");
+                    Logger.LogError(LogSystems.Tutorial, $"Failed to restore tutorial snapshot: {ex.Message}");
                     return false;
                 }
             }
 
-            QuestLogger.LogWarning(LogSubsystem.Tutorial, $"Invalid snapshot type: {snapshot?.GetType().Name ?? "null"}");
+            Logger.LogWarning(LogSystems.Tutorial, $"Invalid snapshot type: {snapshot?.GetType().Name ?? "null"}");
             return false;
         }
 

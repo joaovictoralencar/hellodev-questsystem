@@ -16,24 +16,47 @@ MonoBehaviour:
     m_Code: pt-BR
   m_SharedData: {fileID: 11400000, guid: 48ac7cfe848f1d44d9f56607e6cde3e8, type: 2}
   m_Metadata:
-    m_Items: []
+    m_Items:
+    - rid: 2249559676743319659
   m_TableData:
   - m_Id: 287187189760
     m_Localized: "Bem-vindo! Vamos aprender os controles b\xE1sicos."
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 2249559676743319659
   - m_Id: 287203966976
-    m_Localized: Mova o mouse para olhar ao redor.
+    m_Localized: Mova o mouse <sprite name=mouse> para olhar ao redor.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 2249559676743319659
   - m_Id: 287203966977
-    m_Localized: "Use WASD para se mover em diferentes dire\xE7\xF5es."
+    m_Localized: "Use <sprite name=w> <sprite name=a><sprite name=s> <sprite name=d>
+      para se mover em diferentes dire\xE7\xF5es."
+    m_Metadata:
+      m_Items:
+      - rid: 2249559676743319659
+  - m_Id: 287203966978
+    m_Localized: Pressione <sprite name=space> para pular. ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 2249559676743319659
+  - m_Id: 1464224994869248
+    m_Localized: Pressione <sprite name=shift> para correr.
     m_Metadata:
       m_Items: []
-  - m_Id: 287203966978
-    m_Localized: "Pressione Espa\xE7o para pular. ({current}/{required})"
+  - m_Id: 1500396701925376
+    m_Localized: "Bom trabalho! Agora voc\xEA sabe os controles b\xE1sicos."
     m_Metadata:
       m_Items: []
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 2249559676743319659
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 287203966977
+        - id: 287203966976
+        - id: 287203966978
+        - id: 287187189760

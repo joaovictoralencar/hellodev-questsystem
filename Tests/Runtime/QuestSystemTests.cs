@@ -4,6 +4,7 @@ using HelloDev.Conditions;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Tasks;
+using HelloDev.Utils;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -109,7 +110,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
         {
             QuestRuntime quest = _questData.GetRuntimeQuest();
             bool eventFired = false;
-            quest.OnQuestStarted.AddListener(_ => eventFired = true);
+            quest.OnQuestStarted.SafeSubscribe(_ => eventFired = true);
 
             quest.StartQuest();
 
@@ -148,7 +149,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
-            quest.OnQuestFailed.AddListener(_ => eventFired = true);
+            quest.OnQuestFailed.SafeSubscribe(_ => eventFired = true);
 
             quest.FailQuest();
 
@@ -261,7 +262,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool completedEventFired = false;
-            quest.OnQuestCompleted.AddListener(_ => completedEventFired = true);
+            quest.OnQuestCompleted.SafeSubscribe(_ => completedEventFired = true);
 
             quest.Tasks[0].CompleteTask();
             quest.Tasks[1].CompleteTask();
@@ -280,7 +281,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
-            quest.Tasks[0].OnTaskUpdated.AddListener(_ => eventFired = true);
+            quest.Tasks[0].OnTaskUpdated.SafeSubscribe(_ => eventFired = true);
 
             quest.Tasks[0].IncrementStep();
 
@@ -293,7 +294,7 @@ namespace HelloDev.QuestSystem.Tests.Runtime
             QuestRuntime quest = _questData.GetRuntimeQuest();
             quest.StartQuest();
             bool eventFired = false;
-            quest.Tasks[0].OnTaskCompleted.AddListener(_ => eventFired = true);
+            quest.Tasks[0].OnTaskCompleted.SafeSubscribe(_ => eventFired = true);
 
             quest.Tasks[0].CompleteTask();
 

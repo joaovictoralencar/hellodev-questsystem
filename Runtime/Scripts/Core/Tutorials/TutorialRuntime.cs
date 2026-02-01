@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HelloDev.Logging;
 using HelloDev.Objectives;
 using HelloDev.QuestSystem.Utils;
+using HelloDev.Utils;
 using UnityEngine.Events;
 
 namespace HelloDev.QuestSystem.Tutorials
@@ -17,7 +19,14 @@ namespace HelloDev.QuestSystem.Tutorials
         #region Events
 
         /// <summary>
-        /// Fired when this tutorial starts.
+        /// Fired before a tutorial starts (before any step initialization).
+        /// Use this to perform global setup that should happen before steps are configured.
+        /// </summary>
+        public UnityEvent<TutorialRuntime> OnTutorialStarting = new();
+
+        /// <summary>
+        /// Fired when this tutorial has fully started and all step initialization is complete.
+        /// Use this for post-initialization tasks that depend on step state being ready.
         /// </summary>
         public UnityEvent<TutorialRuntime> OnTutorialStarted = new();
 
@@ -115,16 +124,8 @@ namespace HelloDev.QuestSystem.Tutorials
                 if (Steps.Count == 0) return 1f;
 
                 // Count completed steps
-                int completedSteps = Steps.Count(s => s.CurrentState == ObjectiveState.Completed);
-
-                // Add partial progress from current step (if in progress)
-                float currentStepProgress = 0f;
-                if (CurrentStep != null && CurrentStep.CurrentState == ObjectiveState.InProgress)
-                {
-                    currentStepProgress = CurrentStep.Progress;
-                }
-
-                return (completedSteps + currentStepProgress) / Steps.Count;
+                float AllProgress = Steps.Sum(s => s.Progress);
+                return AllProgress / Steps.Count;
             }
         }
 
@@ -249,7 +250,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (CurrentState != ObjectiveState.NotStarted) return;
             if (Steps.Count == 0)
             {
-                QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' has no steps, completing immediately.");
+                Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' has no steps, completing immediately.");
                 CurrentState = ObjectiveState.Completed;
                 OnTutorialCompleted?.Invoke(this);
                 _onCompleted?.Invoke(this);
@@ -257,22 +258,26 @@ namespace HelloDev.QuestSystem.Tutorials
             }
 
             CurrentState = ObjectiveState.InProgress;
-            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' started with {Steps.Count} steps.");
+            Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' started with {Steps.Count} steps.");
+
+            // Fire event BEFORE any step initialization so global setup can happen first
+            OnTutorialStarting?.Invoke(this);
 
             // Subscribe to step events
             foreach (var step in Steps)
             {
-                step.OnStepCompleted.AddListener(HandleStepCompleted);
+                step.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
             }
-
-            OnTutorialStarted?.Invoke(this);
-            _onStarted?.Invoke(this);
 
             // Start first step
             CurrentStepIndex = 0;
             Steps[0].StartStep();
             OnStepStarted?.Invoke(this, Steps[0]);
             _onStageEntered?.Invoke(this, Steps[0]);
+
+            // Fire event AFTER step initialization is complete
+            OnTutorialStarted?.Invoke(this);
+            _onStarted?.Invoke(this);
         }
 
         /// <summary>
@@ -285,7 +290,7 @@ namespace HelloDev.QuestSystem.Tutorials
             CurrentState = ObjectiveState.Completed;
             UnsubscribeFromStepEvents();
 
-            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' completed.");
+            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' completed.");
 
             _onProgressChanged?.Invoke(this);
             OnTutorialCompleted?.Invoke(this);
@@ -305,7 +310,7 @@ namespace HelloDev.QuestSystem.Tutorials
             CurrentState = ObjectiveState.Completed;
             UnsubscribeFromStepEvents();
 
-            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' skipped.");
+            Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' skipped.");
 
             _onProgressChanged?.Invoke(this);
             OnTutorialSkipped?.Invoke(this);
@@ -352,7 +357,7 @@ namespace HelloDev.QuestSystem.Tutorials
             CurrentState = ObjectiveState.Failed;
             UnsubscribeFromStepEvents();
 
-            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' failed.");
+            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' failed.");
 
             _onFailed?.Invoke(this);
         }
@@ -373,7 +378,7 @@ namespace HelloDev.QuestSystem.Tutorials
             CurrentStepIndex = -1;
             WasSkipped = false;
 
-            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' reset.");
+            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' reset.");
         }
 
         #endregion
@@ -386,7 +391,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         /// <param name="state">The state to restore to.</param>
         /// <param name="currentStepIndex">The step index to restore to.</param>
-        /// <param name="fireEvents">If true, fires OnTutorialStarted and OnStepStarted events so UI can update.</param>
+        /// <param name="fireEvents">If true, fires OnTutorialStarting, step restoration, and OnTutorialStarted events so UI can update.</param>
         public void RestoreTutorialState(ObjectiveState state, int currentStepIndex, bool fireEvents = true)
         {
             CurrentState = state;
@@ -397,31 +402,39 @@ namespace HelloDev.QuestSystem.Tutorials
             {
                 foreach (var step in Steps)
                 {
-                    step.OnStepCompleted.AddListener(HandleStepCompleted);
+                    step.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
+                    Logger.Log(LogSystems.Tutorial, $"Restored step '{step.DevName}' to state {step.CurrentState}");
                 }
 
                 // Resume the current step's condition subscription if needed
                 if (CurrentStep != null && CurrentStep.CurrentState == ObjectiveState.InProgress)
                 {
+                    // Fire event BEFORE step resumption so global setup can happen first
+                    if (fireEvents)
+                    {
+                        Logging.Logger.Log(LogSystems.Tutorial, $"Firing OnTutorialStarting for restore of '{DevName}'");
+                        OnTutorialStarting?.Invoke(this);
+                    }
+
                     CurrentStep.ResumeStep();
 
                     // Fire events so UI can display current state
                     if (fireEvents)
                     {
-                        QuestLogger.Log(LogSubsystem.Tutorial, $"Firing restore events for '{DevName}' step '{CurrentStep.DevName}'");
-                        OnTutorialStarted?.Invoke(this);
-                        _onStarted?.Invoke(this);
+                        Logging.Logger.Log(LogSystems.Tutorial, $"Firing restore events for '{DevName}' step '{CurrentStep.DevName}'");
                         OnStepStarted?.Invoke(this, CurrentStep);
                         _onStageEntered?.Invoke(this, CurrentStep);
+                        OnTutorialStarted?.Invoke(this);
+                        _onStarted?.Invoke(this);
                     }
                 }
                 else
                 {
-                    QuestLogger.LogWarning(LogSubsystem.Tutorial, $"Cannot fire restore events: CurrentStep={CurrentStep?.DevName ?? "null"}, State={CurrentStep?.CurrentState.ToString() ?? "N/A"}");
+                    Logger.LogWarning(LogSystems.Tutorial, $"Cannot fire restore events: CurrentStep={CurrentStep?.DevName ?? "null"}, State={CurrentStep?.CurrentState.ToString() ?? "N/A"}");
                 }
             }
 
-            QuestLogger.Log(LogSubsystem.Tutorial, $"Tutorial '{DevName}' state restored: {state} at step {currentStepIndex}.");
+            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial '{DevName}' state restored: {state} at step {currentStepIndex}.");
         }
 
         #endregion
@@ -454,7 +467,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             foreach (var step in Steps)
             {
-                step.OnStepCompleted.RemoveListener(HandleStepCompleted);
+                step.OnStepCompleted.SafeUnsubscribe(HandleStepCompleted);
             }
         }
 

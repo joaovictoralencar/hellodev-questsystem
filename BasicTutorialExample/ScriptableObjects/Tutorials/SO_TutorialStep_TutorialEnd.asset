@@ -10,25 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e23adba5f87b9ea4e9e88498ab04b881, type: 3}
-  m_Name: SO_TutorialStep_LookAround
+  m_Name: SO_TutorialStep_TutorialEnd
   m_EditorClassIdentifier: 
   _description: Describe what this scriptable object represents
-  devName: Look Around
-  stepId: 46c70329-84d7-4c40-8e38-bf2bbdde6ff6
+  devName: Welcome
+  stepId: 8181657c-bb4f-4566-926a-c10bf2e56f01
   instruction:
     m_TableReference:
       m_TableCollectionName: GUID:48ac7cfe848f1d44d9f56607e6cde3e8
     m_TableEntryReference:
-      m_KeyId: 287203966976
+      m_KeyId: 1500396701925376
       m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   stepIcon: {fileID: 0}
-  isTimedStep: 0
-  duration: 3
+  isTimedStep: 1
+  duration: 5
   canSkip: 1
-  completionCondition: {fileID: 11400000, guid: ad8a53e606575634c8f1b5f989fe1f63, type: 2}
+  completionCondition: {fileID: 0}
   substeps: []
   requiredCount: 1
   references:

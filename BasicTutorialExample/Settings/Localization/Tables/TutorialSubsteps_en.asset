@@ -19,19 +19,19 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 94077239296
-    m_Localized: Press W to move forward.
+    m_Localized: Press <sprite name=w> to move forward.
     m_Metadata:
       m_Items: []
   - m_Id: 94119182336
-    m_Localized: Press A to move left.
+    m_Localized: Press <sprite name=a> to move left.
     m_Metadata:
       m_Items: []
   - m_Id: 94123376640
-    m_Localized: Press D to move right.
+    m_Localized: Press <sprite name=d> to move right.
     m_Metadata:
       m_Items: []
   - m_Id: 94123376641
-    m_Localized: Press S to move backward.
+    m_Localized: Press <sprite name=s> to move backward.
     m_Metadata:
       m_Items: []
   references:

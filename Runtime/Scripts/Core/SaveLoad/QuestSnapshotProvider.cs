@@ -202,8 +202,8 @@ namespace HelloDev.QuestSystem.SaveLoad
                 // Evaluate database quests not in save data - they may now qualify to start
                 // (e.g., a quest whose start condition depends on a completed quest or world flag)
                 _questManager.EvaluateUnstartedDatabaseQuests();
-
-                QuestLogger.LogLoad(snapshot.Timestamp, true);
+                
+                QuestLogger.Log(LogSubsystem.Save, $"Load from <b>'{snapshot.Timestamp}'</b> {true}");
                 return true;
             }
             catch (Exception ex)

@@ -76,7 +76,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 _originalColor = selectableImage.color;
 
             // Subscribe to toggle events
-            toggle.OnToggleOn.AddListener(HandleToggleOn);
+            toggle.OnToggleOn.SafeSubscribe(HandleToggleOn);
             toggle.OnShowVisualFeedback.AddListener(ShowSelectionVisual);
             toggle.OnHideVisualFeedback.AddListener(HideSelectionVisual);
         }

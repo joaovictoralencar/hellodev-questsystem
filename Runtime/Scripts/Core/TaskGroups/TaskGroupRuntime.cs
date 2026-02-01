@@ -436,7 +436,7 @@ namespace HelloDev.QuestSystem.TaskGroups
             add
             {
                 _onStarted += value;
-                OnGroupStarted.AddListener(_ => value?.Invoke(this));
+                OnGroupStarted.SafeSubscribe(_ => value?.Invoke(this));
             }
             remove => _onStarted -= value;
         }

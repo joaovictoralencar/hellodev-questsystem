@@ -11,6 +11,7 @@ using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
+using HelloDev.QuestSystem.Stages;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Saving;
 using HelloDev.Utils;
@@ -189,6 +190,10 @@ namespace HelloDev.QuestSystem
         /// </summary>
         private QuestSnapshotProvider _snapshotProvider;
 
+        // Filtered subscription storage for stage lifecycle hooks
+        private readonly List<(Func<QuestStageRuntime, bool> filter, Action<QuestStageRuntime> handler)> _stageEnterSubscriptions = new();
+        private readonly List<(Func<QuestStageRuntime, bool> filter, Action<QuestStageRuntime> handler)> _stageExitSubscriptions = new();
+
         #endregion
 
         #region Operation Guards
@@ -252,7 +257,7 @@ namespace HelloDev.QuestSystem
         }
 
         /// <inheritdoc />
-        public int InitializationPriority => 150; // Game systems layer
+
 
         /// <inheritdoc />
         public bool IsInitialized => _isInitialized;
@@ -309,6 +314,13 @@ namespace HelloDev.QuestSystem
 
         /// <summary>Fired when a questline is removed from tracking.</summary>
         [HideInInspector] public UnityEvent<QuestLineRuntime> QuestLineRemoved = new();
+
+        // Stage Events
+        /// <summary>Fired when any quest stage is entered.</summary>
+        [HideInInspector] public UnityEvent<QuestRuntime, QuestStageRuntime> StageEntered = new();
+
+        /// <summary>Fired when any quest stage is exited (completed, failed, or skipped).</summary>
+        [HideInInspector] public UnityEvent<QuestRuntime, QuestStageRuntime> StageExited = new();
 
         // Aggregate Events for Save System
         /// <summary>
@@ -972,6 +984,139 @@ namespace HelloDev.QuestSystem
 
         #endregion
 
+        #region Stage Lifecycle Subscriptions
+
+        /// <summary>
+        /// Subscribes to stage enter events with a filter.
+        /// Handler is called when a stage starts and matches the filter.
+        /// </summary>
+        /// <param name="filter">Predicate to filter which stages trigger the handler.</param>
+        /// <param name="handler">Action to execute when a matching stage starts.</param>
+        public void SubscribeToStageEnter(Func<QuestStageRuntime, bool> filter, Action<QuestStageRuntime> handler)
+        {
+            if (filter == null || handler == null) return;
+            _stageEnterSubscriptions.Add((filter, handler));
+        }
+
+        /// <summary>
+        /// Subscribes to stage exit events with a filter.
+        /// Handler is called when a stage completes/fails/skips and matches the filter.
+        /// </summary>
+        /// <param name="filter">Predicate to filter which stages trigger the handler.</param>
+        /// <param name="handler">Action to execute when a matching stage exits.</param>
+        public void SubscribeToStageExit(Func<QuestStageRuntime, bool> filter, Action<QuestStageRuntime> handler)
+        {
+            if (filter == null || handler == null) return;
+            _stageExitSubscriptions.Add((filter, handler));
+        }
+
+        /// <summary>
+        /// Unsubscribes a handler from stage enter events.
+        /// </summary>
+        /// <param name="handler">The handler to remove.</param>
+        public void UnsubscribeFromStageEnter(Action<QuestStageRuntime> handler)
+        {
+            if (handler == null) return;
+            _stageEnterSubscriptions.RemoveAll(sub => sub.handler == handler);
+        }
+
+        /// <summary>
+        /// Unsubscribes a handler from stage exit events.
+        /// </summary>
+        /// <param name="handler">The handler to remove.</param>
+        public void UnsubscribeFromStageExit(Action<QuestStageRuntime> handler)
+        {
+            if (handler == null) return;
+            _stageExitSubscriptions.RemoveAll(sub => sub.handler == handler);
+        }
+
+        /// <summary>
+        /// Clears all stage lifecycle subscriptions.
+        /// </summary>
+        public void ClearStageSubscriptions()
+        {
+            _stageEnterSubscriptions.Clear();
+            _stageExitSubscriptions.Clear();
+        }
+
+        /// <summary>
+        /// Invokes all matching enter subscriptions for a stage.
+        /// </summary>
+        private void InvokeStageEnterSubscriptions(QuestStageRuntime stage)
+        {
+            foreach (var (filter, handler) in _stageEnterSubscriptions)
+            {
+                try
+                {
+                    if (filter(stage))
+                    {
+                        handler(stage);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    QuestLogger.LogError(LogSubsystem.Stage, $"Error in stage enter subscription: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Invokes all matching exit subscriptions for a stage.
+        /// </summary>
+        private void InvokeStageExitSubscriptions(QuestStageRuntime stage)
+        {
+            foreach (var (filter, handler) in _stageExitSubscriptions)
+            {
+                try
+                {
+                    if (filter(stage))
+                    {
+                        handler(stage);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    QuestLogger.LogError(LogSubsystem.Stage, $"Error in stage exit subscription: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Internal method called by QuestRuntime when a stage is entered.
+        /// </summary>
+        internal void NotifyStageEntered(QuestRuntime quest, QuestStageRuntime stage)
+        {
+            BeginEventProcessing();
+            try
+            {
+                InvokeStageEnterSubscriptions(stage);
+                StageEntered.SafeInvoke(quest, stage);
+            }
+            finally
+            {
+                EndEventProcessing();
+            }
+        }
+
+        /// <summary>
+        /// Internal method called by QuestRuntime when a stage is exited.
+        /// </summary>
+        internal void NotifyStageExited(QuestRuntime quest, QuestStageRuntime stage)
+        {
+            BeginEventProcessing();
+            try
+            {
+                InvokeStageExitSubscriptions(stage);
+                StageExited.SafeInvoke(quest, stage);
+            }
+            finally
+            {
+                EndEventProcessing();
+            }
+        }
+
+        #endregion
+
         #region QuestLine Lifecycle
 
         /// <summary>
@@ -1277,6 +1422,62 @@ namespace HelloDev.QuestSystem
         public ReadOnlyCollection<QuestRuntime> GetFailedQuests()
         {
             return _questRegistry.GetAllFailed().ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets an active quest by its GUID.
+        /// </summary>
+        /// <param name="questId">The quest GUID.</param>
+        /// <returns>The runtime quest, or null if not active.</returns>
+        public QuestRuntime GetActiveQuest(Guid questId)
+        {
+            return _questRegistry.GetActive(questId);
+        }
+
+        /// <summary>
+        /// Gets a stage runtime by its quest and stage index.
+        /// </summary>
+        /// <param name="questData">The quest SO.</param>
+        /// <param name="stageIndex">The stage index.</param>
+        /// <returns>The runtime stage, or null if not found.</returns>
+        public QuestStageRuntime GetStageRuntime(Quest_SO questData, int stageIndex)
+        {
+            var quest = GetActiveQuest(questData);
+            return quest?.GetStageByIndex(stageIndex);
+        }
+
+        /// <summary>
+        /// Gets a stage runtime by quest GUID and stage index.
+        /// </summary>
+        /// <param name="questId">The quest GUID.</param>
+        /// <param name="stageIndex">The stage index.</param>
+        /// <returns>The runtime stage, or null if not found.</returns>
+        public QuestStageRuntime GetStageRuntime(Guid questId, int stageIndex)
+        {
+            var quest = GetActiveQuest(questId);
+            return quest?.GetStageByIndex(stageIndex);
+        }
+
+        /// <summary>
+        /// Gets the current stage of an active quest.
+        /// </summary>
+        /// <param name="questData">The quest SO.</param>
+        /// <returns>The current stage runtime, or null if quest not active.</returns>
+        public QuestStageRuntime GetCurrentStage(Quest_SO questData)
+        {
+            var quest = GetActiveQuest(questData);
+            return quest?.CurrentStage;
+        }
+
+        /// <summary>
+        /// Gets the current stage of an active quest by GUID.
+        /// </summary>
+        /// <param name="questId">The quest GUID.</param>
+        /// <returns>The current stage runtime, or null if quest not active.</returns>
+        public QuestStageRuntime GetCurrentStage(Guid questId)
+        {
+            var quest = GetActiveQuest(questId);
+            return quest?.CurrentStage;
         }
 
         /// <summary>

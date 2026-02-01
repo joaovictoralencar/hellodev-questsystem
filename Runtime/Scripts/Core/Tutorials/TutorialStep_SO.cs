@@ -186,7 +186,15 @@ namespace HelloDev.QuestSystem.Tutorials
                 devName = name;
             }
         }
-
+        
+#if ODIN_INSPECTOR
+        [Button]
+#endif
+        public void GenerateNewGuid()
+        {
+            stepId = Guid.NewGuid().ToString();
+        }
+        
         #endregion
 
         #region Unity Callbacks

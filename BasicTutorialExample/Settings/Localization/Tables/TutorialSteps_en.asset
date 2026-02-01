@@ -16,24 +16,47 @@ MonoBehaviour:
     m_Code: en
   m_SharedData: {fileID: 11400000, guid: 48ac7cfe848f1d44d9f56607e6cde3e8, type: 2}
   m_Metadata:
-    m_Items: []
+    m_Items:
+    - rid: 2249559676743319658
   m_TableData:
   - m_Id: 287187189760
     m_Localized: Welcome! Let's learn the basic controls.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 2249559676743319658
   - m_Id: 287203966976
-    m_Localized: Move your mouse to look around.
+    m_Localized: Move your mouse <sprite name=mouse> to look around.
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 2249559676743319658
   - m_Id: 287203966977
-    m_Localized: Use WASD to move in different directions.
+    m_Localized: Use <sprite name=w> <sprite name=a><sprite name=s> <sprite name=d>
+      to move in different directions.
+    m_Metadata:
+      m_Items:
+      - rid: 2249559676743319658
+  - m_Id: 287203966978
+    m_Localized: Press <sprite name=space> to jump. ({current}/{required})
+    m_Metadata:
+      m_Items:
+      - rid: 2249559676743319658
+  - m_Id: 1464224994869248
+    m_Localized: Press <sprite name=shift> to sprint.
     m_Metadata:
       m_Items: []
-  - m_Id: 287203966978
-    m_Localized: Press Space to jump. ({current}/{required})
+  - m_Id: 1500396701925376
+    m_Localized: Well done! Now you know the basics controls.
     m_Metadata:
       m_Items: []
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 2249559676743319658
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 287203966977
+        - id: 287203966978
+        - id: 287203966976
+        - id: 287187189760

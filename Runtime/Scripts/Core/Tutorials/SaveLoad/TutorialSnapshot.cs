@@ -78,5 +78,15 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         /// The elapsed time for timed steps.
         /// </summary>
         public float ElapsedTime;
+
+        /// <summary>
+        /// Current count for count-based steps (e.g., "killed 2/3 enemies").
+        /// </summary>
+        public int CurrentCount;
+
+        /// <summary>
+        /// List of completed substep GUIDs for multi-step tutorials.
+        /// </summary>
+        public List<string> CompletedSubstepIds = new();
     }
 }

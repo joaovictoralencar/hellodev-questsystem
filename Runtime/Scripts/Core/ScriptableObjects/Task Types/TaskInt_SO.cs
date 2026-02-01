@@ -98,19 +98,6 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             {
                 existingRequired.Value = intTask.RequiredCount;
             }
-
-            // Note: "target" variable should be pre-defined on the LocalizedString field's Local Variables
-            // (on the Task_SO asset in Inspector) as a LocalizedStringVariable pointing to the target name.
-            // This method only validates it exists if the format string uses {target}.
-            // If you need a fallback, uncomment below:
-            // if (!localizedString.TryGetValue("target", out _))
-            // {
-            //     // Fallback to DisplayName or DevName if target not pre-defined
-            //     if (DisplayName != null && !DisplayName.IsEmpty)
-            //         localizedString.Add("target", new LocalizedStringVariable { Value = DisplayName });
-            //     else
-            //         localizedString.Add("target", new StringVariable { Value = DevName });
-            // }
         }
     }
 }

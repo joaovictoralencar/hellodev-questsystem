@@ -11,18 +11,25 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e23adba5f87b9ea4e9e88498ab04b881, type: 3}
   m_Name: SO_TutorialStep_Jump
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   devName: Jump
-  stepId: c3d4e5f6-a7b8-9012-cdef-345678901234
+  stepId: 424f14f6-22c0-4d87-8298-999df0a45c7f
   instruction:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:48ac7cfe848f1d44d9f56607e6cde3e8
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 287203966978
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
-    m_LocalVariables: []
+    m_LocalVariables:
+    - name: current
+      variable:
+        rid: 2249559721775202380
+    - name: required
+      variable:
+        rid: 2249559721775202381
   stepIcon: {fileID: 0}
   isTimedStep: 0
   duration: 3
@@ -30,3 +37,14 @@ MonoBehaviour:
   completionCondition: {fileID: 11400000, guid: 695e632d8f3d0fc419c6cdee3da07092, type: 2}
   substeps: []
   requiredCount: 3
+  references:
+    version: 2
+    RefIds:
+    - rid: 2249559721775202380
+      type: {class: IntVariable, ns: UnityEngine.Localization.SmartFormat.PersistentVariables, asm: Unity.Localization}
+      data:
+        m_Value: 3
+    - rid: 2249559721775202381
+      type: {class: IntVariable, ns: UnityEngine.Localization.SmartFormat.PersistentVariables, asm: Unity.Localization}
+      data:
+        m_Value: 3

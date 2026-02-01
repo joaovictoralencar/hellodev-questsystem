@@ -174,7 +174,46 @@ namespace HelloDev.QuestSystem.Stages
 
         #endregion
 
+        #region Virtual Lifecycle Hooks
+
+        /// <summary>
+        /// Called after the stage enters InProgress state and subscriptions are set up,
+        /// but before events fire. Override in subclasses for stage-specific enter behavior.
+        /// </summary>
+        protected virtual void OnEnterHook() { }
+
+        /// <summary>
+        /// Called when the stage is about to exit (complete, fail, or skip),
+        /// before unsubscribing from events. Override in subclasses for stage-specific exit behavior.
+        /// </summary>
+        protected virtual void OnExitHook() { }
+
+        #endregion
+
         #region Public Methods
+
+        /// <summary>
+        /// Centralized state setter that automatically fires lifecycle hooks on transitions.
+        /// Do NOT use for RestoreStageState (raw save/load) or constructor (initial state).
+        /// </summary>
+        private void SetState(StageState newState)
+        {
+            var oldState = CurrentState;
+
+            // Fire exit hooks when leaving InProgress
+            if (oldState == StageState.InProgress && newState != StageState.InProgress)
+            {
+                OnExitHook();
+            }
+
+            CurrentState = newState;
+
+            // Fire enter hooks when entering InProgress
+            if (newState == StageState.InProgress && oldState != StageState.InProgress)
+            {
+                OnEnterHook();
+            }
+        }
 
         /// <summary>
         /// Enters this stage and starts its first task group.
@@ -187,12 +226,13 @@ namespace HelloDev.QuestSystem.Stages
                 return;
             }
 
-            CurrentState = StageState.InProgress;
+            SetState(StageState.InProgress);
             SubscribeToGroupEvents();
             SubscribeToConditionTransitions();
 
             // Start the first group
             _currentGroupIndex = 0;
+
             if (TaskGroups.Count > 0)
             {
                 // Log stage start BEFORE starting the group (correct chronological order)
@@ -218,7 +258,7 @@ namespace HelloDev.QuestSystem.Stages
         {
             if (CurrentState != StageState.InProgress) return;
 
-            CurrentState = StageState.Completed;
+            SetState(StageState.Completed);
             UnsubscribeFromAllEvents();
 
             QuestLogger.LogComplete(LogSubsystem.Stage, "Stage", StageName);
@@ -234,7 +274,7 @@ namespace HelloDev.QuestSystem.Stages
         {
             if (CurrentState != StageState.InProgress) return;
 
-            CurrentState = StageState.Failed;
+            SetState(StageState.Failed);
             UnsubscribeFromAllEvents();
 
             QuestLogger.LogFail(LogSubsystem.Stage, "Stage", StageName);
@@ -251,7 +291,8 @@ namespace HelloDev.QuestSystem.Stages
             if (CurrentState == StageState.Completed || CurrentState == StageState.Skipped) return;
 
             bool wasInProgress = CurrentState == StageState.InProgress;
-            CurrentState = StageState.Skipped;
+
+            SetState(StageState.Skipped);
             UnsubscribeFromAllEvents();
 
             QuestLogger.LogVerbose(LogSubsystem.Stage, $"'{StageName}' skipped");
@@ -277,7 +318,7 @@ namespace HelloDev.QuestSystem.Stages
             }
 
             _currentGroupIndex = -1;
-            CurrentState = StageState.NotReached;
+            SetState(StageState.NotReached);
         }
 
         #region Save/Load Restoration
@@ -305,6 +346,10 @@ namespace HelloDev.QuestSystem.Stages
             {
                 SubscribeToGroupEvents();
                 SubscribeToConditionTransitions();
+
+                // Fire lifecycle hooks on resume (same as entering a fresh stage)
+                OnEnterHook();
+
                 QuestLogger.LogVerbose(LogSubsystem.Stage, $"Stage '{StageName}' resumed from save");
             }
         }

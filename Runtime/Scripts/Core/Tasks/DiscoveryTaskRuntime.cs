@@ -84,7 +84,7 @@ namespace HelloDev.QuestSystem.Tasks
                 }
             }
 
-            OnTaskUpdated.AddListener(CheckCompletion);
+            OnTaskUpdated.SafeSubscribe(CheckCompletion);
         }
 
         /// <summary>

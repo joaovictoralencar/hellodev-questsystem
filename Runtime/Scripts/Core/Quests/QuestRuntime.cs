@@ -380,6 +380,12 @@ namespace HelloDev.QuestSystem.Quests
                 // Resume the current stage
                 CurrentStage?.ResumeStage();
 
+                // Notify QuestManager of stage enter on resume
+                if (CurrentStage != null)
+                {
+                    QuestManager.Instance?.NotifyStageEntered(this, CurrentStage);
+                }
+
                 // Resume all InProgress groups and tasks
                 foreach (var stage in Stages)
                 {
@@ -475,12 +481,19 @@ namespace HelloDev.QuestSystem.Quests
                 // Complete current stage if it's still in progress
                 if (CurrentStage?.CurrentState == StageState.InProgress)
                 {
+                    // Notify QuestManager of stage exit before completing
+                    QuestManager.Instance?.NotifyStageExited(this, CurrentStage);
+
                     CurrentStage.Complete();
                     OnStageCompleted.SafeInvoke(this, CurrentStage);
                 }
 
                 CurrentStage = targetStage;
                 targetStage.Enter();
+
+                // Notify QuestManager of stage enter after entering
+                QuestManager.Instance?.NotifyStageEntered(this, targetStage);
+
                 OnStageEntered.SafeInvoke(this, targetStage);
                 NotifyQuestUpdated();
 
@@ -575,7 +588,8 @@ namespace HelloDev.QuestSystem.Quests
             // Record the decision
             string stageKey = $"stage_{CurrentStageIndex}";
             BranchDecisions[stageKey] = choice.ChoiceId;
-            QuestLogger.LogChoice(QuestData.DevName, choice.ChoiceId);
+            
+            QuestLogger.Log(LogSubsystem.Choice, $"Choice <b>'{choice.ChoiceId}'</b> selected in quest <b>'{QuestData.DevName}'</b>");
 
             // Complete any in-progress tasks in the current stage (decision tasks)
             foreach (var task in CurrentTasks)
@@ -882,15 +896,19 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleStageCompleted(QuestStageRuntime stage)
         {
-            // Check if all stages are completed (for terminal stages)
+            // Notify QuestManager of stage exit (for terminal stages that complete without transition)
+            // Note: Non-terminal stages notify exit during TransitionToStage
             if (stage.Data.IsTerminal)
             {
+                QuestManager.Instance?.NotifyStageExited(this, stage);
                 CompleteQuest();
             }
         }
 
         private void HandleStageFailed(QuestStageRuntime stage)
         {
+            // Notify QuestManager of stage exit
+            QuestManager.Instance?.NotifyStageExited(this, stage);
             FailQuest();
         }
 
@@ -1037,6 +1055,12 @@ namespace HelloDev.QuestSystem.Quests
                 {
                     task.CompleteTask();
                 }
+            }
+
+            // Notify stage exit before completing quest
+            if (CurrentState == QuestState.InProgress && CurrentStage?.CurrentState == StageState.InProgress)
+            {
+                QuestManager.Instance?.NotifyStageExited(this, CurrentStage);
             }
 
             // Ensure quest is properly completed
@@ -1222,7 +1246,7 @@ namespace HelloDev.QuestSystem.Quests
                 // Also subscribe to the UnityEvent to forward it
                 if (value != null)
                 {
-                    OnQuestStarted.AddListener(_ => value(this));
+                    OnQuestStarted.SafeSubscribe(_ => value(this));
                 }
             }
             remove => _onMissionStarted -= value;
@@ -1235,7 +1259,7 @@ namespace HelloDev.QuestSystem.Quests
                 _onMissionProgressChanged += value;
                 if (value != null)
                 {
-                    OnQuestUpdated.AddListener(_ => value(this));
+                    OnQuestUpdated.SafeSubscribe(_ => value(this));
                 }
             }
             remove => _onMissionProgressChanged -= value;
@@ -1248,7 +1272,7 @@ namespace HelloDev.QuestSystem.Quests
                 _onMissionCompleted += value;
                 if (value != null)
                 {
-                    OnQuestCompleted.AddListener(_ => value(this));
+                    OnQuestCompleted.SafeSubscribe(_ => value(this));
                 }
             }
             remove => _onMissionCompleted -= value;
@@ -1261,7 +1285,7 @@ namespace HelloDev.QuestSystem.Quests
                 _onMissionFailed += value;
                 if (value != null)
                 {
-                    OnQuestFailed.AddListener(_ => value(this));
+                    OnQuestFailed.SafeSubscribe(_ => value(this));
                 }
             }
             remove => _onMissionFailed -= value;
@@ -1274,7 +1298,7 @@ namespace HelloDev.QuestSystem.Quests
                 _onMissionStageEntered += value;
                 if (value != null)
                 {
-                    OnStageEntered.AddListener((_, stage) => value(this, stage as IStage));
+                    OnStageEntered.SafeSubscribe((_, stage) => value(this, stage as IStage));
                 }
             }
             remove => _onMissionStageEntered -= value;
@@ -1287,7 +1311,7 @@ namespace HelloDev.QuestSystem.Quests
                 _onMissionStageCompleted += value;
                 if (value != null)
                 {
-                    OnStageCompleted.AddListener((_, stage) => value(this, stage as IStage));
+                    OnStageCompleted.SafeSubscribe((_, stage) => value(this, stage as IStage));
                 }
             }
             remove => _onMissionStageCompleted -= value;

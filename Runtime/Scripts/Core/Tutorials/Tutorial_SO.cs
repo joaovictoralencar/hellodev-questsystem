@@ -157,6 +157,21 @@ namespace HelloDev.QuestSystem.Tutorials
                     }
                 }
             }
+            
+            var guids = new HashSet<string>();
+            foreach (var step in Steps)
+            {
+                if (string.IsNullOrEmpty(step.StepId.ToString()))
+                {
+                    step.GenerateNewGuid();
+                    UnityEditor.EditorUtility.SetDirty(this);
+                }
+                else if (guids.Contains(step.StepId.ToString()))
+                {
+                    Debug.LogError($"Duplicate GUID detected in tutorial '{DevName}' for step '{step.DevName}'!");
+                }
+                guids.Add(step.StepId.ToString());
+            }
         }
 
         #endregion

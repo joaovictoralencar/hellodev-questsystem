@@ -1,9 +1,12 @@
+using HelloDev.Input;
+using HelloDev.Logging;
 using HelloDev.QuestSystem.Tutorials;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using PrimeTween;
 using UnityEngine;
+using Logger = HelloDev.Logging.Logger;
 
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -27,14 +30,16 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Tutorial Panel")]
 #endif
-        [SerializeField] private UIContainer panelContainer;
+        [SerializeField]
+        private UIContainer panelContainer;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Tutorial Panel")]
         [PropertyOrder(1)]
         [Tooltip("RectTransform to apply scale animation to. If null, scale animation is skipped.")]
 #endif
-        [SerializeField] private RectTransform panelContentRoot;
+        [SerializeField]
+        private RectTransform panelContentRoot;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Step Display")]
@@ -43,7 +48,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Step Display")]
 #endif
-        [SerializeField] private UI_TutorialStep stepDisplay;
+        [SerializeField]
+        private UI_TutorialStep stepDisplay;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Buttons")]
@@ -51,25 +57,29 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Buttons")]
 #endif
-        [SerializeField] private UIButton skipButton;
+        [SerializeField]
+        private UIButton completeButton;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Buttons")]
         [PropertyOrder(31)]
 #endif
-        [SerializeField] private UIButton continueButton;
+        [SerializeField]
+        private UIButton skipButton;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Buttons")]
         [PropertyOrder(32)]
 #endif
-        [SerializeField] private float buttonHoverScale = 1.05f;
+        [SerializeField]
+        private float buttonHoverScale = 1.05f;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Buttons")]
         [PropertyOrder(33)]
 #endif
-        [SerializeField] private float buttonPressScale = 0.95f;
+        [SerializeField]
+        private float buttonPressScale = 0.95f;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Settings")]
@@ -77,7 +87,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Settings")]
 #endif
-        [SerializeField] private bool hideOnComplete = true;
+        [SerializeField]
+        private bool hideOnComplete = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Animation")]
@@ -85,20 +96,23 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Animation")]
 #endif
-        [SerializeField] private bool useUnscaledTime = true;
+        [SerializeField]
+        private bool useUnscaledTime = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Animation")]
         [PropertyOrder(51)]
 #endif
-        [SerializeField] private bool useScaleAnimation = true;
+        [SerializeField]
+        private bool useScaleAnimation = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Animation")]
         [PropertyOrder(52)]
         [ShowIf("useScaleAnimation")]
 #endif
-        [SerializeField] private float scaleAnimationDuration = 0.25f;
+        [SerializeField]
+        private float scaleAnimationDuration = 0.25f;
 
         #endregion
 
@@ -151,12 +165,12 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContainer == null)
             {
-                Debug.LogError($"[UI_TutorialController] UIContainer reference is required on '{gameObject.name}'. Panel animations will not work.", this);
+                Logger.LogError(LogSystems.Tutorial,$"UIContainer reference is required on '{gameObject.name}'. Panel animations will not work.", this);
             }
 
             if (stepDisplay == null)
             {
-                Debug.LogError($"[UI_TutorialController] UI_TutorialStep reference is required on '{gameObject.name}'. Step display will not work.", this);
+                Logger.LogError(LogSystems.Tutorial,$"UI_TutorialStep reference is required on '{gameObject.name}'. Step display will not work.", this);
             }
         }
 
@@ -164,16 +178,16 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (_isInitialized) return;
 
-            if (skipButton != null)
+            if (completeButton != null)
             {
-                skipButton.OnClick.AddListener(HandleSkipClicked);
-                SetupButtonAnimations(skipButton);
+                completeButton.OnClick.SafeSubscribe(HandleSkipClicked);
+                SetupButtonAnimations(completeButton);
             }
 
-            if (continueButton != null)
+            if (skipButton != null)
             {
-                continueButton.OnClick.AddListener(HandleContinueClicked);
-                SetupButtonAnimations(continueButton);
+                skipButton.OnClick.SafeSubscribe(HandleContinueClicked);
+                SetupButtonAnimations(skipButton);
             }
 
             _isInitialized = true;
@@ -186,25 +200,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             var buttonTransform = button.transform;
             var originalScale = buttonTransform.localScale;
 
-            button.HighlightedStateEvent.AddListener(() =>
-            {
-                AnimateButtonScale(buttonTransform, originalScale * buttonHoverScale, 0.15f, Ease.OutQuad);
-            });
+            button.HighlightedStateEvent.SafeSubscribe(() => { AnimateButtonScale(buttonTransform, originalScale * buttonHoverScale, 0.15f, Ease.OutQuad); });
 
-            button.SelectedStateEvent.AddListener(() =>
-            {
-                AnimateButtonScale(buttonTransform, originalScale * buttonHoverScale, 0.15f, Ease.OutQuad);
-            });
+            button.SelectedStateEvent.SafeSubscribe(() => { AnimateButtonScale(buttonTransform, originalScale * buttonHoverScale, 0.15f, Ease.OutQuad); });
 
-            button.PressedStateEvent.AddListener(() =>
-            {
-                AnimateButtonScale(buttonTransform, originalScale * buttonPressScale, 0.08f, Ease.InQuad);
-            });
+            button.PressedStateEvent.SafeSubscribe(() => { AnimateButtonScale(buttonTransform, originalScale * buttonPressScale, 0.08f, Ease.InQuad); });
 
-            button.NormalStateEvent.AddListener(() =>
-            {
-                AnimateButtonScale(buttonTransform, originalScale, 0.12f, Ease.OutBack);
-            });
+            button.NormalStateEvent.SafeSubscribe(() => { AnimateButtonScale(buttonTransform, originalScale, 0.12f, Ease.OutBack); });
         }
 
         private void AnimateButtonScale(Transform buttonTransform, Vector3 targetScale, float duration, Ease ease)
@@ -230,7 +232,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             var currentTutorial = TutorialManager.Instance.CurrentTutorial;
             if (currentTutorial != null && currentTutorial.CurrentState == HelloDev.Objectives.ObjectiveState.InProgress)
             {
-                QuestLogger.Log(LogSubsystem.Tutorial, "[UI_TutorialController] Found active tutorial on subscribe, showing UI");
+                Logging.Logger.Log(LogSystems.Tutorial, "Found active tutorial on subscribe, showing UI");
                 HandleTutorialStarted(currentTutorial);
                 if (currentTutorial.CurrentStep != null)
                 {
@@ -253,10 +255,10 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContentRoot != null)
                 Tween.StopAll(panelContentRoot);
+            if (completeButton != null)
+                Tween.StopAll(completeButton.transform);
             if (skipButton != null)
                 Tween.StopAll(skipButton.transform);
-            if (continueButton != null)
-                Tween.StopAll(continueButton.transform);
         }
 
         #endregion
@@ -267,16 +269,16 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             _currentTutorial = tutorial;
 
-            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Tutorial started: {tutorial.DevName}");
+            Logger.Log(LogSystems.Tutorial, $"Tutorial started: {tutorial.DevName}", this);
 
-            SetButtonVisible(skipButton, tutorial.Data.CanSkip);
+            SetButtonVisible(completeButton, tutorial.Data.CanSkip);
             UpdateProgress();
             ShowPanel();
         }
 
         private void HandleTutorialCompleted(TutorialRuntime tutorial)
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Tutorial completed: {tutorial.DevName}");
+            Logger.Log(LogSystems.Tutorial, $"Tutorial completed: {tutorial.DevName}", this);
 
             if (hideOnComplete)
                 HidePanel();
@@ -286,11 +288,11 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleStepStarted(TutorialRuntime tutorial, TutorialStepRuntime step)
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Step started: {step.DevName}");
+            Logger.Log(LogSystems.Tutorial, $"Step started: {step.DevName}", this);
 
             // Subscribe to substep/count events for this step
-            step.OnSubstepCompleted.AddListener(HandleSubstepCompleted);
-            step.OnCountProgressChanged.AddListener(HandleCountProgressChanged);
+            step.OnSubstepCompleted.SafeSubscribe(HandleSubstepCompleted);
+            step.OnCountProgressChanged.SafeSubscribe(HandleCountProgressChanged);
 
             // Update step display
             if (stepDisplay != null)
@@ -305,18 +307,18 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleStepCompleted(TutorialRuntime tutorial, TutorialStepRuntime step)
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Step completed: {step.DevName}");
+            Logger.Log(LogSystems.Tutorial, $"Step completed: {step.DevName}", this);
 
             // Unsubscribe from step events
-            step.OnSubstepCompleted.RemoveListener(HandleSubstepCompleted);
-            step.OnCountProgressChanged.RemoveListener(HandleCountProgressChanged);
+            step.OnSubstepCompleted.SafeUnsubscribe(HandleSubstepCompleted);
+            step.OnCountProgressChanged.SafeUnsubscribe(HandleCountProgressChanged);
 
             UpdateProgress();
         }
 
         private void HandleSubstepCompleted(TutorialStepRuntime step, TutorialSubstep_SO substep)
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Substep completed: {substep.DevName} ({step.CompletedSubstepCount}/{step.TotalSubstepCount})");
+            Logger.Log(LogSystems.Tutorial, $"Substep completed: {substep.DevName} ({step.CompletedSubstepCount}/{step.TotalSubstepCount})", this);
 
             // Update display to show next substep
             if (stepDisplay != null)
@@ -329,7 +331,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleCountProgressChanged(TutorialStepRuntime step, int current, int required)
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, $"[UI_TutorialController] Count progress: {current}/{required}");
+            Logger.Log(LogSystems.Tutorial, $"Count progress: {current}/{required}", this);
 
             // Update display to show count progress
             if (stepDisplay != null)
@@ -349,6 +351,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (_currentTutorial == null || stepDisplay == null) return;
 
             float progress = _currentTutorial.Progress;
+            Logger.Log(LogSystems.Tutorial, $"Progress: {progress}", this);
             stepDisplay.SetProgress(progress);
         }
 
@@ -360,14 +363,14 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             // 1. Simple manual steps (no timer, no condition, no substeps, not count-based), OR
             // 2. Steps that allow skipping (CanSkip = true) - allows manual progression even with conditions
             bool isSimpleManualStep = !step.Data.IsTimedStep
-                && step.Data.CompletionCondition == null
-                && !step.HasSubsteps
-                && !step.IsCountBased;
+                                      && step.Data.CompletionCondition == null
+                                      && !step.HasSubsteps
+                                      && !step.IsCountBased;
             bool showContinue = isSimpleManualStep || step.Data.CanSkip;
-            SetButtonVisible(continueButton, showContinue);
+            SetButtonVisible(skipButton, showContinue);
 
             // Show Skip button based on step's CanSkip setting
-            SetButtonVisible(skipButton, step.Data.CanSkip);
+            SetButtonVisible(completeButton, step.Data.CanSkip);
         }
 
         private void SetButtonVisible(UIButton button, bool visible)
@@ -386,6 +389,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                     button.gameObject.SetActive(true);
                     buttonTransform.localScale = Vector3.zero;
                 }
+
                 // Animate to full scale (handles both newly activated and interrupted hide animations)
                 if (buttonTransform.localScale != Vector3.one)
                 {
@@ -397,6 +401,48 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 Tween.Scale(buttonTransform, Vector3.zero, 0.15f, Ease.InBack, useUnscaledTime: useUnscaledTime)
                     .OnComplete(() => button.gameObject.SetActive(false));
             }
+
+            OnUpdateButtonVisibility(button, visible);
+        }
+
+        private void OnUpdateButtonVisibility(UIButton button, bool visible)
+        {
+            if (button == completeButton)
+            {
+                var onActionPerformed = button.GetComponentInChildren<InputButtonWithPrompt>().OnActionPerformed;
+                if (visible)
+                {
+                    onActionPerformed.SafeSubscribe(OnSkipInput);
+                }
+                else
+                {
+                    onActionPerformed.SafeUnsubscribe(OnSkipInput);
+                }
+            }
+            else if (button == skipButton)
+            {
+                var onActionPerformed = button.GetComponentInChildren<InputButtonWithPrompt>().OnActionPerformed;
+                if (visible)
+                {
+                    Logger.Log(LogSystems.Tutorial,$"Adding OnContinueInput callback to button {button.name}", button);
+                    onActionPerformed.SafeSubscribe(OnContinueInput);
+                }
+                else
+                {
+                    Logger.Log(LogSystems.Tutorial,$"Removing OnContinueInput callback to button {button.name}", button);
+                    onActionPerformed.SafeUnsubscribe(OnContinueInput);
+                }
+            }
+        }
+
+        private void OnContinueInput()
+        {
+            HandleContinueClicked();
+        }
+
+        private void OnSkipInput()
+        {
+            HandleSkipClicked();
         }
 
         #endregion
@@ -405,13 +451,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleSkipClicked()
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, "[UI_TutorialController] Skip button clicked");
+            Logger.Log(LogSystems.Tutorial, "Skip button clicked", this);
             TutorialManager.Instance?.SkipCurrentTutorial();
         }
 
         private void HandleContinueClicked()
         {
-            QuestLogger.Log(LogSubsystem.Tutorial, "[UI_TutorialController] Continue button clicked");
+            Logger.Log(LogSystems.Tutorial, "Continue button clicked", this);
 
             var currentStep = _currentTutorial?.CurrentStep;
             if (currentStep == null)
@@ -450,7 +496,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContainer == null)
             {
-                Debug.LogError("[UI_TutorialController] Cannot show panel - UIContainer is not assigned.", this);
+                Logger.LogError(LogSystems.Tutorial,"Cannot show panel - UIContainer is not assigned.", this);
                 return;
             }
 
@@ -466,7 +512,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContainer == null)
             {
-                Debug.LogError("[UI_TutorialController] Cannot hide panel - UIContainer is not assigned.", this);
+                Logger.LogError(LogSystems.Tutorial,"Cannot hide panel - UIContainer is not assigned.", this);
                 return;
             }
 

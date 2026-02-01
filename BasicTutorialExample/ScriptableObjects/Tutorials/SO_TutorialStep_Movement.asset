@@ -11,15 +11,16 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e23adba5f87b9ea4e9e88498ab04b881, type: 3}
   m_Name: SO_TutorialStep_Movement
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   devName: Movement
-  stepId: b2c3d4e5-f6a7-8901-bcde-f23456789012
+  stepId: d9de2383-13d5-4232-875b-772a776e6901
   instruction:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:48ac7cfe848f1d44d9f56607e6cde3e8
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 287203966977
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -34,3 +35,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c846f1f2b77bc8745afd23c3a00dca9a, type: 2}
   - {fileID: 11400000, guid: 8d640639802455845b838f2d98d4a3cd, type: 2}
   requiredCount: 1
+  references:
+    version: 2
+    RefIds: []

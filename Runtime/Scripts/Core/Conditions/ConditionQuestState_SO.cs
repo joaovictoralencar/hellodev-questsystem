@@ -1,5 +1,6 @@
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
+using HelloDev.Utils;
 using UnityEngine;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -71,21 +72,21 @@ namespace HelloDev.QuestSystem.Conditions
         /// <inheritdoc/>
         protected override void SubscribeToManagerEvents()
         {
-            QuestManager.Instance.QuestStarted.AddListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestCompleted.AddListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestFailed.AddListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestRestarted.AddListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestAdded.AddListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestStarted.SafeSubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestCompleted.SafeSubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestFailed.SafeSubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestRestarted.SafeSubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestAdded.SafeSubscribe(OnQuestStateChanged);
         }
 
         /// <inheritdoc/>
         protected override void UnsubscribeFromManagerEvents()
         {
-            QuestManager.Instance.QuestStarted.RemoveListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestCompleted.RemoveListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestFailed.RemoveListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestRestarted.RemoveListener(OnQuestStateChanged);
-            QuestManager.Instance.QuestAdded.RemoveListener(OnQuestStateChanged);
+            QuestManager.Instance.QuestStarted.SafeUnsubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestCompleted.SafeUnsubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestFailed.SafeUnsubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestRestarted.SafeUnsubscribe(OnQuestStateChanged);
+            QuestManager.Instance.QuestAdded.SafeUnsubscribe(OnQuestStateChanged);
         }
 
         /// <inheritdoc/>

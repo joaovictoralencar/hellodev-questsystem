@@ -33,7 +33,6 @@ namespace HelloDev.QuestSystem.Utils
         SaveManager, // QuestSnapshotProvider operations
         Choice,      // Player choice events
         UI,          // UI components
-        Tutorial,    // Tutorial system operations
         Achievement  // Achievement system operations
     }
 
@@ -83,8 +82,6 @@ namespace HelloDev.QuestSystem.Utils
                 LogSubsystem.SaveManager => "Quest.SaveManager",
                 LogSubsystem.Choice => "Quest.Choice",
                 LogSubsystem.UI => "Quest.UI",
-                LogSubsystem.Tutorial => "Quest.Tutorial",
-                LogSubsystem.Achievement => "Quest.Achievement",
                 _ => "Quest.Manager"
             };
         }
@@ -151,26 +148,6 @@ namespace HelloDev.QuestSystem.Utils
         public static void LogTransition(LogSubsystem subsystem, string from, string to)
         {
             Logger.LogTransition(GetSystemId(subsystem), from, to);
-        }
-
-        /// <summary>Logs a save operation.</summary>
-        public static void LogSave(string slot, bool success)
-        {
-            string result = success ? "succeeded" : "failed";
-            Logger.Log("Quest.Save", $"{IconSave} Save to <b>'{slot}'</b> {result}");
-        }
-
-        /// <summary>Logs a load operation.</summary>
-        public static void LogLoad(string slot, bool success)
-        {
-            string result = success ? "succeeded" : "failed";
-            Logger.Log("Quest.Save", $"{IconLoad} Load from <b>'{slot}'</b> {result}");
-        }
-
-        /// <summary>Logs a player choice event.</summary>
-        public static void LogChoice(string questName, string choiceId)
-        {
-            Logger.Log("Quest.Choice", $"{IconChoice} Choice <b>'{choiceId}'</b> selected in quest <b>'{questName}'</b>");
         }
 
         #endregion

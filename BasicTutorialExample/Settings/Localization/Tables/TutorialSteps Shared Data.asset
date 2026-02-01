@@ -31,6 +31,14 @@ MonoBehaviour:
     m_Key: TutorialStep_Instruction_Jump
     m_Metadata:
       m_Items: []
+  - m_Id: 1464224994869248
+    m_Key: TutorialStep_Instruction_Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1500396701925376
+    m_Key: TutorialStep_Instruction_End
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

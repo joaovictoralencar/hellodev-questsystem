@@ -11,25 +11,26 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e23adba5f87b9ea4e9e88498ab04b881, type: 3}
   m_Name: SO_TutorialStep_Welcome
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   devName: Welcome
-  stepId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  stepId: 815f64c1-9ff2-4d9e-908b-2f47411ebac1
   instruction:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:48ac7cfe848f1d44d9f56607e6cde3e8
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 287187189760
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   stepIcon: {fileID: 0}
   isTimedStep: 1
-  duration: 3
+  duration: 5
   canSkip: 1
   completionCondition: {fileID: 0}
-  highlightTarget:
-  popupOffset: {x: 0, y: 0}
+  substeps: []
+  requiredCount: 1
   references:
     version: 2
     RefIds: []

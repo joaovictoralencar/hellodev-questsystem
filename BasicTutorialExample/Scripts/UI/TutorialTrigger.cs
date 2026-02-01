@@ -1,6 +1,8 @@
+using HelloDev.Logging;
 using HelloDev.QuestSystem.Tutorials;
 using HelloDev.QuestSystem.Utils;
 using UnityEngine;
+using Logger = UnityEngine.Logger;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -23,7 +25,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Tutorial")]
 #endif
-        [SerializeField] private Tutorial_SO tutorial;
+        [SerializeField]
+        private Tutorial_SO tutorial;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Trigger Settings")]
@@ -31,19 +34,22 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Trigger Settings")]
 #endif
-        [SerializeField] private string playerTag = "Player";
+        [SerializeField]
+        private string playerTag = "Player";
 
 #if ODIN_INSPECTOR
         [TitleGroup("Trigger Settings")]
         [PropertyOrder(11)]
 #endif
-        [SerializeField] private bool triggerOnce = true;
+        [SerializeField]
+        private bool triggerOnce = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Trigger Settings")]
         [PropertyOrder(12)]
 #endif
-        [SerializeField] private bool disableAfterTrigger = true;
+        [SerializeField]
+        private bool disableAfterTrigger = true;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Debug")]
@@ -51,7 +57,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #else
         [Header("Debug")]
 #endif
-        [SerializeField] private bool logTriggerEvents;
+        [SerializeField]
+        private bool logTriggerEvents;
 
         #endregion
 
@@ -85,8 +92,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             // Ensure collider is set as trigger
             if (_collider != null && !_collider.isTrigger)
             {
-                QuestLogger.LogWarning(LogSubsystem.Tutorial,
-                    $"[TutorialTrigger] Collider on '{gameObject.name}' is not set as trigger. Setting isTrigger = true.");
+                Logging.Logger.LogWarning(LogSystems.Tutorial, $"[TutorialTrigger] Collider on '{gameObject.name}' is not set as trigger. Setting isTrigger = true.", this);
                 _collider.isTrigger = true;
             }
         }
@@ -135,8 +141,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (TutorialManager.Instance == null)
             {
-                QuestLogger.LogWarning(LogSubsystem.Tutorial,
-                    "[TutorialTrigger] TutorialManager.Instance is null. Cannot start tutorial.");
+                Logging.Logger.LogWarning(LogSystems.Tutorial, "[TutorialTrigger] TutorialManager.Instance is null. Cannot start tutorial.", this);
                 return;
             }
 
@@ -144,8 +149,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (TutorialManager.Instance.IsTutorialCompleted(tutorial.TutorialId))
             {
                 if (logTriggerEvents)
-                    QuestLogger.Log(LogSubsystem.Tutorial,
-                        $"[TutorialTrigger] Tutorial '{tutorial.DevName}' already completed. Skipping.");
+                    Logging.Logger.Log(LogSystems.Tutorial, $"[TutorialTrigger] Tutorial '{tutorial.DevName}' already completed. Skipping.", this);
 
                 HandlePostTrigger();
                 return;
@@ -157,16 +161,14 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (runtime != null)
             {
                 if (logTriggerEvents)
-                    QuestLogger.Log(LogSubsystem.Tutorial,
-                        $"[TutorialTrigger] Started tutorial '{tutorial.DevName}'.");
+                    Logging.Logger.Log(LogSystems.Tutorial, $"[TutorialTrigger] Started tutorial '{tutorial.DevName}'.", this);
 
                 HandlePostTrigger();
             }
             else
             {
                 if (logTriggerEvents)
-                    QuestLogger.Log(LogSubsystem.Tutorial,
-                        $"[TutorialTrigger] Failed to start tutorial '{tutorial.DevName}'. May be already active or queued.");
+                    Logging.Logger.Log(LogSystems.Tutorial, $"[TutorialTrigger] Failed to start tutorial '{tutorial.DevName}'. May be already active or queued.", this);
             }
         }
 
@@ -232,9 +234,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             // Draw label
             if (tutorial != null)
             {
-                UnityEditor.Handles.Label(
-                    transform.position + Vector3.up * 0.5f,
-                    $"Tutorial: {tutorial.DevName}");
+                UnityEditor.Handles.Label(transform.position + Vector3.up * 0.5f, $"Tutorial: {tutorial.DevName}");
             }
         }
 #endif

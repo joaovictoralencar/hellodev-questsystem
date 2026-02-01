@@ -11,16 +11,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74fd7d407246a7d4d937ce121cd3f23c, type: 3}
   m_Name: SO_Substep_MoveRight
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   devName: Move Right
   substepId: f1a2b3c4-d5e6-7890-abcd-100000000003
   instruction:
     m_TableReference:
-      m_TableCollectionName:
+      m_TableCollectionName: GUID:0636a639f58939b4990e6786a2e22a77
     m_TableEntryReference:
-      m_KeyId: 0
-      m_Key:
+      m_KeyId: 94123376640
+      m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
   completionCondition: {fileID: 11400000, guid: bfeee96b12c959d44b08f1cc089f202a, type: 2}
+  references:
+    version: 2
+    RefIds: []

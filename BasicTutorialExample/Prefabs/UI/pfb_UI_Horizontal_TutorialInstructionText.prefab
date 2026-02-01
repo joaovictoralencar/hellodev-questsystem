@@ -86,6 +86,8 @@ MonoBehaviour:
   pendingColour: {fileID: 11400000, guid: b1ae34b224f66f848a47d9b62cd132fe, type: 2}
   fadeDuration: 0.25
   useUnscaledTime: 1
+  iconProvider: {fileID: 11400000, guid: ee20dea11ac25924694d0e0e475b8cea, type: 2}
+  defaultDeviceLayout: XInputController
 --- !u!1 &2227048118135623419
 GameObject:
   m_ObjectHideFlags: 0
@@ -352,7 +354,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: m_text
-      value: What if I say I'm crazy
+      value: Press <sprite name=space> to jump
       objectReference: {fileID: 0}
     - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: m_fontSize

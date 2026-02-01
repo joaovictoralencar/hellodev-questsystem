@@ -4,6 +4,7 @@ using System.Linq;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.UI.Default;
+using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
@@ -57,8 +58,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             // Subscribe to expand/collapse if toggle exists
             if (expandToggle != null)
             {
-                expandToggle.OnToggleOn.AddListener(HandleExpand);
-                expandToggle.OnToggleOff.AddListener(HandleCollapse);
+                expandToggle.OnToggleOn.SafeSubscribe(HandleExpand);
+                expandToggle.OnToggleOff.SafeSubscribe(HandleCollapse);
             }
         }
 
@@ -66,8 +67,8 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (expandToggle != null)
             {
-                expandToggle.OnToggleOn.RemoveListener(HandleExpand);
-                expandToggle.OnToggleOff.RemoveListener(HandleCollapse);
+                expandToggle.OnToggleOn.SafeUnsubscribe(HandleExpand);
+                expandToggle.OnToggleOff.SafeUnsubscribe(HandleCollapse);
             }
         }
 

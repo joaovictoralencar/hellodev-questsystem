@@ -194,7 +194,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 }
                 else
                 {
-                    textItem.SetInstruction(_currentStep.DevName, current, required);
+                    textItem.SetInstruction(_currentStep.Data.Instruction, current, required);
                 }
             }
         }
@@ -337,7 +337,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             }
             else
             {
-                item.SetInstruction(fallbackText ?? "", current, total);
+                item.SetInstruction(instruction, current, total);
             }
 
             item.SetState(TutorialStepTextState.Active);

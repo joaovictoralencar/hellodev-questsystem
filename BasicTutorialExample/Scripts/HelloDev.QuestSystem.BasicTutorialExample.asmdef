@@ -12,7 +12,8 @@
         "QuestSystem.Utils",
         "HelloDev.Events",
         "Unity.InputSystem",
-        "HelloDev.Conditions"
+        "HelloDev.Conditions",
+        "HelloDev.Input"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
