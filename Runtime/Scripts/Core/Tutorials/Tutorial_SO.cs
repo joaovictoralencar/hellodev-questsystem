@@ -158,8 +158,8 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
             }
             
-            var guids = new HashSet<string>();
-            foreach (var step in Steps)
+            HashSet<string> guids = new HashSet<string>();
+            foreach (TutorialStep_SO step in Steps)
             {
                 if (string.IsNullOrEmpty(step.StepId.ToString()))
                 {

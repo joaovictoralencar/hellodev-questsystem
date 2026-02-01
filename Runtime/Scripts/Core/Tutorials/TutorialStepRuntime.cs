@@ -299,7 +299,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         private void SetState(ObjectiveState newState)
         {
-            var oldState = CurrentState;
+            ObjectiveState oldState = CurrentState;
 
             // Fire exit hooks when leaving InProgress
             if (oldState == ObjectiveState.InProgress && newState != ObjectiveState.InProgress)
@@ -400,7 +400,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (!Data.CanSkip) return false;
             if (!HasSubsteps) return false;
 
-            var currentSubstep = CurrentSubstep;
+            TutorialSubstep_SO currentSubstep = CurrentSubstep;
             if (currentSubstep == null) return false;
 
             // Mark the substep as completed
@@ -408,7 +408,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
             // Unsubscribe from this substep's condition
             if (currentSubstep.CompletionCondition is IConditionEventDriven eventCondition &&
-                _substepCallbacks.TryGetValue(currentSubstep.SubstepId, out var callback))
+                _substepCallbacks.TryGetValue(currentSubstep.SubstepId, out Action callback))
             {
                 eventCondition.UnsubscribeFromEvent(callback);
                 _substepCallbacks.Remove(currentSubstep.SubstepId);
@@ -528,7 +528,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
         private void SubscribeToSubsteps()
         {
-            foreach (var substep in Data.Substeps)
+            foreach (TutorialSubstep_SO substep in Data.Substeps)
             {
                 if (substep?.CompletionCondition is IConditionEventDriven eventCondition)
                 {
@@ -553,10 +553,10 @@ namespace HelloDev.QuestSystem.Tutorials
             // Unsubscribe from substep conditions
             if (HasSubsteps)
             {
-                foreach (var substep in Data.Substeps)
+                foreach (TutorialSubstep_SO substep in Data.Substeps)
                 {
                     if (substep?.CompletionCondition is IConditionEventDriven eventCondition &&
-                        _substepCallbacks.TryGetValue(substep.SubstepId, out var callback))
+                        _substepCallbacks.TryGetValue(substep.SubstepId, out Action callback))
                     {
                         eventCondition.UnsubscribeFromEvent(callback);
                     }
@@ -586,7 +586,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
             // Unsubscribe from this substep's condition
             if (substep.CompletionCondition is IConditionEventDriven eventCondition &&
-                _substepCallbacks.TryGetValue(substep.SubstepId, out var callback))
+                _substepCallbacks.TryGetValue(substep.SubstepId, out Action callback))
             {
                 eventCondition.UnsubscribeFromEvent(callback);
                 _substepCallbacks.Remove(substep.SubstepId);
@@ -643,7 +643,7 @@ namespace HelloDev.QuestSystem.Tutorials
             _completedSubstepIds.Clear();
             if (completedSubstepIds != null)
             {
-                foreach (var id in completedSubstepIds)
+                foreach (Guid id in completedSubstepIds)
                 {
                     _completedSubstepIds.Add(id);
                 }
@@ -671,7 +671,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (HasSubsteps)
             {
                 // Only subscribe to incomplete substeps
-                foreach (var substep in Data.Substeps)
+                foreach (TutorialSubstep_SO substep in Data.Substeps)
                 {
                     if (!_completedSubstepIds.Contains(substep.SubstepId) &&
                         substep?.CompletionCondition is IConditionEventDriven eventCondition)

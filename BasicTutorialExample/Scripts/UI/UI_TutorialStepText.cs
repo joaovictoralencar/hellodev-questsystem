@@ -413,11 +413,10 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         /// </summary>
         private void DetectDeviceLayout()
         {
-#if ENABLE_INPUT_SYSTEM
             // Try to get the last used device
             var lastDevice = InputSystem.devices.Count > 0 ? InputSystem.devices[InputSystem.devices.Count - 1] : null;
             
-            if (lastDevice != null && lastDevice is UnityEngine.InputSystem.Gamepad)
+            if (lastDevice != null && lastDevice is Gamepad)
             {
                 _currentDeviceLayout = lastDevice.layout;
             }
@@ -425,9 +424,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             {
                 _currentDeviceLayout = defaultDeviceLayout;
             }
-#else
-            _currentDeviceLayout = defaultDeviceLayout;
-#endif
         }
 
         /// <summary>

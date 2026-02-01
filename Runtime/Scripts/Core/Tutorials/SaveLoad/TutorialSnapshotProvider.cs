@@ -54,7 +54,7 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
 
             TutorialSystemSnapshot tutorialSystemSnapshot = _tutorialManager.CaptureSnapshot();
             Logger.Log(LogSystems.Save,$"Saved tutorial snapshot: {tutorialSystemSnapshot}");
-            foreach (var step in tutorialSystemSnapshot.ActiveTutorial.Steps)
+            foreach (TutorialStepSnapshot step in tutorialSystemSnapshot.ActiveTutorial.Steps)
             {
                 Logger.Log(LogSystems.Save,$"Step state: {step.State}");
 

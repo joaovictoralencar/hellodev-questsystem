@@ -223,7 +223,7 @@ namespace HelloDev.QuestSystem.Tutorials
             WasSkipped = false;
 
             // Create runtime steps
-            var steps = data.Steps
+            List<TutorialStepRuntime> steps = data.Steps
                 .Where(s => s != null)
                 .Select(s => s.GetRuntimeStep())
                 .ToList();
@@ -264,7 +264,7 @@ namespace HelloDev.QuestSystem.Tutorials
             OnTutorialStarting?.Invoke(this);
 
             // Subscribe to step events
-            foreach (var step in Steps)
+            foreach (TutorialStepRuntime step in Steps)
             {
                 step.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
             }
@@ -369,7 +369,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             UnsubscribeFromStepEvents();
 
-            foreach (var step in Steps)
+            foreach (TutorialStepRuntime step in Steps)
             {
                 step.ResetStep();
             }
@@ -400,7 +400,7 @@ namespace HelloDev.QuestSystem.Tutorials
             // Subscribe to step events for in-progress tutorials
             if (state == ObjectiveState.InProgress)
             {
-                foreach (var step in Steps)
+                foreach (TutorialStepRuntime step in Steps)
                 {
                     step.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
                     Logger.Log(LogSystems.Tutorial, $"Restored step '{step.DevName}' to state {step.CurrentState}");
@@ -465,7 +465,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
         private void UnsubscribeFromStepEvents()
         {
-            foreach (var step in Steps)
+            foreach (TutorialStepRuntime step in Steps)
             {
                 step.OnStepCompleted.SafeUnsubscribe(HandleStepCompleted);
             }

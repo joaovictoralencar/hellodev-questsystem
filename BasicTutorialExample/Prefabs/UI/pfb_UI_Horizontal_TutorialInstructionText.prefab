@@ -368,6 +368,10 @@ PrefabInstance:
       propertyPath: m_VerticalAlignment
       value: 512
       objectReference: {fileID: 0}
+    - target: {fileID: 8943713912311864016, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9145296832163672100, guid: cf2bb1d7a24346047af016ee448cd40c, type: 3}
       propertyPath: textStyle
       value: 
