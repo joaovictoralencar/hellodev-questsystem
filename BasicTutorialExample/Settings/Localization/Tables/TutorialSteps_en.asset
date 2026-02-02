@@ -25,23 +25,23 @@ MonoBehaviour:
       m_Items:
       - rid: 2249559676743319658
   - m_Id: 287203966976
-    m_Localized: Move your mouse <sprite name=mouse> to look around.
+    m_Localized: Move your mouse <sprite name=look> to look around.
     m_Metadata:
       m_Items:
       - rid: 2249559676743319658
   - m_Id: 287203966977
-    m_Localized: Use <sprite name=w> <sprite name=a><sprite name=s> <sprite name=d>
-      to move in different directions.
+    m_Localized: Use <sprite name=Move/WASD/Up> <sprite name=Move/WASD/Left><sprite
+      name=Move/WASD/Down> <sprite name=Move/WASD/Right> to move in different directions.
     m_Metadata:
       m_Items:
       - rid: 2249559676743319658
   - m_Id: 287203966978
-    m_Localized: Press <sprite name=space> to jump. ({current}/{required})
+    m_Localized: Press <sprite name=jump> to jump. ({current}/{required})
     m_Metadata:
       m_Items:
       - rid: 2249559676743319658
   - m_Id: 1464224994869248
-    m_Localized: Press <sprite name=shift> to sprint.
+    m_Localized: Press <sprite name=sprint> to sprint.
     m_Metadata:
       m_Items: []
   - m_Id: 1500396701925376

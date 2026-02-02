@@ -19,19 +19,19 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 94077239296
-    m_Localized: Pressione <sprite name=w> para mover para frente.
+    m_Localized: Pressione <sprite name=Move/WASD/Up> para mover para frente.
     m_Metadata:
       m_Items: []
   - m_Id: 94119182336
-    m_Localized: Pressione <sprite name=a> para mover para a esquerda.
+    m_Localized: Pressione <sprite name=Move/WASD/Left>  para mover para a esquerda.
     m_Metadata:
       m_Items: []
   - m_Id: 94123376640
-    m_Localized: Pressione <sprite name=d> para mover para a direita.
+    m_Localized: Pressione <sprite name=Move/WASD/Right> para mover para a direita.
     m_Metadata:
       m_Items: []
   - m_Id: 94123376641
-    m_Localized: "Pressione <sprite name=s> para mover para tr\xE1s."
+    m_Localized: "Pressione <sprite name=Move/WASD/Down> para mover para tr\xE1s."
     m_Metadata:
       m_Items: []
   references:

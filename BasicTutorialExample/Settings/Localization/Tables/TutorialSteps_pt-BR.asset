@@ -25,23 +25,24 @@ MonoBehaviour:
       m_Items:
       - rid: 2249559676743319659
   - m_Id: 287203966976
-    m_Localized: Mova o mouse <sprite name=mouse> para olhar ao redor.
+    m_Localized: Mova o mouse <sprite name=look> para olhar ao redor.
     m_Metadata:
       m_Items:
       - rid: 2249559676743319659
   - m_Id: 287203966977
-    m_Localized: "Use <sprite name=w> <sprite name=a><sprite name=s> <sprite name=d>
-      para se mover em diferentes dire\xE7\xF5es."
+    m_Localized: "Use <sprite name=Move/WASD/Up> <sprite name=Move/WASD/Left><sprite
+      name=Move/WASD/Down> <sprite name=Move/WASD/Right> para se mover em diferentes
+      dire\xE7\xF5es."
     m_Metadata:
       m_Items:
       - rid: 2249559676743319659
   - m_Id: 287203966978
-    m_Localized: Pressione <sprite name=space> para pular. ({current}/{required})
+    m_Localized: Pressione <sprite name=jump> para pular. ({current}/{required})
     m_Metadata:
       m_Items:
       - rid: 2249559676743319659
   - m_Id: 1464224994869248
-    m_Localized: Pressione <sprite name=shift> para correr.
+    m_Localized: Pressione <sprite name=sprint> para correr.
     m_Metadata:
       m_Items: []
   - m_Id: 1500396701925376

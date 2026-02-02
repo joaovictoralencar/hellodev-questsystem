@@ -1,19 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using HelloDev.Input;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 using UnityEngine.UI;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -32,9 +28,18 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
     /// <summary>
     /// A spawnable text component for displaying a single tutorial instruction line.
-    /// Supports localization, state-based coloring via Colour_SO, and checkmark for completed state.
-    /// Mimics UI_TaskItem pattern without navigation.
+    /// Supports localization, state-based coloring via Colour_SO, checkmark for completed state,
+    /// and automatic device-specific input sprite replacement.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Uses <see cref="InputSpriteUtility"/> to replace generic sprite tags (e.g., &lt;sprite name=buttonSouth&gt;)
+    /// with device-specific sprite names based on the current input device.
+    /// </para>
+    /// <para>
+    /// Automatically updates when the player switches between keyboard/mouse and gamepad.
+    /// </para>
+    /// </remarks>
     public class UI_TutorialStepText : MonoBehaviour
     {
         #region Serialized Fields
@@ -51,6 +56,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #if ODIN_INSPECTOR
         [TitleGroup("Text")]
         [PropertyOrder(1)]
+#else
 #endif
         [SerializeField, Tooltip("Fallback TextMeshPro when no localization is available.")]
         private TextMeshProUGUI fallbackText;
@@ -67,6 +73,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #if ODIN_INSPECTOR
         [TitleGroup("Visuals")]
         [PropertyOrder(11)]
+#else
 #endif
         [SerializeField, Tooltip("Text style updater for applying colors.")]
         private TextStyleUpdater textStyleUpdater;
@@ -83,6 +90,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #if ODIN_INSPECTOR
         [TitleGroup("State Colors")]
         [PropertyOrder(21)]
+#else
 #endif
         [SerializeField, Tooltip("Color for completed instructions.")]
         private Colour_SO completedColour;
@@ -90,6 +98,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #if ODIN_INSPECTOR
         [TitleGroup("State Colors")]
         [PropertyOrder(22)]
+#else
 #endif
         [SerializeField, Tooltip("Color for upcoming/pending instructions.")]
         private Colour_SO pendingColour;
@@ -106,6 +115,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #if ODIN_INSPECTOR
         [TitleGroup("Animation")]
         [PropertyOrder(31)]
+#else
 #endif
         [SerializeField, Tooltip("Use unscaled time for animations.")]
         private bool useUnscaledTime = true;
@@ -119,28 +129,15 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         [SerializeField, Tooltip("Icon provider for resolving device-specific input sprites.")]
         private InputIconProvider_SO iconProvider;
 
-#if ODIN_INSPECTOR
-        [TitleGroup("Input Icons")]
-        [PropertyOrder(41)]
-#endif
-        [SerializeField, Tooltip("Default device layout to use (e.g., 'XInputController', 'DualShockGamepad'). Leave empty to auto-detect.")]
-        private string defaultDeviceLayout = "XInputController";
-
-        #endregion
-
-        #region Static Fields
-
-        // Static list optimization (Unity's pattern) - single subscription for all instances
-        private static List<UI_TutorialStepText> s_Instances;
-
         #endregion
 
         #region Private Fields
 
         private TutorialStepTextState _currentState = TutorialStepTextState.Pending;
         private CanvasGroup _canvasGroup;
-        private string _currentDeviceLayout;
         private LocalizedString _cachedInstruction;
+        private DeviceTrackingHelper _deviceTracker;
+        private string _lastProcessedText;
 
         #endregion
 
@@ -182,41 +179,39 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             // Initialize checkmark fill to hidden
             if (checkmarkFill != null)
                 checkmarkFill.enabled = false;
-
-            // Detect current device layout
-            DetectDeviceLayout();
         }
 
         private void OnEnable()
         {
-            // Static list optimization - single subscription shared by all instances
-            if (s_Instances == null)
-                s_Instances = new List<UI_TutorialStepText>();
+            // Subscribe to device tracker for real-time device switching
+            if (_deviceTracker == null)
+                _deviceTracker = new DeviceTrackingHelper(this, OnDeviceChanged);
 
-            s_Instances.Add(this);
-
-            // Only subscribe once when first instance is enabled
-            if (s_Instances.Count == 1)
-                InputSystem.onActionChange += OnActionChange;
+            _deviceTracker.Subscribe();
         }
 
         private void OnDisable()
         {
-            if (s_Instances != null)
-            {
-                s_Instances.Remove(this);
-                // Unsubscribe when last instance is disabled
-                if (s_Instances.Count == 0)
-                {
-                    s_Instances = null;
-                    InputSystem.onActionChange -= OnActionChange;
-                }
-            }
+            // Unsubscribe from device tracker
+            _deviceTracker?.Unsubscribe();
         }
 
         private void OnDestroy()
         {
             CleanupTweens();
+        }
+
+        #endregion
+
+        #region Device Tracking
+
+        /// <summary>
+        /// Called when the active input device changes.
+        /// Refreshes sprite replacements for the new device.
+        /// </summary>
+        private void OnDeviceChanged(InputDevice previousDevice, InputDevice newDevice)
+        {
+            RefreshForDeviceChange();
         }
 
         #endregion
@@ -234,8 +229,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (instruction != null && !instruction.IsEmpty && localizedText != null)
             {
                 localizedText.StringReference = instruction;
-                localizedText.OnUpdateString.SafeUnsubscribe(OnLocalizedStringUpdated);
-                localizedText.OnUpdateString.AddListener(OnLocalizedStringUpdated);
+                localizedText.OnUpdateString.SafeSubscribe(OnLocalizedStringUpdated);
                 localizedText.RefreshString();
                 localizedText.gameObject.SetActive(true);
 
@@ -260,7 +254,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (fallbackText != null)
             {
-                fallbackText.text = text ?? "";
+                var processedText = ProcessInputSprites(text);
+                fallbackText.text = processedText ?? "";
                 fallbackText.gameObject.SetActive(true);
             }
 
@@ -283,12 +278,12 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 SetupLocalizedVariables(instruction, current, total);
                 localizedText.StringReference = instruction;
                 localizedText.OnUpdateString.SafeUnsubscribe(OnLocalizedStringUpdated);
-                localizedText.OnUpdateString.AddListener(OnLocalizedStringUpdated);
                 localizedText.RefreshString();
                 localizedText.gameObject.SetActive(true);
 
                 if (fallbackText != null && fallbackText.gameObject != localizedText.gameObject)
                     fallbackText.gameObject.SetActive(false);
+                OnLocalizedStringUpdated(localizedText.StringReference.GetLocalizedString());
             }
             else if (fallbackText != null)
             {
@@ -361,24 +356,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             RefreshForDeviceChange();
         }
 
-        /// <summary>
-        /// Manually sets the device layout to use for sprite resolution.
-        /// </summary>
-        /// <param name="deviceLayout">The device layout name (e.g., "XInputController", "DualShockGamepad").</param>
-        public void SetDeviceLayout(string deviceLayout)
-        {
-            if (_currentDeviceLayout != deviceLayout)
-            {
-                _currentDeviceLayout = deviceLayout;
-                RefreshForDeviceChange();
-            }
-        }
-
-        /// <summary>
-        /// Gets the current device layout being used.
-        /// </summary>
-        public string GetCurrentDeviceLayout() => _currentDeviceLayout;
-
         #endregion
 
         #region Public Methods - Clear
@@ -389,6 +366,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         public void Clear()
         {
             _cachedInstruction = null;
+            _lastProcessedText = null;
 
             if (localizedText != null)
             {
@@ -406,25 +384,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         #endregion
 
-        #region Private Methods - Device Detection & Sprite Processing
-
-        /// <summary>
-        /// Detects the current device layout from the Input System.
-        /// </summary>
-        private void DetectDeviceLayout()
-        {
-            // Try to get the last used device
-            var lastDevice = InputSystem.devices.Count > 0 ? InputSystem.devices[InputSystem.devices.Count - 1] : null;
-            
-            if (lastDevice != null && lastDevice is Gamepad)
-            {
-                _currentDeviceLayout = lastDevice.layout;
-            }
-            else
-            {
-                _currentDeviceLayout = defaultDeviceLayout;
-            }
-        }
+        #region Private Methods - Sprite Processing
 
         /// <summary>
         /// Called when the localized string is updated.
@@ -436,13 +396,14 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             var textMesh = TextMesh;
             if (textMesh != null)
             {
-                textMesh.text = ProcessInputSprites(localizedValue);
+                var processedText = ProcessInputSprites(localizedValue);
+                textMesh.text = processedText;
+                _lastProcessedText = processedText;
             }
         }
 
         /// <summary>
-        /// Processes input sprite tags and replaces them with device-specific sprite names.
-        /// Pattern: &lt;sprite name=keyName&gt; -> &lt;sprite name=deviceSpecificKey&gt;
+        /// Processes input sprite tags using InputSpriteUtility.
         /// </summary>
         /// <param name="text">The text containing sprite tags.</param>
         /// <returns>Text with device-specific sprite names.</returns>
@@ -451,29 +412,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (string.IsNullOrEmpty(text) || iconProvider == null)
                 return text;
 
-            // Regex pattern to match <sprite name=keyName>
-            var pattern = @"<sprite\s+name=([^>]+)>";
-            
-            return Regex.Replace(text, pattern, match =>
-            {
-                var controlPath = match.Groups[1].Value.Trim();
-                
-                // Get the device-specific icon from the icon provider
-                var iconMap = iconProvider.GetIconMapForLayout(_currentDeviceLayout);
-                if (iconMap != null)
-                {
-                    var (icon, mappedText) = iconMap.GetBinding(controlPath);
-                    
-                    // If we have an icon sprite, use its name for the TMP sprite tag
-                    if (icon != null)
-                    {
-                        return $"<sprite name=\"{icon.name}\">";
-                    }
-                }
-                
-                // Fallback: keep original sprite tag
-                return match.Value;
-            });
+            // Use utility to process sprites based on current device
+            return InputSpriteUtility.ProcessInputSprites(text, iconProvider);
         }
 
         /// <summary>
@@ -484,55 +424,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (_cachedInstruction != null && localizedText != null)
             {
                 localizedText.RefreshString();
+                OnLocalizedStringUpdated(localizedText.StringReference.GetLocalizedString());
             }
-        }
-
-#if ENABLE_INPUT_SYSTEM
-        /// <summary>
-        /// Called when Input System action changes occur.
-        /// </summary>
-        private void OnInputActionChange(object obj, InputActionChange change)
-        {
-            // Detect device changes and refresh display
-            if (change == InputActionChange.BoundControlsChanged)
+            else if (!string.IsNullOrEmpty(_lastProcessedText) && fallbackText != null)
             {
-                var oldLayout = _currentDeviceLayout;
-                DetectDeviceLayout();
-                
-                if (oldLayout != _currentDeviceLayout)
-                {
-                    RefreshForDeviceChange();
-                }
-            }
-        }
-#endif
-
-        #endregion
-
-        #region Static Event Handler
-
-        // Static handler - updates all instances when device changes (Unity's pattern)
-        private static void OnActionChange(object obj, InputActionChange change)
-        {
-            if (change != InputActionChange.BoundControlsChanged)
-                return;
-
-            if (s_Instances == null || s_Instances.Count == 0)
-                return;
-
-            // Update all instances when device bindings change
-            for (var i = 0; i < s_Instances.Count; ++i)
-            {
-                var instance = s_Instances[i];
-                if (instance == null) continue;
-
-                var oldLayout = instance._currentDeviceLayout;
-                instance.DetectDeviceLayout();
-
-                if (oldLayout != instance._currentDeviceLayout)
-                {
-                    instance.RefreshForDeviceChange();
-                }
+                // Reprocess last text with new device
+                var reprocessed = ProcessInputSprites(_lastProcessedText);
+                fallbackText.text = reprocessed;
             }
         }
 
@@ -581,7 +479,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 _ => activeColour
             };
 
-            // Apply color via TextStyleUpdater (like UI_TaskItem)
+            // Apply color via TextStyleUpdater
             if (textStyleUpdater != null && targetColour != null)
             {
                 textStyleUpdater.TextColourSO = targetColour;

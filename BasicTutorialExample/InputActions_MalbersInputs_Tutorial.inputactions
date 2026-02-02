@@ -516,10 +516,10 @@
                 {
                     "name": "",
                     "id": "0b960376-1a47-4940-ae5f-e5ac4d387b52",
-                    "path": "<Gamepad>/rightStickPress",
+                    "path": "<Gamepad>/select",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Gamepad",
                     "action": "CompleteTutorial",
                     "isComposite": false,
                     "isPartOfComposite": false
