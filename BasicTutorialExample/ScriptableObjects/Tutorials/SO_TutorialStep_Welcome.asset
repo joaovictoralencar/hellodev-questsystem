@@ -26,7 +26,7 @@ MonoBehaviour:
     m_LocalVariables: []
   stepIcon: {fileID: 0}
   isTimedStep: 1
-  duration: 5
+  duration: 15
   canSkip: 1
   completionCondition: {fileID: 0}
   substeps: []

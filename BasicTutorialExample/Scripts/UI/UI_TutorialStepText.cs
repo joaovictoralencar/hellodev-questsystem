@@ -1,15 +1,20 @@
 using System;
 using HelloDev.Input;
+using HelloDev.Logging;
+using HelloDev.Objectives;
+using HelloDev.QuestSystem.Tutorials;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 using UnityEngine.UI;
+using Logger = HelloDev.Logging.Logger;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -45,21 +50,29 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         #region Serialized Fields
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Text")]
+        [TitleGroup("References")]
         [PropertyOrder(0)]
 #else
-        [Header("Text")]
+        [Header("References")]
 #endif
         [SerializeField, Tooltip("Primary localized text display.")]
         private LocalizeStringEvent localizedText;
 
 #if ODIN_INSPECTOR
-        [TitleGroup("Text")]
+        [TitleGroup("References")]
         [PropertyOrder(1)]
 #else
 #endif
-        [SerializeField, Tooltip("Fallback TextMeshPro when no localization is available.")]
-        private TextMeshProUGUI fallbackText;
+        [SerializeField, Tooltip("Layout group for managing text item spacing.")]
+        private LayoutGroup _layoutGroup;
+#if ODIN_INSPECTOR
+        [TitleGroup("References")]
+        [PropertyOrder(2)]
+#else
+#endif
+        [SerializeField, Tooltip("CanvasGroup for alpha and visibility control.")]
+        private CanvasGroup _canvasGroup;
+
 
 #if ODIN_INSPECTOR
         [TitleGroup("Visuals")]
@@ -110,15 +123,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         [Header("Animation")]
 #endif
         [SerializeField, Tooltip("Duration of fade animations.")]
-        private float fadeDuration = 0.25f;
-
-#if ODIN_INSPECTOR
-        [TitleGroup("Animation")]
-        [PropertyOrder(31)]
-#else
-#endif
-        [SerializeField, Tooltip("Use unscaled time for animations.")]
-        private bool useUnscaledTime = true;
+        private float animationDuration = .35f;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Input Icons")]
@@ -134,10 +139,10 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         #region Private Fields
 
         private TutorialStepTextState _currentState = TutorialStepTextState.Pending;
-        private CanvasGroup _canvasGroup;
         private LocalizedString _cachedInstruction;
         private DeviceTrackingHelper _deviceTracker;
-        private string _lastProcessedText;
+        private UnityAction Completed;
+        private TutorialStepRuntime _step;
 
         #endregion
 
@@ -157,10 +162,11 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             {
                 if (localizedText != null)
                 {
-                    var textMesh = localizedText.GetComponent<TextMeshProUGUI>();
+                    TextMeshProUGUI textMesh = localizedText.GetComponent<TextMeshProUGUI>();
                     if (textMesh != null) return textMesh;
                 }
-                return fallbackText;
+
+                return null;
             }
         }
 
@@ -196,11 +202,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             _deviceTracker?.Unsubscribe();
         }
 
-        private void OnDestroy()
-        {
-            CleanupTweens();
-        }
-
         #endregion
 
         #region Device Tracking
@@ -232,35 +233,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 localizedText.OnUpdateString.SafeSubscribe(OnLocalizedStringUpdated);
                 localizedText.RefreshString();
                 localizedText.gameObject.SetActive(true);
-
-                if (fallbackText != null && fallbackText.gameObject != localizedText.gameObject)
-                    fallbackText.gameObject.SetActive(false);
             }
-            else if (fallbackText != null)
-            {
-                fallbackText.text = "";
-                fallbackText.gameObject.SetActive(true);
-
-                if (localizedText != null && localizedText.gameObject != fallbackText.gameObject)
-                    localizedText.gameObject.SetActive(false);
-            }
-        }
-
-        /// <summary>
-        /// Sets the instruction from a plain string (fallback).
-        /// </summary>
-        /// <param name="text">The text to display.</param>
-        public void SetInstruction(string text)
-        {
-            if (fallbackText != null)
-            {
-                var processedText = ProcessInputSprites(text);
-                fallbackText.text = processedText ?? "";
-                fallbackText.gameObject.SetActive(true);
-            }
-
-            if (localizedText != null && localizedText.gameObject != fallbackText?.gameObject)
-                localizedText.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -281,18 +254,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 localizedText.RefreshString();
                 localizedText.gameObject.SetActive(true);
 
-                if (fallbackText != null && fallbackText.gameObject != localizedText.gameObject)
-                    fallbackText.gameObject.SetActive(false);
                 OnLocalizedStringUpdated(localizedText.StringReference.GetLocalizedString());
             }
-            else if (fallbackText != null)
-            {
-                fallbackText.text = $"({current}/{total})";
-                fallbackText.gameObject.SetActive(true);
+        }
 
-                if (localizedText != null && localizedText.gameObject != fallbackText.gameObject)
-                    localizedText.gameObject.SetActive(false);
-            }
+        public void SetStep(TutorialStepRuntime step)
+        {
+            _step = step;
         }
 
         #endregion
@@ -305,6 +273,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         /// <param name="state">The new state to apply.</param>
         public void SetState(TutorialStepTextState state)
         {
+            if (_currentState == state) return;
             _currentState = state;
             ApplyStateVisuals();
         }
@@ -316,44 +285,21 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         /// <summary>
         /// Animates the text item into view.
         /// </summary>
-        public void AnimateIn()
+        public Sequence AnimateIn()
         {
-            if (_canvasGroup == null) return;
-
-            CleanupTweens();
             _canvasGroup.alpha = 0f;
-            Tween.Alpha(_canvasGroup, 1f, fadeDuration, Ease.OutQuad, useUnscaledTime: useUnscaledTime);
-        }
-
-        /// <summary>
-        /// Animates the text item out of view.
-        /// </summary>
-        /// <param name="onComplete">Callback invoked when animation completes.</param>
-        public void AnimateOut(Action onComplete = null)
-        {
-            if (_canvasGroup == null)
+            int startValue = -175;
+            _layoutGroup.padding.left = startValue;
+            Sequence animateIn = Sequence.Create();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
+            animateIn.Group(Tween.Custom(startValue, 0, duration: animationDuration, ease: Ease.OutBack, onValueChange: (tempValue) =>
             {
-                onComplete?.Invoke();
-                return;
-            }
-
-            CleanupTweens();
-            Tween.Alpha(_canvasGroup, 0f, fadeDuration, Ease.InQuad, useUnscaledTime: useUnscaledTime)
-                .OnComplete(() => onComplete?.Invoke());
-        }
-
-        #endregion
-
-        #region Public Methods - Configuration
-
-        /// <summary>
-        /// Sets the icon provider at runtime.
-        /// </summary>
-        /// <param name="provider">The icon provider to use.</param>
-        public void SetIconProvider(InputIconProvider_SO provider)
-        {
-            iconProvider = provider;
-            RefreshForDeviceChange();
+                _layoutGroup.padding.left = (int)tempValue;
+                LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
+            }));
+            animateIn.Group(Tween.Alpha(_canvasGroup, startValue: 0f, endValue: 1f, duration: animationDuration * 1.1f, ease: Ease.InCubic));
+            animateIn.OnComplete(() => { LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform); }, gameObject);
+            return animateIn;
         }
 
         #endregion
@@ -366,16 +312,9 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         public void Clear()
         {
             _cachedInstruction = null;
-            _lastProcessedText = null;
-
             if (localizedText != null)
             {
                 localizedText.OnUpdateString.SafeUnsubscribe(OnLocalizedStringUpdated);
-            }
-
-            if (fallbackText != null)
-            {
-                fallbackText.text = "";
             }
 
             if (checkmarkFill != null)
@@ -393,12 +332,11 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         /// <param name="localizedValue">The localized string value.</param>
         private void OnLocalizedStringUpdated(string localizedValue)
         {
-            var textMesh = TextMesh;
+            TextMeshProUGUI textMesh = TextMesh;
             if (textMesh != null)
             {
-                var processedText = ProcessInputSprites(localizedValue);
+                string processedText = ProcessInputSprites(localizedValue);
                 textMesh.text = processedText;
-                _lastProcessedText = processedText;
             }
         }
 
@@ -425,12 +363,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             {
                 localizedText.RefreshString();
                 OnLocalizedStringUpdated(localizedText.StringReference.GetLocalizedString());
-            }
-            else if (!string.IsNullOrEmpty(_lastProcessedText) && fallbackText != null)
-            {
-                // Reprocess last text with new device
-                var reprocessed = ProcessInputSprites(_lastProcessedText);
-                fallbackText.text = reprocessed;
             }
         }
 
@@ -486,25 +418,49 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             }
 
             // Show/hide and tint checkmark fill based on state
+            bool isCompleted = _currentState == TutorialStepTextState.Completed;
             if (checkmarkFill != null)
             {
-                bool isCompleted = _currentState == TutorialStepTextState.Completed;
                 checkmarkFill.enabled = isCompleted;
-
-                // Tint checkmark fill with the completed color
-                if (isCompleted && completedColour != null)
+            }
+            // Tint checkmark fill with the completed color
+            if (isCompleted)
+            {
+                if (completedColour != null)
                 {
                     checkmarkFill.color = completedColour.Colour;
                 }
+
+                float duration = 0.1f;
+
+                Logger.LogVerbose(LogSystems.UI, $"Starting animation for {name}", this);
+                // Always run a small pop animation and invoke the Completed callback afterwards
+                Sequence sequence = Sequence.Create();
+                sequence.Chain(Tween.Scale(TextMesh.transform, Vector3.one * 1.05f, duration, Ease.OutQuad));
+                sequence.Chain(Tween.Scale(TextMesh.transform, Vector3.one, duration, Ease.InQuad));
+                sequence.OnComplete(() =>
+                {
+                    if (_step != null && _step.HasSubsteps)
+                    {
+                        if (_step.CurrentState != ObjectiveState.Completed) return;
+                    }
+
+                    Completed?.Invoke();
+                });
             }
         }
 
-        private void CleanupTweens()
+        public void SetOnCompleteStepAction(UnityAction onCompleted)
         {
-            if (_canvasGroup != null)
-                Tween.StopAll(_canvasGroup);
+            Completed = onCompleted;
         }
 
-        #endregion
+        public void RunCompleteStepAnimation(TutorialStepRuntime step)
+        {
+            _currentState = TutorialStepTextState.Completed;
+            ApplyStateVisuals();
+        }
     }
+
+    #endregion
 }

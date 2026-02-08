@@ -13,7 +13,8 @@
         "HelloDev.Events",
         "Unity.InputSystem",
         "HelloDev.Conditions",
-        "HelloDev.Input"
+        "HelloDev.Input",
+        "BroAudio"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
