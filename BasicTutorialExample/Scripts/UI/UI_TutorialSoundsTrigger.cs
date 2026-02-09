@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Ami.BroAudio;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Tutorials;
 using HelloDev.Utils;
 using Sirenix.OdinInspector;
@@ -14,7 +16,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
 #else
         [Header("Sounds")]
 #endif
-        [SerializeField] SoundID startTutorialSound, showPanelSound, hidePanelSound, stepStartedSound, stepCompletedSound, tutorialCompletedSound;
+        [SerializeField]
+        SoundID startTutorialSound, stepStartedSound, stepCompletedSound, tutorialCompletedSound, updateCounterSound;
 
         public void ReceiveContext(GameContext context)
         {
@@ -25,37 +28,66 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
 
         public Task InitializeAsync()
         {
-            TutorialManager.Instance.OnTutorialStarted.SafeSubscribe(HandleTutorialStarted);
-            TutorialManager.Instance.OnTutorialCompleted.SafeSubscribe(HandleTutorialCompleted);
-            TutorialManager.Instance.OnStepStarted.SafeSubscribe(HandleStepStarted);
-            TutorialManager.Instance.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
+            TutorialManager.Instance.OnStepCompleted.SafeSubscribe(OnStepCompleted);
+            TutorialManager.Instance.OnStepStarted.SafeSubscribe(OnStepStarted);
             return Task.CompletedTask;
         }
 
-        private void HandleStepCompleted(TutorialRuntime tutorialRuntime, TutorialStepRuntime stepRuntime)
+        private void OnStepStarted(TutorialRuntime tutorialRuntime, TutorialStepRuntime stepRuntime)
         {
-            BroAudio.Play(stepCompletedSound);
+            if (stepRuntime.HasSubsteps)
+            {
+                stepRuntime.OnSubstepCompleted.SafeSubscribe(OnSubstepCompleted);
+            }
         }
 
-        private void HandleTutorialCompleted(TutorialRuntime tutorialRuntime)
+        private void OnSubstepCompleted(TutorialStepRuntime step, TutorialSubstep_SO subStepSO)
         {
-            BroAudio.Play(tutorialCompletedSound);
+            PlayStepCompletedSound();
         }
 
-        private void HandleStepStarted(TutorialRuntime tutorialRuntime, TutorialStepRuntime tutorialStepRuntime)
+        private void OnStepCompleted(TutorialRuntime tutorialRuntime, TutorialStepRuntime stepRuntime)
         {
-            BroAudio.Play(stepStartedSound);
+            if (tutorialRuntime.Steps.Last().CurrentState != ObjectiveState.Completed)
+            {
+                PlayStepCompletedSound();
+            }
+
+            if (stepRuntime.HasSubsteps) stepRuntime.OnSubstepCompleted.SafeUnsubscribe(OnSubstepCompleted);
         }
 
-        private void HandleTutorialStarted(TutorialRuntime tutorialRuntime)
+        private void PlaySound(SoundID sound)
         {
-            BroAudio.Play(stepCompletedSound);
+            BroAudio.Play(sound);
+        }
+
+        public void PlayTutorialStartedSound()
+        {
+            PlaySound(startTutorialSound);
+        }
+
+        public void PlayTutorialCompletedSound()
+        {
+            PlaySound(tutorialCompletedSound);
+        }
+
+        public void PlayStepCompletedSound()
+        {
+            PlaySound(stepCompletedSound);
+        }
+
+        public void PlayStepStartedSound()
+        {
+            PlaySound(stepStartedSound);
+        }
+
+        public void PlayUpdateCounterSound()
+        {
+            PlaySound(updateCounterSound);
         }
 
         public void Shutdown()
         {
-            BroAudio.Play(stepCompletedSound);
         }
-
     }
 }

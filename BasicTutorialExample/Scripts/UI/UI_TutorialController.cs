@@ -215,9 +215,10 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (TutorialManager.Instance == null) return;
 
-            TutorialManager.Instance.OnTutorialStarted.SafeSubscribe(HandleTutorialStarted);//show panel and first step
-            TutorialManager.Instance.OnTutorialCompleted.SafeSubscribe(HandleTutorialCompleted);//hide panel
+            TutorialManager.Instance.OnTutorialStarted.SafeSubscribe(HandleTutorialStarted); //show panel and first step
+            TutorialManager.Instance.OnTutorialCompleted.SafeSubscribe(HandleTutorialCompleted); //hide panel
             TutorialManager.Instance.OnStepCompleted.SafeSubscribe(HandleStepCompleted);
+            TutorialManager.Instance.OnStepStarted.SafeSubscribe(HandleStepStarted);
 
             // Handle case where tutorial was restored from save before UI subscribed
             TutorialRuntime currentTutorial = TutorialManager.Instance.CurrentTutorial;
@@ -232,10 +233,9 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             }
         }
 
-        private void HandleStepStarted(TutorialRuntime tutorialRuntime, TutorialStepRuntime step)
+        private void HandleStepStarted(TutorialRuntime tutorialRuntime, TutorialStepRuntime stepRuntime)
         {
-            // Fully set up UI for the newly started step (subscribe to its events, update display and buttons)
-            SetupStep(tutorialRuntime, step);
+            SetupStep(tutorialRuntime, stepRuntime);
         }
 
         private void UnsubscribeFromManagerEvents()
@@ -271,6 +271,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             UpdateProgress();
             ShowPanel();
             SetupStep(tutorial, tutorial.CurrentStep);
+            stepDisplay.ShowStep(tutorial.CurrentStep);
         }
 
         private void HandleTutorialCompleted(TutorialRuntime tutorial)
@@ -282,19 +283,16 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
             _currentTutorial = null;
         }
-        
+
+        TutorialStepRuntime previousStep = null;
+
         private void SetupStep(TutorialRuntime tutorial, TutorialStepRuntime step)
         {
-            // Unsubscribe previous step events to avoid duplicate or stale subscriptions
-            TutorialStepRuntime previousStep = null;
-            if (_currentTutorial != null)
-                previousStep = _currentTutorial.CurrentStep;
-
-            if (previousStep != null && previousStep != step)
-            {
-                previousStep.OnSubstepCompleted.SafeUnsubscribe(HandleSubstepCompleted);
-                previousStep.OnCountProgressChanged.SafeUnsubscribe(HandleCountProgressChanged);
-            }
+            if (previousStep != null && previousStep.Equals(step)) return;
+            previousStep = step;
+            
+            previousStep.OnSubstepCompleted.SafeUnsubscribe(HandleSubstepCompleted);
+            previousStep.OnCountProgressChanged.SafeUnsubscribe(HandleCountProgressChanged);
 
             // Update current tutorial reference
             _currentTutorial = tutorial;
@@ -303,7 +301,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (stepDisplay != null)
             {
                 stepDisplay.SaveCurrentStep(step);
-                stepDisplay.ShowStep(step);
             }
 
             // Subscribe to substep/count events for this step
@@ -334,6 +331,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (stepDisplay != null)
             {
                 stepDisplay.ForceRefreshSubstepUI(step);
+                UpdateProgress();
                 Logger.Log(LogSystems.Tutorial, "[UI] Called stepDisplay.ForceRefreshSubstepUI", this);
             }
             else
@@ -572,13 +570,3 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         #endregion
     }
 }
-
-
-
-
-
-
-
-
-
-

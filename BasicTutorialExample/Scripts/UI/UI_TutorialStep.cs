@@ -7,6 +7,7 @@ using HelloDev.Utils;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Localization;
 using UnityEngine.UI;
 using Logger = HelloDev.Logging.Logger;
@@ -90,6 +91,32 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 #endif
         [SerializeField, Tooltip("How substeps should be displayed.")]
         private SubstepDisplayMode substepDisplayMode = SubstepDisplayMode.SingleLine;
+#if ODIN_INSPECTOR
+        [TitleGroup("UI Events")]
+        [PropertyOrder(30)]
+#else
+        [Header("UI Events")]
+#endif
+        [SerializeField]
+        UnityEvent OnTutorialCompleted = new();
+#if ODIN_INSPECTOR
+        [TitleGroup("UI Events")]
+        [PropertyOrder(31)]
+#endif
+        [SerializeField]
+        UnityEvent OnDisplayStep = new();
+#if ODIN_INSPECTOR
+        [TitleGroup("UI Events")]
+        [PropertyOrder(32)]
+#endif
+        [SerializeField]
+        UnityEvent OnUpdateCounter = new();
+#if ODIN_INSPECTOR
+        [TitleGroup("UI Events")]
+        [PropertyOrder(33)]
+#endif
+        [SerializeField]
+        UnityEvent OnDisplayStepFirstTime = new();
 
         #endregion
 
@@ -111,13 +138,14 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         #endregion
 
         #region Public Methods - Display Step
-        
+
         public void SaveCurrentStep(TutorialStepRuntime step)
         {
             if (Equals(_currentStep, step))
             {
                 return;
             }
+
             _currentStep = step;
         }
 
@@ -125,24 +153,43 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             SaveCurrentStep(TutorialManager.Instance.GetCurrentStep());
             // For non-checklist modes or simple steps, rebuild as before
-            ShowStep(_currentStep);
+
+            if (TutorialManager.Instance.CurrentTutorial == null)
+            {
+                OnTutorialCompleted.SafeInvoke();
+            }
+            else
+            {
+                ShowStep(_currentStep);
+            }
         }
+
+        bool firstShow = true;
 
         public void ShowStep(TutorialStepRuntime step)
         {
             if (step == null) return;
 
-            Logger.Log(LogSystems.Tutorial, $"[UI_TutorialStep] ShowStep called for '{step.DevName}' HasSubsteps={step.HasSubsteps} CompletedSubsteps={step.CompletedSubstepCount}/{step.TotalSubstepCount}");
-            
+            if (step.CurrentState != ObjectiveState.Completed)
+            {
+                if (firstShow)
+                {
+                    OnDisplayStepFirstTime.SafeInvoke();
+                    firstShow = false;
+                }
+                else OnDisplayStep.SafeInvoke();
+            }
+
+            Logger.LogVerbose(LogSystems.Tutorial, $"[UI_TutorialStep] ShowStep called for '{step.DevName}' HasSubsteps={step.HasSubsteps} CompletedSubsteps={step.CompletedSubstepCount}/{step.TotalSubstepCount}");
+
             // Clean up previous content
             if (contentRoot != null)
             {
-                Logger.Log(LogSystems.Tutorial, $"[UI_TutorialStep] DESTROYING CHILDREN OF {contentRoot.name}", contentRoot);
                 contentRoot.DestroyAllChildren();
             }
 
             _activeTextItems.Clear();
-            
+
             if (step.HasSubsteps)
             {
                 DisplaySubstepBasedStep(step);
@@ -155,6 +202,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             {
                 DisplaySimpleStep(step);
             }
+
             SetStepCounter(step.StepIndex + 1, TutorialManager.Instance.CurrentTutorial.Steps.Count);
         }
 
@@ -181,6 +229,8 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 {
                     textItem.SetInstruction(_currentStep.Data.Instruction, current, required);
                 }
+
+                OnUpdateCounter.SafeInvoke();
             }
         }
 
@@ -199,7 +249,10 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (progressBar != null)
             {
                 progress = Mathf.Clamp01(progress);
-                Tween.UISliderValue(progressBar, progress, duration, ease, useUnscaledTime: true);
+                if (progressBar.value != progress)
+                {
+                    Tween.UISliderValue(progressBar, progress, duration, ease, useUnscaledTime: true);
+                }
             }
 
             if (progressText != null)
@@ -239,6 +292,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                     TutorialStepTextState state = GetSubstepState(step, substep);
                     Logger.Log(LogSystems.Tutorial, $"[UI_TutorialStep] Spawning substep[{spawnIndex}] state={state} name={substep.DevName}");
                     item = SpawnTextItem(substep.Instruction, state, false);
+                    seq.ChainCallback(() => OnDisplayStep.SafeInvoke());
                     seq.Chain(item.AnimateIn());
                     spawnIndex++;
                     if (item != null) item.SetStep(step);
@@ -260,22 +314,15 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                     if (item != null) item.SetStep(step);
                 }
             }
-
         }
 
         private void DisplayCountBasedStep(TutorialStepRuntime step)
         {
             // Show step instruction with count: "Jump! (0/3)"
             UI_TutorialStepText item = SpawnTextItemWithCounter(step.Data.Instruction, step.CurrentCount, step.RequiredCount);
-
-            // Subscribe to step completion to run the green/scale animation
-            // NOTE: For quick transitions, this animation may be cut off when the next step starts
-            // If you want users to see the completion animation, the controller should wait
-            // for the animation duration before transitioning to the next step
             step.OnStepCompleted.SafeSubscribe(item.RunCompleteStepAnimation);
-            
-            if (item != null) item.SetStep(step);
 
+            if (item != null) item.SetStep(step);
         }
 
         private void DisplaySimpleStep(TutorialStepRuntime step)
@@ -374,7 +421,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                     Tween.StopAll(item.gameObject);
                 }
             }
-            
+
             // Also stop any tweens on the content root itself
             if (contentRoot != null)
             {
@@ -396,15 +443,14 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         public void ForceRefreshSubstepUI(TutorialStepRuntime step)
         {
             if (step == null || !step.HasSubsteps) return;
-            
+
             // Guard: Don't refresh if this isn't the current step being displayed
             // This prevents late callbacks from old steps interfering with new step UI
-            if (_currentStep != step)
+            if (!Equals(_currentStep, step))
             {
-                Logger.Log(LogSystems.Tutorial, $"[UI_TutorialStep] ForceRefreshSubstepUI: Ignoring refresh for old step '{step.DevName}' (current: '{_currentStep?.DevName}')");
                 return;
             }
-            
+
             if (_activeTextItems.Count == 0)
             {
                 ShowStep(step);
@@ -417,13 +463,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             {
                 UI_TutorialStepText item = _activeTextItems[i];
                 TutorialStepTextState desired = GetSubstepState(step, substeps[i]);
-                
+
                 // Stop any running animations before changing state to prevent tween errors
                 if (item != null && item.gameObject != null)
                 {
                     Tween.StopAll(item.gameObject);
                 }
-                
+
                 // Directly set state without triggering completion callback animation
                 item.SetState(desired);
             }
@@ -436,6 +482,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 {
                     Tween.StopAll(_activeTextItems[activeIndex].gameObject);
                 }
+
                 _activeTextItems[activeIndex].SetState(TutorialStepTextState.Active);
             }
 

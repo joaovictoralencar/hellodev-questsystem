@@ -207,7 +207,7 @@ namespace HelloDev.QuestSystem.Tutorials
         public void Shutdown()
         {
             // Unregister snapshot provider from unified save system
-            if (_snapshotProvider != null && _context != null && _context.TryGet<UnifiedSaveManager>(out UnifiedSaveManager saveManager))
+            if (_snapshotProvider != null && _context != null && _context.TryGet(out UnifiedSaveManager saveManager))
             {
                 saveManager.UnregisterSystem(_snapshotProvider);
                 Logger.LogVerbose(LogSystems.Tutorial, "TutorialSnapshotProvider unregistered from unified save system", this);
@@ -303,14 +303,14 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             _snapshotProvider = new TutorialSnapshotProvider(this);
 
-            if (_context != null && _context.TryGet<UnifiedSaveManager>(out UnifiedSaveManager saveManager))
+            if (_context != null && _context.TryGet(out UnifiedSaveManager saveManager))
             {
                 saveManager.RegisterSystem(_snapshotProvider);
-                Logging.Logger.Log(LogSystems.Tutorial, "TutorialSnapshotProvider registered with unified save system", this);
+                Logger.Log(LogSystems.Tutorial, "TutorialSnapshotProvider registered with unified save system", this);
             }
             else
             {
-                Logging.Logger.LogVerbose(LogSystems.Tutorial, "No UnifiedSaveManager in context - snapshot provider created but not registered", this);
+                Logger.LogVerbose(LogSystems.Tutorial, "No UnifiedSaveManager in context - snapshot provider created but not registered", this);
             }
         }
 
@@ -737,7 +737,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 snapshot.QueuedTutorials.Add(CaptureTutorial(queuedTutorial));
             }
 
-            Logging.Logger.Log(LogSystems.Tutorial, $"Captured tutorial snapshot: {snapshot.CompletedTutorialIds.Count} completed" +
+            Logger.Log(LogSystems.Save, $"Captured tutorial snapshot: {snapshot.CompletedTutorialIds.Count} completed" +
                 (snapshot.ActiveTutorial != null ? ", 1 active" : "") +
                 (snapshot.QueuedTutorials.Count > 0 ? $", {snapshot.QueuedTutorials.Count} queued" : ""));
 
@@ -752,7 +752,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (snapshot == null)
             {
-                Logging.Logger.LogWarning(LogSystems.Tutorial,"Cannot restore null snapshot.", this);
+                Logger.LogWarning(LogSystems.Tutorial,"Cannot restore null snapshot.", this);
                 return;
             }
 

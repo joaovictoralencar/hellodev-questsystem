@@ -1,4 +1,3 @@
-using System;
 using HelloDev.Input;
 using HelloDev.Logging;
 using HelloDev.Objectives;
@@ -431,7 +430,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                     checkmarkFill.color = completedColour.Colour;
                 }
 
-                float duration = 0.1f;
+                float duration = 0.15f;
 
                 Logger.LogVerbose(LogSystems.UI, $"Starting animation for {name}", this);
                 // Always run a small pop animation and invoke the Completed callback afterwards
@@ -454,7 +453,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             Completed = onCompleted;
         }
-
+        
         public void RunCompleteStepAnimation(TutorialStepRuntime step)
         {
             _currentState = TutorialStepTextState.Completed;
