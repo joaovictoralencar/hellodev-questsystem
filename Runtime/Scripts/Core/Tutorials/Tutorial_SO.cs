@@ -68,12 +68,6 @@ namespace HelloDev.QuestSystem.Tutorials
         [SerializeField, Tooltip("If true, player can skip the entire tutorial.")]
         private bool canSkip = true;
 
-#if ODIN_INSPECTOR
-        [TitleGroup("Behavior"), PropertyOrder(32)]
-#endif
-        [SerializeField, Tooltip("Priority for tutorial ordering (higher = plays first).")]
-        private int priority;
-
         #endregion
 
         #region Properties
@@ -112,11 +106,6 @@ namespace HelloDev.QuestSystem.Tutorials
         /// Gets whether the player can skip this tutorial.
         /// </summary>
         public bool CanSkip => canSkip;
-
-        /// <summary>
-        /// Gets the priority for tutorial ordering.
-        /// </summary>
-        public int Priority => priority;
 
         #endregion
 

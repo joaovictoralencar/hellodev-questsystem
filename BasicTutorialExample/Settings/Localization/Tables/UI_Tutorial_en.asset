@@ -10,28 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
-  m_Name: TutorialSubsteps_en
+  m_Name: UI_Tutorial_en
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
   m_LocaleId:
     m_Code: en
-  m_SharedData: {fileID: 11400000, guid: 0636a639f58939b4990e6786a2e22a77, type: 2}
+  m_SharedData: {fileID: 11400000, guid: a34d9834ad94df246b4f6a054206cf14, type: 2}
   m_Metadata:
     m_Items: []
   m_TableData:
-  - m_Id: 94077239296
-    m_Localized: Use <sprite name=Move/WASD/Up> to move forward.
+  - m_Id: 55292510208
+    m_Localized: Skip
     m_Metadata:
       m_Items: []
-  - m_Id: 94119182336
-    m_Localized: Use <sprite name=Move/WASD/Left> to move left.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 94123376640
-    m_Localized: Use <sprite name=Move/WASD/Right> to move right.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 94123376641
-    m_Localized: Use <sprite name=Move/WASD/Down> to move backward.
+  - m_Id: 6005243904
+    m_Localized: Complete
     m_Metadata:
       m_Items: []
   references:

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f22489f7d3feda649b34639bebd94653, type: 3}
   m_Name: SO_Tutorial_BasicMovement
   m_EditorClassIdentifier: 
-  _description: Describe what this scriptable object represents
+  _description: Basic Movement Tutorial reference. Presents the most basic movements
+    to the player.
   devName: Basic Movement Tutorial
   tutorialId: d4e5f6a7-b8c9-0123-def4-567890123456
   displayName:

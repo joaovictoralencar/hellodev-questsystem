@@ -563,6 +563,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         private void AnimatePanelOnHide()
         {
             panelContentRoot.localScale = Vector3.one;
+            if (!panelContentRoot.gameObject.activeInHierarchy) return;
             Tween.Scale(panelContentRoot, 0.15f, panelContainer.HideDuration * 0.5f, Ease.InBack, useUnscaledTime: useUnscaledTime);
             Tween.UIAnchoredPositionY(panelContentRoot, startValue: panelContentRoot.anchoredPosition.y, endValue: -150, panelContainer.HideDuration * 0.75f);
         }
