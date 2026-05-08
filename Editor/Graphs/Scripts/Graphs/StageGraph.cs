@@ -95,7 +95,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor
             base.OnEnable();
             if (string.IsNullOrEmpty(stageName))
             {
-                stageName = name;
+                stageName = Name;
             }
         }
 

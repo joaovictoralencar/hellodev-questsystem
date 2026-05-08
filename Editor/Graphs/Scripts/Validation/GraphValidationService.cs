@@ -42,7 +42,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             try
             {
                 var port = node.GetOutputPortByName(portName);
-                return port != null && port.isConnected;
+                return port != null && port.IsConnected;
             }
             catch
             {
@@ -55,7 +55,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             try
             {
                 var port = node.GetInputPortByName(portName);
-                return port != null && port.isConnected;
+                return port != null && port.IsConnected;
             }
             catch
             {

@@ -92,7 +92,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             // Ensure collider is set as trigger
             if (_collider != null && !_collider.isTrigger)
             {
-                Logging.Logger.LogWarning(LogSystems.Tutorial, $"[TutorialTrigger] Collider on '{gameObject.name}' is not set as trigger. Setting isTrigger = true.", this);
+                Logging.Logger.LogWarning("Tutorial", $"[TutorialTrigger] Collider on '{gameObject.name}' is not set as trigger. Setting isTrigger = true.", this);
                 _collider.isTrigger = true;
             }
         }
@@ -141,7 +141,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (TutorialManager.Instance == null)
             {
-                Logging.Logger.LogWarning(LogSystems.Tutorial, "[TutorialTrigger] TutorialManager.Instance is null. Cannot start tutorial.", this);
+                Logging.Logger.LogWarning("Tutorial", "[TutorialTrigger] TutorialManager.Instance is null. Cannot start tutorial.", this);
                 return;
             }
 
@@ -149,7 +149,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (TutorialManager.Instance.IsTutorialCompleted(tutorial.TutorialId))
             {
                 if (logTriggerEvents)
-                    Logging.Logger.Log(LogSystems.Tutorial, $"[TutorialTrigger] Tutorial '{tutorial.DevName}' already completed. Skipping.", this);
+                    Logging.Logger.Log("Tutorial", $"[TutorialTrigger] Tutorial '{tutorial.DevName}' already completed. Skipping.", this);
 
                 HandlePostTrigger();
                 return;
@@ -161,14 +161,14 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (runtime != null)
             {
                 if (logTriggerEvents)
-                    Logging.Logger.Log(LogSystems.Tutorial, $"[TutorialTrigger] Started tutorial '{tutorial.DevName}'.", this);
+                    Logging.Logger.Log("Tutorial", $"[TutorialTrigger] Started tutorial '{tutorial.DevName}'.", this);
 
                 HandlePostTrigger();
             }
             else
             {
                 if (logTriggerEvents)
-                    Logging.Logger.Log(LogSystems.Tutorial, $"[TutorialTrigger] Failed to start tutorial '{tutorial.DevName}'. May be already active or queued.", this);
+                    Logging.Logger.Log("Tutorial", $"[TutorialTrigger] Failed to start tutorial '{tutorial.DevName}'. May be already active or queued.", this);
             }
         }
 

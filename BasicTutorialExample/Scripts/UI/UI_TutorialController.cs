@@ -157,12 +157,12 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContainer == null)
             {
-                Logger.LogError(LogSystems.Tutorial, $"UIContainer reference is required on '{gameObject.name}'. Panel animations will not work.", this);
+                Logger.LogError("Tutorial", $"UIContainer reference is required on '{gameObject.name}'. Panel animations will not work.", this);
             }
 
             if (stepDisplay == null)
             {
-                Logger.LogError(LogSystems.Tutorial, $"UI_TutorialStep reference is required on '{gameObject.name}'. Step display will not work.", this);
+                Logger.LogError("Tutorial", $"UI_TutorialStep reference is required on '{gameObject.name}'. Step display will not work.", this);
             }
         }
 
@@ -224,7 +224,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             TutorialRuntime currentTutorial = TutorialManager.Instance.CurrentTutorial;
             if (currentTutorial != null && currentTutorial.CurrentState == Objectives.ObjectiveState.InProgress)
             {
-                Logger.Log(LogSystems.Tutorial, "Found active tutorial on subscribe, showing UI");
+                Logger.Log("Tutorial", "Found active tutorial on subscribe, showing UI");
                 HandleTutorialStarted(currentTutorial);
                 if (currentTutorial.CurrentStep != null)
                 {
@@ -265,7 +265,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             _currentTutorial = tutorial;
 
-            Logger.Log(LogSystems.Tutorial, $"Tutorial started: {tutorial.DevName}", this);
+            Logger.Log("Tutorial", $"Tutorial started: {tutorial.DevName}", this);
 
             SetButtonVisible(completeButton, tutorial.Data.CanSkip);
             UpdateProgress();
@@ -276,7 +276,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleTutorialCompleted(TutorialRuntime tutorial)
         {
-            Logger.Log(LogSystems.Tutorial, $"Tutorial completed: {tutorial.DevName}", this);
+            Logger.Log("Tutorial", $"Tutorial completed: {tutorial.DevName}", this);
 
             if (hideOnComplete)
                 HidePanel();
@@ -312,7 +312,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleStepCompleted(TutorialRuntime tutorial, TutorialStepRuntime step)
         {
-            Logger.Log(LogSystems.Tutorial, $"Step completed: {step.DevName}", this);
+            Logger.Log("Tutorial", $"Step completed: {step.DevName}", this);
 
             // Unsubscribe from step events
             step.OnSubstepCompleted.SafeUnsubscribe(HandleSubstepCompleted);
@@ -323,20 +323,20 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleSubstepCompleted(TutorialStepRuntime step, TutorialSubstep_SO substep)
         {
-            Logger.Log(LogSystems.Tutorial, $"[UI] HandleSubstepCompleted received for step {step?.DevName} substep {substep?.DevName} (Completed: {step?.CompletedSubstepCount}/{step?.TotalSubstepCount})", this);
+            Logger.Log("Tutorial", $"[UI] HandleSubstepCompleted received for step {step?.DevName} substep {substep?.DevName} (Completed: {step?.CompletedSubstepCount}/{step?.TotalSubstepCount})", this);
 
-            Logger.Log(LogSystems.Tutorial, $"[UI] stepDisplay is {(stepDisplay == null ? "NULL" : "AVAILABLE")}");
+            Logger.Log("Tutorial", $"[UI] stepDisplay is {(stepDisplay == null ? "NULL" : "AVAILABLE")}");
 
             // Update display to show next substep
             if (stepDisplay != null)
             {
                 stepDisplay.ForceRefreshSubstepUI(step);
                 UpdateProgress();
-                Logger.Log(LogSystems.Tutorial, "[UI] Called stepDisplay.ForceRefreshSubstepUI", this);
+                Logger.Log("Tutorial", "[UI] Called stepDisplay.ForceRefreshSubstepUI", this);
             }
             else
             {
-                Logger.Log(LogSystems.Tutorial, "[UI] stepDisplay was null, cannot update substeps", this);
+                Logger.Log("Tutorial", "[UI] stepDisplay was null, cannot update substeps", this);
             }
 
             UpdateProgress();
@@ -344,7 +344,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleCountProgressChanged(TutorialStepRuntime step, int current, int required)
         {
-            Logger.Log(LogSystems.Tutorial, $"Count progress: {current}/{required}", this);
+            Logger.Log("Tutorial", $"Count progress: {current}/{required}", this);
 
             // Update display to show count progress
             if (stepDisplay != null)
@@ -364,7 +364,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             if (_currentTutorial == null || stepDisplay == null) return;
 
             float progress = _currentTutorial.Progress;
-            Logger.LogVerbose(LogSystems.Tutorial, $"Progress: {progress}", this);
+            Logger.LogVerbose("Tutorial", $"Progress: {progress}", this);
             stepDisplay.SetProgress(progress);
         }
 
@@ -437,12 +437,12 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 UnityEvent onActionPerformed = button.GetComponentInChildren<InputButtonWithPrompt>().OnActionPerformed;
                 if (visible)
                 {
-                    Logger.Log(LogSystems.Tutorial, $"Adding OnContinueInput callback to button {button.name}", button);
+                    Logger.Log("Tutorial", $"Adding OnContinueInput callback to button {button.name}", button);
                     onActionPerformed.SafeSubscribe(OnContinueInput);
                 }
                 else
                 {
-                    Logger.Log(LogSystems.Tutorial, $"Removing OnContinueInput callback to button {button.name}", button);
+                    Logger.Log("Tutorial", $"Removing OnContinueInput callback to button {button.name}", button);
                     onActionPerformed.SafeUnsubscribe(OnContinueInput);
                 }
             }
@@ -464,13 +464,13 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
         private void HandleSkipClicked()
         {
-            Logger.Log(LogSystems.Tutorial, "Skip button clicked", this);
+            Logger.Log("Tutorial", "Skip button clicked", this);
             TutorialManager.Instance?.SkipCurrentTutorial();
         }
 
         private void HandleContinueClicked()
         {
-            Logger.Log(LogSystems.Tutorial, "Continue button clicked", this);
+            Logger.Log("Tutorial", "Continue button clicked", this);
 
             TutorialStepRuntime currentStep = _currentTutorial?.CurrentStep;
             if (currentStep == null)
@@ -487,7 +487,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 // Fallback: if for any reason the OnSubstepCompleted event didn't reach UI, update UI immediately
                 if (skipped && stepDisplay != null)
                 {
-                    Logger.Log(LogSystems.Tutorial, "[UI] Fallback: forcing immediate UI refresh after skipping substep", this);
+                    Logger.Log("Tutorial", "[UI] Fallback: forcing immediate UI refresh after skipping substep", this);
                     stepDisplay.ForceRefreshSubstepUI(currentStep);
                     UpdateProgress();
                     UpdateButtonStates(currentStep);
@@ -527,7 +527,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContainer == null)
             {
-                Logger.LogError(LogSystems.Tutorial, "Cannot show panel - UIContainer is not assigned.", this);
+                Logger.LogError("Tutorial", "Cannot show panel - UIContainer is not assigned.", this);
                 return;
             }
 
@@ -542,7 +542,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (panelContainer == null)
             {
-                Logger.LogError(LogSystems.Tutorial, "Cannot hide panel - UIContainer is not assigned.", this);
+                Logger.LogError("Tutorial", "Cannot hide panel - UIContainer is not assigned.", this);
                 return;
             }
 

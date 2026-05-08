@@ -415,9 +415,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 try
                 {
                     var thenPort = node.GetOutputPortByName("Then");
-                    if (thenPort != null && thenPort.isConnected)
+                    if (thenPort != null && thenPort.IsConnected)
                     {
-                        var connectedNode = thenPort.firstConnectedPort?.GetNode();
+                        var connectedNode = thenPort.FirstConnectedPort?.GetNode();
                         if (connectedNode == stageNode)
                         {
                             taskGroupsProperty.InsertArrayElementAtIndex(taskGroupsProperty.arraySize);
@@ -446,7 +446,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             var tasksProperty = tgProperty.FindPropertyRelative("tasks");
             tasksProperty.ClearArray();
 
-            var taskBlocks = tgContext.blockNodes.OfType<TaskBlockBase>().ToList();
+            var taskBlocks = tgContext.BlockNodes.OfType<TaskBlockBase>().ToList();
             foreach (var taskBlock in taskBlocks)
             {
                 Task_SO taskAsset = taskBlock.IsDefineMode ? taskBlock.CreateTaskAsset() : taskBlock.TaskAsset;
@@ -561,17 +561,17 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 try
                 {
                     var thenPort = conditionContext.GetOutputPortByName("Then"); 
-                    if (thenPort == null || !thenPort.isConnected)
+                    if (thenPort == null || !thenPort.IsConnected)
                         continue;
 
-                    var connectedPort = thenPort.firstConnectedPort;
+                    var connectedPort = thenPort.FirstConnectedPort;
                     var connectedNode = connectedPort?.GetNode();
 
                     // Check if the connected port's name matches the target input port
-                    if (connectedNode == questNode && connectedPort?.name == inputPortName)
+                    if (connectedNode == questNode && connectedPort?.Name == inputPortName)
                     {
                         // Found the matching ConditionContextNode - extract conditions
-                        var conditionBlocks = conditionContext.blockNodes.OfType<ConditionBlock>().ToList();
+                        var conditionBlocks = conditionContext.BlockNodes.OfType<ConditionBlock>().ToList();
                         foreach (var block in conditionBlocks)
                         {
                             if (block.ConditionAsset != null)
@@ -608,17 +608,17 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 try
                 {
                     var thenPort = rewardContext.GetOutputPortByName("Then");
-                    if (thenPort == null || !thenPort.isConnected)
+                    if (thenPort == null || !thenPort.IsConnected)
                         continue;
 
-                    var connectedPort = thenPort.firstConnectedPort;
+                    var connectedPort = thenPort.FirstConnectedPort;
                     var connectedNode = connectedPort?.GetNode();
 
                     // Check if connected to this questNode's RewardsInput port
-                    if (connectedNode == questNode && connectedPort?.name == "RewardsInput")
+                    if (connectedNode == questNode && connectedPort?.Name == "RewardsInput")
                     {
                         // Found the matching RewardContextNode - extract rewards
-                        foreach (var block in rewardContext.blockNodes.OfType<RewardBlock>())
+                        foreach (var block in rewardContext.BlockNodes.OfType<RewardBlock>())
                         {
                             if (block.IsValid)
                             {

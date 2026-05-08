@@ -39,7 +39,7 @@ namespace HelloDev.QuestSystem.Tutorials
                     _instance = FindFirstObjectByType<TutorialManager>();
                     if (_instance == null)
                     {
-                        Logger.LogWarning(LogSystems.Tutorial,"No TutorialManager found in scene.");
+                        Logger.LogWarning("Tutorial","No TutorialManager found in scene.");
                     }
                 }
                 return _instance;
@@ -192,11 +192,11 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (_isInitialized) return Task.CompletedTask;
 
-            Logger.Log(LogSystems.Tutorial, "TutorialManager starting initialization...", this);
+            Logger.Log("Tutorial", "TutorialManager starting initialization...", this);
 
             Initialize();
 
-            Logger.Log(LogSystems.Tutorial, "TutorialManager initialized.", this);
+            Logger.Log("Tutorial", "TutorialManager initialized.", this);
 
             return Task.CompletedTask;
         }
@@ -210,7 +210,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (_snapshotProvider != null && _context != null && _context.TryGet(out UnifiedSaveManager saveManager))
             {
                 saveManager.UnregisterSystem(_snapshotProvider);
-                Logger.LogVerbose(LogSystems.Tutorial, "TutorialSnapshotProvider unregistered from unified save system", this);
+                Logger.LogVerbose("Tutorial", "TutorialSnapshotProvider unregistered from unified save system", this);
             }
             _snapshotProvider = null;
 
@@ -229,7 +229,7 @@ namespace HelloDev.QuestSystem.Tutorials
             _currentTutorial = null;
             _isInitialized = false;
 
-            Logger.Log(LogSystems.Tutorial, "TutorialManager shutdown.", this);
+            Logger.Log("Tutorial", "TutorialManager shutdown.", this);
         }
 
         #endregion
@@ -288,7 +288,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (_isInitialized) return;
 
             QuestLogger.IsLoggingEnabled = enableDebugLogging;
-            Logger.Log(LogSystems.Tutorial, $"TutorialManager initialized with {tutorialDatabase.Count} tutorials.", this);
+            Logger.Log("Tutorial", $"TutorialManager initialized with {tutorialDatabase.Count} tutorials.", this);
 
             // Create and register snapshot provider for unified save system
             CreateAndRegisterSnapshotProvider();
@@ -306,11 +306,11 @@ namespace HelloDev.QuestSystem.Tutorials
             if (_context != null && _context.TryGet(out UnifiedSaveManager saveManager))
             {
                 saveManager.RegisterSystem(_snapshotProvider);
-                Logger.Log(LogSystems.Tutorial, "TutorialSnapshotProvider registered with unified save system", this);
+                Logger.Log("Tutorial", "TutorialSnapshotProvider registered with unified save system", this);
             }
             else
             {
-                Logger.LogVerbose(LogSystems.Tutorial, "No UnifiedSaveManager in context - snapshot provider created but not registered", this);
+                Logger.LogVerbose("Tutorial", "No UnifiedSaveManager in context - snapshot provider created but not registered", this);
             }
         }
 
@@ -327,21 +327,21 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (tutorialData == null)
             {
-                Logger.Log(LogSystems.Tutorial, "Cannot start null tutorial.", this);
+                Logger.Log("Tutorial", "Cannot start null tutorial.", this);
                 return null;
             }
 
             // Check if already completed (for PlayOnce tutorials)
             if (tutorialData.PlayOnce && _completedTutorialIds.Contains(tutorialData.TutorialId))
             {
-                Logger.Log(LogSystems.Tutorial, $"Tutorial '{tutorialData.DevName}' already completed (PlayOnce).", this);
+                Logger.Log("Tutorial", $"Tutorial '{tutorialData.DevName}' already completed (PlayOnce).", this);
                 return null;
             }
 
             // Check if already active
             if (_activeTutorials.ContainsKey(tutorialData.TutorialId))
             {
-                Logger.Log(LogSystems.Tutorial, $"Tutorial '{tutorialData.DevName}' is already active.", this);
+                Logger.Log("Tutorial", $"Tutorial '{tutorialData.DevName}' is already active.", this);
                 return _activeTutorials[tutorialData.TutorialId];
             }
 
@@ -361,7 +361,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 _currentTutorial.CurrentState == ObjectiveState.InProgress)
             {
                 _tutorialQueue.Enqueue(runtime);
-                Logger.Log(LogSystems.Tutorial, $"Tutorial '{tutorialData.DevName}' queued.", this);
+                Logger.Log("Tutorial", $"Tutorial '{tutorialData.DevName}' queued.", this);
             }
             else
             {
@@ -382,7 +382,7 @@ namespace HelloDev.QuestSystem.Tutorials
             Tutorial_SO tutorialData = tutorialDatabase.FirstOrDefault(t => t.TutorialId == tutorialId);
             if (tutorialData == null)
             {
-                Logger.Log(LogSystems.Tutorial, $"Tutorial with ID '{tutorialId}' not found in database.", this);
+                Logger.Log("Tutorial", $"Tutorial with ID '{tutorialId}' not found in database.", this);
                 return null;
             }
 
@@ -466,7 +466,7 @@ namespace HelloDev.QuestSystem.Tutorials
             _tutorialQueue.Clear();
             _currentTutorial = null;
 
-            Logger.Log(LogSystems.Tutorial, "Tutorial progress reset.", this);
+            Logger.Log("Tutorial", "Tutorial progress reset.", this);
         }
 
         /// <summary>
@@ -627,7 +627,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(LogSystems.Tutorial, $"Error in step enter subscription: {ex.Message}", this);
+                    Logger.LogError("Tutorial", $"Error in step enter subscription: {ex.Message}", this);
                 }
             }
         }
@@ -648,7 +648,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(LogSystems.Tutorial, $"Error in step exit subscription: {ex.Message}", this);
+                    Logger.LogError("Tutorial", $"Error in step exit subscription: {ex.Message}", this);
                 }
             }
         }
@@ -680,7 +680,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
             }
 
-            Logger.Log(LogSystems.Tutorial, $"Restored {_completedTutorialIds.Count} completed tutorial IDs.", this);
+            Logger.Log("Tutorial", $"Restored {_completedTutorialIds.Count} completed tutorial IDs.", this);
         }
 
         /// <summary>
@@ -737,7 +737,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 snapshot.QueuedTutorials.Add(CaptureTutorial(queuedTutorial));
             }
 
-            Logger.Log(LogSystems.Save, $"Captured tutorial snapshot: {snapshot.CompletedTutorialIds.Count} completed" +
+            Logger.Log("Save", $"Captured tutorial snapshot: {snapshot.CompletedTutorialIds.Count} completed" +
                 (snapshot.ActiveTutorial != null ? ", 1 active" : "") +
                 (snapshot.QueuedTutorials.Count > 0 ? $", {snapshot.QueuedTutorials.Count} queued" : ""));
 
@@ -752,7 +752,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (snapshot == null)
             {
-                Logger.LogWarning(LogSystems.Tutorial,"Cannot restore null snapshot.", this);
+                Logger.LogWarning("Tutorial","Cannot restore null snapshot.", this);
                 return;
             }
 
@@ -776,7 +776,7 @@ namespace HelloDev.QuestSystem.Tutorials
             {
                 RestoreQueuedTutorial(queuedSnapshot);
             }
-            Logger.Log(LogSystems.Tutorial, $"Restored tutorial snapshot: {snapshot.CompletedTutorialIds?.Count ?? 0} completed" +
+            Logger.Log("Tutorial", $"Restored tutorial snapshot: {snapshot.CompletedTutorialIds?.Count ?? 0} completed" +
                 (snapshot.ActiveTutorial != null ? ", 1 active" : "") +
                 (snapshot.QueuedTutorials.Count > 0 ? $", {snapshot.QueuedTutorials.Count} queued" : ""));
         }
@@ -820,7 +820,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             if (!Guid.TryParse(tutorialSnapshot.TutorialGuid, out Guid tutorialId))
             {
-                Logger.LogWarning(LogSystems.Tutorial, $"No valid tutorial GUID found. {tutorialSnapshot.TutorialGuid}", this);
+                Logger.LogWarning("Tutorial", $"No valid tutorial GUID found. {tutorialSnapshot.TutorialGuid}", this);
                 return;
             }
 
@@ -828,7 +828,7 @@ namespace HelloDev.QuestSystem.Tutorials
             Tutorial_SO tutorialData = GetTutorialData(tutorialId);
             if (tutorialData == null)
             {
-                Logger.LogWarning(LogSystems.Tutorial, $"Tutorial not found in database: {tutorialSnapshot.TutorialGuid}", this);
+                Logger.LogWarning("Tutorial", $"Tutorial not found in database: {tutorialSnapshot.TutorialGuid}", this);
                 return;
             }
 
@@ -836,7 +836,7 @@ namespace HelloDev.QuestSystem.Tutorials
             TutorialRuntime tutorial = StartTutorialForRestore(tutorialData);
             if (tutorial == null)
             {
-                Logger.LogWarning(LogSystems.Tutorial, $"Failed to create tutorial for restore: {tutorialData.DevName}", this);
+                Logger.LogWarning("Tutorial", $"Failed to create tutorial for restore: {tutorialData.DevName}", this);
                 return;
             }
 
@@ -850,7 +850,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 fireEvents: true
             );
 
-            Logger.LogVerbose(LogSystems.Tutorial, $"Restored active tutorial '{tutorialData.DevName}' at step {tutorialSnapshot.CurrentStepIndex}", this);
+            Logger.LogVerbose("Tutorial", $"Restored active tutorial '{tutorialData.DevName}' at step {tutorialSnapshot.CurrentStepIndex}", this);
         }
 
         private void RestoreQueuedTutorial(TutorialSnapshot tutorialSnapshot)
@@ -879,12 +879,12 @@ namespace HelloDev.QuestSystem.Tutorials
 
             _tutorialQueue.Enqueue(runtime);
 
-            Logger.LogVerbose(LogSystems.Tutorial, $"Restored queued tutorial '{tutorialData.DevName}'", this);
+            Logger.LogVerbose("Tutorial", $"Restored queued tutorial '{tutorialData.DevName}'", this);
         }
 
         private void RestoreTutorialSteps(TutorialRuntime tutorial, TutorialSnapshot snapshot)
         {
-            Logger.Log(LogSystems.Tutorial, $"Restoring {snapshot.Steps.Count} steps from snapshot");
+            Logger.Log("Tutorial", $"Restoring {snapshot.Steps.Count} steps from snapshot");
 
             foreach (TutorialStepSnapshot stepSnapshot in snapshot.Steps)
             {
@@ -893,13 +893,13 @@ namespace HelloDev.QuestSystem.Tutorials
 
                 if (step == null)
                 {
-                    Logger.LogWarning(LogSystems.Tutorial, $"Could not find step with GUID {stepId} in tutorial");
+                    Logger.LogWarning("Tutorial", $"Could not find step with GUID {stepId} in tutorial");
                     continue;
                 }
                 
                 ObjectiveState state = (ObjectiveState)stepSnapshot.State;
 
-                Logger.Log(LogSystems.Tutorial, $"Restoring step '{step.DevName}' (GUID: {stepId}) to state {stepSnapshot.State}");
+                Logger.Log("Tutorial", $"Restoring step '{step.DevName}' (GUID: {stepId}) to state {stepSnapshot.State}");
 
                 List<Guid> completedSubstepIds = stepSnapshot.CompletedSubstepIds?
                     .Select(Guid.Parse)

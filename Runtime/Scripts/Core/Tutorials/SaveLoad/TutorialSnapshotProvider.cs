@@ -48,12 +48,12 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         {
             if (_tutorialManager == null)
             { 
-                Logger.LogWarning(LogSystems.Tutorial, "TutorialManager not available, cannot capture snapshot.");
+                Logger.LogWarning("Tutorial", "TutorialManager not available, cannot capture snapshot.");
                 return null;
             }
 
             TutorialSystemSnapshot tutorialSystemSnapshot = _tutorialManager.CaptureSnapshot();
-            Logger.Log(LogSystems.Save,$"Saved tutorial snapshot: {tutorialSystemSnapshot}");
+            Logger.Log("Save",$"Saved tutorial snapshot: {tutorialSystemSnapshot}");
             return tutorialSystemSnapshot;
         }
 
@@ -62,7 +62,7 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         {
             if (_tutorialManager == null)
             {
-                Logger.LogWarning(LogSystems.Tutorial, "TutorialManager not available, cannot restore snapshot.");
+                Logger.LogWarning("Tutorial", "TutorialManager not available, cannot restore snapshot.");
                 return false;
             }
 
@@ -75,12 +75,12 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(LogSystems.Tutorial, $"Failed to restore tutorial snapshot: {ex.Message}");
+                    Logger.LogError("Tutorial", $"Failed to restore tutorial snapshot: {ex.Message}");
                     return false;
                 }
             }
 
-            Logger.LogWarning(LogSystems.Tutorial, $"Invalid snapshot type: {snapshot?.GetType().Name ?? "null"}");
+            Logger.LogWarning("Tutorial", $"Invalid snapshot type: {snapshot?.GetType().Name ?? "null"}");
             return false;
         }
 

@@ -342,7 +342,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 eventCondition.SubscribeToEvent(CompleteStep);
             }
 
-            Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' started.");
+            Logger.Log("Tutorial", $"Tutorial step '{DevName}' started.");
 
             OnStepStarted?.Invoke(this);
             _onEntered?.Invoke(this);
@@ -358,7 +358,7 @@ namespace HelloDev.QuestSystem.Tutorials
             UnsubscribeFromAllConditions();
 
             SetState(ObjectiveState.Completed);
-            Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' completed.");
+            Logger.Log("Tutorial", $"Tutorial step '{DevName}' completed.");
 
             _onProgressChanged?.Invoke(this);
             OnStepCompleted?.Invoke(this);
@@ -379,7 +379,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
             WasSkipped = true;
             SetState(ObjectiveState.Completed);
-            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' skipped.");
+            Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' skipped.");
 
             _onProgressChanged?.Invoke(this);
             OnStepSkipped?.Invoke(this);
@@ -414,7 +414,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 _substepCallbacks.Remove(currentSubstep.SubstepId);
             }
 
-            Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' substep '{currentSubstep.DevName}' skipped ({CompletedSubstepCount}/{TotalSubstepCount}).");
+            Logger.Log("Tutorial", $"Tutorial step '{DevName}' substep '{currentSubstep.DevName}' skipped ({CompletedSubstepCount}/{TotalSubstepCount}).");
 
             OnSubstepCompleted?.Invoke(this, currentSubstep);
             _onProgressChanged?.Invoke(this);
@@ -440,7 +440,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (_currentCount >= RequiredCount) return false;
 
             _currentCount++;
-            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' count manually incremented: {_currentCount}/{RequiredCount}.");
+            Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' count manually incremented: {_currentCount}/{RequiredCount}.");
 
             OnCountProgressChanged?.Invoke(this, _currentCount, RequiredCount);
             _onProgressChanged?.Invoke(this);
@@ -482,7 +482,7 @@ namespace HelloDev.QuestSystem.Tutorials
             UnsubscribeFromAllConditions();
 
             SetState(ObjectiveState.Failed);
-            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' failed.");
+            Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' failed.");
 
             _onProgressChanged?.Invoke(this);
             _onFailed?.Invoke(this);
@@ -592,7 +592,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 _substepCallbacks.Remove(substep.SubstepId);
             }
 
-            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' substep '{substep.DevName}' completed ({CompletedSubstepCount}/{TotalSubstepCount}).");
+            Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' substep '{substep.DevName}' completed ({CompletedSubstepCount}/{TotalSubstepCount}).");
 
             OnSubstepCompleted?.Invoke(this, substep);
             _onProgressChanged?.Invoke(this);
@@ -610,7 +610,7 @@ namespace HelloDev.QuestSystem.Tutorials
             if (_currentCount >= RequiredCount) return;
 
             _currentCount++;
-            Logging.Logger.Log(LogSystems.Tutorial, $"Tutorial step '{DevName}' count progress: {_currentCount}/{RequiredCount}.");
+            Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' count progress: {_currentCount}/{RequiredCount}.");
 
             OnCountProgressChanged?.Invoke(this, _currentCount, RequiredCount);
             _onProgressChanged?.Invoke(this);
@@ -649,7 +649,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
             }
 
-            Logger.LogVerbose(LogSystems.Tutorial, $"Step '{DevName}' state restored: {state}");
+            Logger.LogVerbose("Tutorial", $"Step '{DevName}' state restored: {state}");
         }
 
         /// <summary>
@@ -681,7 +681,7 @@ namespace HelloDev.QuestSystem.Tutorials
                         eventCondition.SubscribeToEvent(callback);
                     }
                 }
-                Logger.LogVerbose(LogSystems.Tutorial, $"Step '{DevName}' resumed substep subscriptions ({TotalSubstepCount - CompletedSubstepCount} remaining).");
+                Logger.LogVerbose("Tutorial", $"Step '{DevName}' resumed substep subscriptions ({TotalSubstepCount - CompletedSubstepCount} remaining).");
             }
             else if (Data.CompletionCondition is IConditionEventDriven eventCondition)
             {
@@ -693,7 +693,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 {
                     eventCondition.SubscribeToEvent(CompleteStep);
                 }
-                Logger.LogVerbose(LogSystems.Tutorial, $"Step '{DevName}' resumed condition subscription.");
+                Logger.LogVerbose("Tutorial", $"Step '{DevName}' resumed condition subscription.");
             }
 
             // Fire lifecycle hooks on resume (same as entering a fresh step)

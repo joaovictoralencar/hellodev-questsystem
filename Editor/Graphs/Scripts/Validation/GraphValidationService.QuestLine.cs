@@ -88,14 +88,14 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
             if (outputCount == 1)
             {
                 var targetPort = node.GetOutputPortByName("Target");
-                hasAnyConnection = targetPort != null && targetPort.isConnected;
+                hasAnyConnection = targetPort != null && targetPort.IsConnected;
             }
             else
             {
                 for (int i = 0; i < outputCount; i++)
                 {
                     var targetPort = node.GetOutputPortByName($"Target{i}");
-                    if (targetPort != null && targetPort.isConnected)
+                    if (targetPort != null && targetPort.IsConnected)
                     {
                         hasAnyConnection = true;
                         break;
@@ -104,7 +104,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
                 // Also check Default port
                 var defaultPort = node.GetOutputPortByName("Default");
-                if (defaultPort != null && defaultPort.isConnected)
+                if (defaultPort != null && defaultPort.IsConnected)
                 {
                     hasAnyConnection = true;
                 }

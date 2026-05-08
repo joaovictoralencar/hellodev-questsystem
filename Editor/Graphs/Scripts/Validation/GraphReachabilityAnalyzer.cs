@@ -154,7 +154,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
 
                 foreach (var port in outputPorts)
                 {
-                    if (port.isConnected)
+                    if (port.IsConnected)
                     {
                         // Get all connected input ports (Graph Toolkit 0.4.0 API)
                         var connectedPorts = new List<IPort>();
@@ -196,7 +196,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
                 if (node is StageNode stageNode)
                 {
                     var taskGroupsInputPort = stageNode.GetInputPortByName("TaskGroupsInput");
-                    if (taskGroupsInputPort != null && taskGroupsInputPort.isConnected)
+                    if (taskGroupsInputPort != null && taskGroupsInputPort.IsConnected)
                     {
                         var inputConnectedPorts = new List<IPort>();
                         taskGroupsInputPort.GetConnectedPorts(inputConnectedPorts);

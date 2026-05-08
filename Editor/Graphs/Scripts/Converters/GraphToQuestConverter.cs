@@ -230,9 +230,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 try
                 {
                     var thenPort = node.GetOutputPortByName("Then");
-                    if (thenPort != null && thenPort.isConnected)
+                    if (thenPort != null && thenPort.IsConnected)
                     {
-                        var connectedNode = thenPort.firstConnectedPort?.GetNode();
+                        var connectedNode = thenPort.FirstConnectedPort?.GetNode();
                         if (connectedNode == stageNode)
                         {
                             taskGroups.Add(node);
@@ -283,9 +283,9 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 try
                 {
                     var thenPort = node.GetOutputPortByName("Then");
-                    if (thenPort != null && thenPort.isConnected)
+                    if (thenPort != null && thenPort.IsConnected)
                     {
-                        var connectedNode = thenPort.firstConnectedPort?.GetNode();
+                        var connectedNode = thenPort.FirstConnectedPort?.GetNode();
                         if (connectedNode == subgraphNode)
                         {
                             taskGroups.Add(node);
@@ -400,7 +400,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                 // Legacy: All RewardContextNodes in graph (when not using QuestNode)
                 foreach (var rewardContext in _allNodes.OfType<RewardContextNode>())
                 {
-                    foreach (var block in rewardContext.blockNodes.OfType<RewardBlock>())
+                    foreach (var block in rewardContext.BlockNodes.OfType<RewardBlock>())
                     {
                         if (block.IsValid)
                         {
@@ -545,7 +545,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             var tasksProperty = tgProperty.FindPropertyRelative("tasks");
             tasksProperty.ClearArray();
 
-            var taskBlocks = tgContext.blockNodes.OfType<TaskBlockBase>().ToList();
+            var taskBlocks = tgContext.BlockNodes.OfType<TaskBlockBase>().ToList();
             foreach (var taskBlock in taskBlocks)
             {
                 // Handle both Asset and Define modes
@@ -884,7 +884,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             }
             catch
             {
-                _context.AddWarning($"Failed to extract tasks from subgraph '{subgraph.name}'");
+                _context.AddWarning($"Failed to extract tasks from subgraph '{subgraph.Name}'");
             }
 
             return tasks;
@@ -961,7 +961,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             if (connectedNode is ConditionContextNode conditionContext)
             {
-                foreach (var block in conditionContext.blockNodes.OfType<ConditionBlock>())
+                foreach (var block in conditionContext.BlockNodes.OfType<ConditionBlock>())
                 {
                     // Resolve condition from port (embedded or connected), fall back to option
                     var condition = GraphTraversalUtility.ResolveDataPort<HelloDev.Conditions.Condition_SO>(
@@ -1050,7 +1050,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             if (connectedNode is ConditionContextNode conditionContext)
             {
-                foreach (var block in conditionContext.blockNodes.OfType<ConditionBlock>())
+                foreach (var block in conditionContext.BlockNodes.OfType<ConditionBlock>())
                 {
                     // Resolve condition from port (embedded or connected), fall back to option
                     var condition = GraphTraversalUtility.ResolveDataPort<HelloDev.Conditions.Condition_SO>(
@@ -1080,7 +1080,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             if (connectedNode is RewardContextNode rewardContext)
             {
                 // Extract rewards from blocks
-                foreach (var block in rewardContext.blockNodes.OfType<RewardBlock>())
+                foreach (var block in rewardContext.BlockNodes.OfType<RewardBlock>())
                 {
                     if (block.IsValid)
                     {

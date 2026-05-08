@@ -116,7 +116,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor
             // Initialize default values
             if (string.IsNullOrEmpty(devName))
             {
-                devName = name;
+                devName = Name;
             }
 
             if (string.IsNullOrEmpty(questLineId))

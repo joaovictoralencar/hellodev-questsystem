@@ -65,7 +65,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor
             base.OnEnable();
             if (string.IsNullOrEmpty(groupName))
             {
-                groupName = name;
+                groupName = Name;
             }
         }
 

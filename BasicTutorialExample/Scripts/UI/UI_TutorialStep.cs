@@ -180,7 +180,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 else OnDisplayStep.SafeInvoke();
             }
 
-            Logger.LogVerbose(LogSystems.Tutorial, $"[UI_TutorialStep] ShowStep called for '{step.DevName}' HasSubsteps={step.HasSubsteps} CompletedSubsteps={step.CompletedSubstepCount}/{step.TotalSubstepCount}");
+            Logger.LogVerbose("Tutorial", $"[UI_TutorialStep] ShowStep called for '{step.DevName}' HasSubsteps={step.HasSubsteps} CompletedSubsteps={step.CompletedSubstepCount}/{step.TotalSubstepCount}");
 
             // Clean up previous content
             if (contentRoot != null)
@@ -290,7 +290,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 foreach (TutorialSubstep_SO substep in step.Data.Substeps)
                 {
                     TutorialStepTextState state = GetSubstepState(step, substep);
-                    Logger.Log(LogSystems.Tutorial, $"[UI_TutorialStep] Spawning substep[{spawnIndex}] state={state} name={substep.DevName}");
+                    Logger.Log("Tutorial", $"[UI_TutorialStep] Spawning substep[{spawnIndex}] state={state} name={substep.DevName}");
                     item = SpawnTextItem(substep.Instruction, state, false);
                     seq.ChainCallback(() => OnDisplayStep.SafeInvoke());
                     seq.Chain(item.AnimateIn());

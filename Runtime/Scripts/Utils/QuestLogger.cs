@@ -129,25 +129,25 @@ namespace HelloDev.QuestSystem.Utils
         /// <summary>Logs a start event (quest/task/stage started).</summary>
         public static void LogStart(LogSubsystem subsystem, string entityType, string entityName)
         {
-            Logger.LogStart(GetSystemId(subsystem), entityType, entityName);
+            Logger.Log(GetSystemId(subsystem), $"Started: Entity type: {entityType}, Entity name: {entityName}");
         }
 
         /// <summary>Logs a completion event.</summary>
         public static void LogComplete(LogSubsystem subsystem, string entityType, string entityName)
         {
-            Logger.LogComplete(GetSystemId(subsystem), entityType, entityName);
+            Logger.Log(GetSystemId(subsystem), $"Completed: Entity type: {entityType}, Entity name: {entityName}");
         }
 
         /// <summary>Logs a failure event.</summary>
         public static void LogFail(LogSubsystem subsystem, string entityType, string entityName)
         {
-            Logger.LogFail(GetSystemId(subsystem), entityType, entityName);
+            Logger.Log(GetSystemId(subsystem), $"Failed: Entity type: {entityType}, Entity name: {entityName}");
         }
 
         /// <summary>Logs a transition event (stage to stage, etc.).</summary>
         public static void LogTransition(LogSubsystem subsystem, string from, string to)
         {
-            Logger.LogTransition(GetSystemId(subsystem), from, to);
+            Logger.Log(GetSystemId(subsystem), $"from {from} to {to}");
         }
 
         #endregion

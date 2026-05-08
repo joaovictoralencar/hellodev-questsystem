@@ -432,7 +432,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
                 float duration = 0.15f;
 
-                Logger.LogVerbose(LogSystems.UI, $"Starting animation for {name}", this);
+                Logger.LogVerbose("UI", $"Starting animation for {name}", this);
                 // Always run a small pop animation and invoke the Completed callback afterwards
                 Sequence sequence = Sequence.Create();
                 sequence.Chain(Tween.Scale(TextMesh.transform, Vector3.one * 1.05f, duration, Ease.OutQuad));

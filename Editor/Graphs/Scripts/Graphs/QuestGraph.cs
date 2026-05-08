@@ -109,7 +109,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor
             base.OnEnable();
             if (string.IsNullOrEmpty(devName))
             {
-                devName = name;
+                devName = Name;
             }
 
             if (string.IsNullOrEmpty(questId))

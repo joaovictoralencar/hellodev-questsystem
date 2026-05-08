@@ -294,7 +294,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
         {
             foreach (var node in contextNodes)
             {
-                var taskBlocks = node.blockNodes.OfType<TaskBlockBase>().ToList();
+                var taskBlocks = node.BlockNodes.OfType<TaskBlockBase>().ToList();
 
                 // Context should have at least one task block
                 if (taskBlocks.Count == 0)
@@ -339,7 +339,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Validation
         {
             foreach (var node in rewardNodes)
             {
-                var rewardBlocks = node.blockNodes.OfType<RewardBlock>().ToList();
+                var rewardBlocks = node.BlockNodes.OfType<RewardBlock>().ToList();
 
                 // Context should have at least one reward block
                 if (rewardBlocks.Count == 0)

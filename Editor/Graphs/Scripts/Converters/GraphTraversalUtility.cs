@@ -24,10 +24,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             try
             {
                 var outputPort = currentNode.GetOutputPortByName(portName);
-                if (outputPort == null || !outputPort.isConnected)
+                if (outputPort == null || !outputPort.IsConnected)
                     return null;
 
-                var nextNodePort = outputPort.firstConnectedPort;
+                var nextNodePort = outputPort.FirstConnectedPort;
                 return nextNodePort?.GetNode();
             }
             catch
@@ -51,10 +51,10 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             try
             {
                 var inputPort = currentNode.GetInputPortByName(portName);
-                if (inputPort == null || !inputPort.isConnected)
+                if (inputPort == null || !inputPort.IsConnected)
                     return null;
 
-                var sourcePort = inputPort.firstConnectedPort;
+                var sourcePort = inputPort.FirstConnectedPort;
                 return sourcePort?.GetNode();
             }
             catch
@@ -80,7 +80,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             try
             {
                 var outputPort = currentNode.GetOutputPortByName(portName);
-                if (outputPort == null || !outputPort.isConnected)
+                if (outputPort == null || !outputPort.IsConnected)
                     return connectedNodes;
 
                 // Graph Toolkit 0.4.0 requires output parameter
@@ -124,16 +124,16 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             try
             {
                 // If port is connected to another node, get value from connection
-                if (port.isConnected)
+                if (port.IsConnected)
                 {
-                    var sourcePort = port.firstConnectedPort;
+                    var sourcePort = port.FirstConnectedPort;
                     var connectedNode = sourcePort?.GetNode();
 
                     switch (connectedNode)
                     {
                         case IVariableNode variableNode:
                             // Try TryGetDefaultValue (works for simple types)
-                            if (variableNode.variable.TryGetDefaultValue<T>(out value))
+                            if (variableNode.Variable.TryGetDefaultValue<T>(out value))
                                 return value;
 
                             // Fallback: Try to get value from source port
@@ -197,7 +197,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
             try
             {
                 var port = node.GetOutputPortByName(portName);
-                return port != null && port.isConnected;
+                return port != null && port.IsConnected;
             }
             catch
             {
@@ -316,7 +316,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
 
             try
             {
-                var sourcePort = port.firstConnectedPort;
+                var sourcePort = port.FirstConnectedPort;
                 var sourceNode = sourcePort?.GetNode();
 
                 // Handle connected nodes
@@ -330,7 +330,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                             break;
 
                         case IVariableNode variableNode:
-                            if (variableNode.variable.TryGetDefaultValue(out T variableValue))
+                            if (variableNode.Variable.TryGetDefaultValue(out T variableValue))
                                 return variableValue;
                             break;
                     }
@@ -397,7 +397,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                     return fallback;
 
                 var port = node.GetInputPortByName(portName);
-                if (port == null || !port.isConnected)
+                if (port == null || !port.IsConnected)
                     return fallback;
 
                 // Port is connected - resolve the value from the connection
@@ -427,7 +427,7 @@ namespace HelloDev.QuestSystem.QuestGraph.Editor.Converters
                     return false;
 
                 var port = node.GetInputPortByName(portName);
-                return port != null && port.isConnected;
+                return port != null && port.IsConnected;
             }
             catch
             {
