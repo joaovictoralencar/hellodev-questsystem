@@ -14,6 +14,7 @@
         "Unity.InputSystem",
         "HelloDev.Conditions",
         "HelloDev.Input",
+        "HelloDev.Input.InputSystem",
         "BroAudio"
     ],
     "includePlatforms": [],
