@@ -94,7 +94,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -144,14 +144,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect:
-      - flagLocator: {fileID: 0}
-        isBoolFlag: 1
-        boolFlag: {fileID: 11400000, guid: 403b20f15c7514244babced236623411, type: 2}
-        boolValue: 1
-        intFlag: {fileID: 0}
-        intOperation: 0
-        intValue: 0
+      effectsOnSelect: []
     - targetStageIndex: 20
       trigger: 3
       conditions:
@@ -179,14 +172,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect:
-      - flagLocator: {fileID: 0}
-        isBoolFlag: 1
-        boolFlag: {fileID: 11400000, guid: 6943833d92ae6a647b3245de78020ae0, type: 2}
-        boolValue: 1
-        intFlag: {fileID: 0}
-        intOperation: 0
-        intValue: 0
+      effectsOnSelect: []
     - targetStageIndex: 30
       trigger: 3
       conditions:
@@ -215,14 +201,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect:
-      - flagLocator: {fileID: 0}
-        isBoolFlag: 1
-        boolFlag: {fileID: 11400000, guid: 7d93028b9d609d246af7cd4d69e71b5d, type: 2}
-        boolValue: 1
-        intFlag: {fileID: 0}
-        intOperation: 0
-        intValue: 0
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -271,7 +250,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -320,7 +299,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -369,7 +348,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -396,7 +375,7 @@ MonoBehaviour:
     isHidden: 0
     isTerminal: 1
   startConditions:
-  - {fileID: 11400000, guid: ac44a453d472a2f4b844256cb6d87a82, type: 2}
+  - {fileID: 11400000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 2}
   failureConditions: []
   globalTaskFailureConditions:
   - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}

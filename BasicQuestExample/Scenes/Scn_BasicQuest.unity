@@ -412,6 +412,12 @@ MonoBehaviour:
   QuestLineRemoved:
     m_PersistentCalls:
       m_Calls: []
+  StageEntered:
+    m_PersistentCalls:
+      m_Calls: []
+  StageExited:
+    m_PersistentCalls:
+      m_Calls: []
   OnQuestDataChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -459,7 +465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44bdecb616a5a9d4a82ef65c371487f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HelloDev.Saving::HelloDev.Saving.UnifiedSaveManager
-  settings: {fileID: 11400000, guid: 074d37a4a43372440b4e59a41dff30df, type: 2}
+  settings: {fileID: 11400000, guid: bdd24dbbe7f3d134bb27a4b6f9cab295, type: 2}
   selfInitialize: 0
   persistent: 1
   defaultSlotKey: autosave
@@ -562,6 +568,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 1
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 31
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0

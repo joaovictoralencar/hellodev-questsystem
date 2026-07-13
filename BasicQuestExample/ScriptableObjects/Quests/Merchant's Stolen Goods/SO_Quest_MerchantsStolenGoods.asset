@@ -93,7 +93,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -143,7 +143,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -193,7 +193,7 @@ MonoBehaviour:
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
-      worldFlagsOnSelect: []
+      effectsOnSelect: []
     isOptional: 0
     isHidden: 0
     isTerminal: 0
@@ -221,7 +221,7 @@ MonoBehaviour:
     isTerminal: 1
   startConditions: []
   failureConditions:
-  - {fileID: 11400000, guid: 5435123018f71264a885614826d6798d, type: 2}
+  - {fileID: 11400000, guid: fd07019e7f393f24bb19d5e30d1315b8, type: 2}
   globalTaskFailureConditions:
   - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
   rewards:
