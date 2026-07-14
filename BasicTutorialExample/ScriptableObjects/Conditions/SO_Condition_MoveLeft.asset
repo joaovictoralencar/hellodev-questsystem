@@ -11,6 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ef4e0f6d32843d4395d466bf26f568a, type: 3}
   m_Name: SO_Condition_MoveLeft
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  _description: Describe what this scriptable object represents
   _isInverted: 0
-  gameEvent: {fileID: 11400000, guid: 0f8e4e8bf91731e48af01205a79ba4cc, type: 2}
+  gameEvent: {fileID: 11400000, guid: a33bf087f6f08214e8decfcfa2a68482, type: 2}

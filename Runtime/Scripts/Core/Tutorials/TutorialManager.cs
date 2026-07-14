@@ -627,7 +627,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Tutorial", $"Error in step enter subscription: {ex.Message}", this);
+                    Logger.LogError("Tutorial", $"Error in step enter subscription: {ex.Message},\n Stack trace: {ex.StackTrace}", this);
                 }
             }
         }
@@ -648,7 +648,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Tutorial", $"Error in step exit subscription: {ex.Message}", this);
+                    Logger.LogError("Tutorial", $"Error in step exit subscription: {ex.Message},\n Stack trace: {ex.StackTrace}", this);
                 }
             }
         }
