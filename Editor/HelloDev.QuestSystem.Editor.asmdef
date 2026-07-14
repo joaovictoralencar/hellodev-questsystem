@@ -4,7 +4,10 @@
   "references": [
     "HelloDev.QuestSystem",
     "HelloDev.Events",
-    "HelloDev.Utils"
+    "HelloDev.Utils",
+    "HelloDev.Conditions",
+    "HelloDev.Conditions.Types",
+    "HelloDev.IDs"
   ],
   "includePlatforms": [
     "Editor"
