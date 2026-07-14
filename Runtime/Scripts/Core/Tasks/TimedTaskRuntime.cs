@@ -1,3 +1,4 @@
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -35,7 +36,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Gets whether the timer has expired.
         /// </summary>
-        public bool IsExpired => _remainingTime <= 0f && CurrentState == TaskState.InProgress;
+        public bool IsExpired => _remainingTime <= 0f && State == Objectives.State.InProgress;
 
         /// <summary>
         /// Gets whether the task objective has been completed (before time expired).
@@ -63,7 +64,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// <param name="deltaTime">The time elapsed since the last frame.</param>
         public void UpdateTimer(float deltaTime)
         {
-            if (CurrentState != TaskState.InProgress || _isCompleted) return;
+            if (State != Objectives.State.InProgress || _isCompleted) return;
 
             _remainingTime -= deltaTime;
 
@@ -71,7 +72,7 @@ namespace HelloDev.QuestSystem.Tasks
             {
                 _remainingTime = 0f;
                 QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Timer expired!");
-                FailTask();
+                Fail();
             }
         }
 
@@ -81,11 +82,11 @@ namespace HelloDev.QuestSystem.Tasks
         /// <param name="seconds">The amount of seconds to add.</param>
         public void AddTime(float seconds)
         {
-            if (CurrentState != TaskState.InProgress) return;
+            if (State != Objectives.State.InProgress) return;
 
             _remainingTime += seconds;
             QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Added {seconds}s to timer. New remaining: {_remainingTime}s");
-            OnTaskUpdated.SafeInvoke(this);
+            Updated.Invoke(this);
         }
 
         /// <summary>
@@ -103,11 +104,11 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         public void MarkObjectiveComplete()
         {
-            if (CurrentState != TaskState.InProgress || _isCompleted) return;
+            if (State != State.InProgress || _isCompleted) return;
 
             _isCompleted = true;
             QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Objective completed with {_remainingTime}s remaining!");
-            OnTaskUpdated.SafeInvoke(this);
+            Updated.SafeInvoke(this);
         }
 
         public override void ForceCompleteState()
@@ -118,7 +119,7 @@ namespace HelloDev.QuestSystem.Tasks
         public override bool OnIncrementStep()
         {
             // For timed tasks, increment marks the objective complete
-            if (CurrentState != TaskState.InProgress || _isCompleted) return false;
+            if (State != Objectives.State.InProgress || _isCompleted) return false;
 
             _isCompleted = true;
             QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' manually marked as completed.");
@@ -134,19 +135,19 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Resets the task's state and timer to initial values.
         /// </summary>
-        public override void ResetTask()
+        public override void Reset()
         {
-            base.ResetTask();
+            base.Reset();
             _remainingTime = TimeLimit;
             _isCompleted = false;
-            OnTaskUpdated.SafeInvoke(this);
+            Updated.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(TaskRuntime task)
+        protected override void CheckCompletion(IObjective task)
         {
             if (_isCompleted)
             {
-                CompleteTask();
+                Complete();
             }
         }
 

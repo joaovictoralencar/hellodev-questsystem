@@ -95,7 +95,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             var snapshot = new QuestSnapshot
             {
                 QuestGuid = quest.QuestData.QuestId.ToString(),
-                State = (int)quest.CurrentState,
+                State = (int)quest.State,
                 CurrentStageIndex = quest.CurrentStageIndex
             };
 
@@ -122,7 +122,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             var snapshot = new TaskSnapshot
             {
                 TaskGuid = task.Data.TaskId.ToString(),
-                State = (int)task.CurrentState,
+                State = (int)task.State,
                 TaskType = task.GetType().Name,
                 ProgressData = new TaskProgressData()
             };

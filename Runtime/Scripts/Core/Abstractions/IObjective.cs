@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Events;
 
 namespace HelloDev.Objectives
 {
@@ -19,7 +20,7 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets the unique identifier for this objective.
         /// </summary>
-        string Id { get; }
+        Guid Id { get; }
 
         #endregion
 
@@ -28,7 +29,7 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets the current state of the objective.
         /// </summary>
-        ObjectiveState State { get; }
+        State State { get; }
 
         /// <summary>
         /// Gets the progress of this objective as a value from 0.0 (not started) to 1.0 (complete).
@@ -76,22 +77,27 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Fired when the objective starts (transitions to InProgress).
         /// </summary>
-        event Action<IObjective> OnStarted;
+        UnityEvent<IObjective> Started { get; set; }
 
         /// <summary>
         /// Fired when the objective's progress changes.
         /// </summary>
-        event Action<IObjective> OnProgressChanged;
+        UnityEvent<IObjective> ProgressChanged { get; set; }
 
         /// <summary>
         /// Fired when the objective is completed successfully.
         /// </summary>
-        event Action<IObjective> OnCompleted;
+        UnityEvent<IObjective> Completed { get; set; }
 
         /// <summary>
         /// Fired when the objective fails.
         /// </summary>
-        event Action<IObjective> OnFailed;
+        UnityEvent<IObjective> Failed { get; set; }
+        
+        /// <summary>
+        /// Fired when the objective is Updated.
+        /// </summary>
+        UnityEvent<IObjective> Updated { get; set; }
 
         #endregion
     }

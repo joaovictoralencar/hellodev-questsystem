@@ -20,12 +20,12 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets the unique identifier for this mission instance.
         /// </summary>
-        Guid MissionId { get; }
+        public Guid MissionId { get; }
 
         /// <summary>
         /// Gets the display name of this mission.
         /// </summary>
-        string DisplayName { get; }
+        public string DisplayName { get; }
 
         #endregion
 
@@ -34,12 +34,12 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets the current state of the mission.
         /// </summary>
-        ObjectiveState State { get; }
+        public State State { get; }
 
         /// <summary>
         /// Gets the overall progress of this mission as a value from 0.0 to 1.0.
         /// </summary>
-        float Progress { get; }
+        public float Progress { get; }
 
         #endregion
 
@@ -48,17 +48,17 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets all stages in this mission.
         /// </summary>
-        IReadOnlyList<IStage> Stages { get; }
+        public IReadOnlyList<IStage> Stages { get; }
 
         /// <summary>
         /// Gets the currently active stage, or null if no stage is active.
         /// </summary>
-        IStage CurrentStage { get; }
+        public IStage CurrentStage { get; }
 
         /// <summary>
         /// Gets the index of the current stage, or -1 if no stage is active.
         /// </summary>
-        int CurrentStageIndex { get; }
+        public int CurrentStageIndex { get; }
 
         #endregion
 
@@ -67,22 +67,22 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Starts the mission, entering the first stage.
         /// </summary>
-        void Start();
+        public void Start();
 
         /// <summary>
         /// Completes the mission successfully.
         /// </summary>
-        void Complete();
+        public void Complete();
 
         /// <summary>
         /// Fails the mission.
         /// </summary>
-        void Fail();
+        public void Fail();
 
         /// <summary>
         /// Resets the mission to its initial state.
         /// </summary>
-        void Reset();
+        public void Reset();
 
         #endregion
 
@@ -91,32 +91,32 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Fired when the mission starts.
         /// </summary>
-        event Action<IMission> OnStarted;
+        public event Action<IMission> OnStarted;
 
         /// <summary>
         /// Fired when the mission's progress changes.
         /// </summary>
-        event Action<IMission> OnProgressChanged;
+        public event Action<IMission> OnProgressChanged;
 
         /// <summary>
         /// Fired when the mission is completed successfully.
         /// </summary>
-        event Action<IMission> OnCompleted;
+        public event Action<IMission> OnCompleted;
 
         /// <summary>
         /// Fired when the mission fails.
         /// </summary>
-        event Action<IMission> OnFailed;
+        public event Action<IMission> OnFailed;
 
         /// <summary>
         /// Fired when a stage is entered.
         /// </summary>
-        event Action<IMission, IStage> OnStageEntered;
+        public event Action<IMission, IStage> OnStageEntered;
 
         /// <summary>
         /// Fired when a stage is completed.
         /// </summary>
-        event Action<IMission, IStage> OnStageCompleted;
+        public event Action<IMission, IStage> OnStageCompleted;
 
         #endregion
     }

@@ -45,7 +45,7 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         /// <summary>
         /// The current state of the tutorial.
         /// </summary>
-        public int State; // ObjectiveState as int
+        public int State; // State as int
 
         /// <summary>
         /// The current step index.
@@ -72,7 +72,7 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         /// <summary>
         /// The current state of the step.
         /// </summary>
-        public int State; // ObjectiveState as int
+        public int State; // State as int
 
         /// <summary>
         /// The elapsed time for timed steps.

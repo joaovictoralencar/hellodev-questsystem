@@ -183,7 +183,7 @@ MonoBehaviour:
         m_TableCollectionName: GUID:ccbd9d2a3cd282b4d94cebc2587a2f74
       m_TableEntryReference:
         m_KeyId: 47952478219
-        m_Key:
+        m_Key: 
       m_FallbackState: 0
       m_WaitForCompletion: 0
       m_LocalVariables: []
@@ -199,26 +199,26 @@ MonoBehaviour:
     - targetStageIndex: 3
       trigger: 0
       conditions: []
-      transitionLabel:
+      transitionLabel: 
       priority: 0
       isPlayerChoice: 0
-      choiceId:
+      choiceId: 
       choiceText:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: 
         m_TableEntryReference:
           m_KeyId: 0
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
       choiceIcon: {fileID: 0}
       choiceTooltip:
         m_TableReference:
-          m_TableCollectionName:
+          m_TableCollectionName: 
         m_TableEntryReference:
           m_KeyId: 0
-          m_Key:
+          m_Key: 
         m_FallbackState: 0
         m_WaitForCompletion: 0
         m_LocalVariables: []
@@ -249,11 +249,9 @@ MonoBehaviour:
     isOptional: 0
     isHidden: 0
     isTerminal: 1
-  startConditions:
-  - {fileID: 11400000, guid: c49ce0457922ab740985a6eab990c1dd, type: 2}
+  startConditions: []
   failureConditions: []
-  globalTaskFailureConditions:
-  - {fileID: 11400000, guid: b4c5d6789012345678abcdef11223344, type: 2}
+  globalTaskFailureConditions: []
   rewards:
   - RewardType: {fileID: 11400000, guid: 29534f31f879c1543a7c2d9a706a3a6b, type: 2}
     Amount: 1500

@@ -80,7 +80,7 @@ namespace HelloDev.QuestSystem.Internal
         public bool AddActive(QuestRuntime quest)
         {
             if (quest == null) return false;
-            return _activeQuests.TryAdd(quest.QuestId, quest);
+            return _activeQuests.TryAdd(quest.MissionId, quest);
         }
 
         public bool RemoveActive(Guid questId)
@@ -111,7 +111,7 @@ namespace HelloDev.QuestSystem.Internal
         public bool AddCompleted(QuestRuntime quest)
         {
             if (quest == null) return false;
-            return _completedQuests.TryAdd(quest.QuestId, quest);
+            return _completedQuests.TryAdd(quest.MissionId, quest);
         }
 
         public bool RemoveCompleted(Guid questId)
@@ -142,7 +142,7 @@ namespace HelloDev.QuestSystem.Internal
         public bool AddFailed(QuestRuntime quest)
         {
             if (quest == null) return false;
-            return _failedQuests.TryAdd(quest.QuestId, quest);
+            return _failedQuests.TryAdd(quest.MissionId, quest);
         }
 
         public bool RemoveFailed(Guid questId)

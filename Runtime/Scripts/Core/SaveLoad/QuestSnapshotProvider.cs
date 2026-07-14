@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions.WorldFlags;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
 using HelloDev.Saving;
@@ -187,9 +188,9 @@ namespace HelloDev.QuestSystem.SaveLoad
                 SnapshotRestorer.RestoreWorldFlags(snapshot.WorldFlags, worldFlags, _worldFlagLocator);
 
                 // Restore quests
-                SnapshotRestorer.RestoreQuests(snapshot.ActiveQuests, QuestState.InProgress, _questManager, FindQuestByGuid);
-                SnapshotRestorer.RestoreQuests(snapshot.CompletedQuests, QuestState.Completed, _questManager, FindQuestByGuid);
-                SnapshotRestorer.RestoreQuests(snapshot.FailedQuests, QuestState.Failed, _questManager, FindQuestByGuid);
+                SnapshotRestorer.RestoreQuests(snapshot.ActiveQuests, State.InProgress, _questManager, FindQuestByGuid);
+                SnapshotRestorer.RestoreQuests(snapshot.CompletedQuests, State.Completed, _questManager, FindQuestByGuid);
+                SnapshotRestorer.RestoreQuests(snapshot.FailedQuests, State.Failed, _questManager, FindQuestByGuid);
 
                 // Restore questlines
                 SnapshotRestorer.RestoreQuestLines(snapshot.ActiveQuestLines, _questManager, FindQuestLineByGuid);

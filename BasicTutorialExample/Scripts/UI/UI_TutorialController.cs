@@ -218,7 +218,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
 
             // Handle case where tutorial was restored from save before UI subscribed
             TutorialRuntime currentTutorial = TutorialManager.Instance.CurrentTutorial;
-            if (currentTutorial != null && currentTutorial.CurrentState == Objectives.ObjectiveState.InProgress)
+            if (currentTutorial != null && currentTutorial.CurrentState == Objectives.State.InProgress)
             {
                 Logger.Log("Tutorial", "Found active tutorial on subscribe, showing UI");
                 HandleTutorialStarted(currentTutorial);

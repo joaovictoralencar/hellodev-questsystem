@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HelloDev.Bootstrap;
 using HelloDev.Conditions;
 using HelloDev.Conditions.WorldFlags;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Internal;
 using HelloDev.QuestSystem.QuestLines;
 using HelloDev.QuestSystem.Quests;
@@ -662,7 +663,7 @@ namespace HelloDev.QuestSystem
 
             if (conditionsMet)
             {
-                quest.StartQuest();
+                quest.Start();
             }
             else
             {
@@ -683,7 +684,7 @@ namespace HelloDev.QuestSystem
             var quest = AddQuestCore(questData);
             if (quest == null) return false;
 
-            quest.StartQuest();
+            quest.Start();
             return true;
         }
 
@@ -706,7 +707,7 @@ namespace HelloDev.QuestSystem
                 bool conditionsMet = quest.CheckStartConditions();
                 if (conditionsMet)
                 {
-                    quest.StartQuest();
+                    quest.Start();
                     return true;
                 }
             }
@@ -796,7 +797,7 @@ namespace HelloDev.QuestSystem
             QuestRuntime quest = _questRegistry.GetActive(questData.QuestId);
             if (quest != null)
             {
-                quest.FailQuest();
+                quest.Fail();
             }
             else
             {
@@ -846,7 +847,7 @@ namespace HelloDev.QuestSystem
             quest = _questRegistry.GetActive(questId);
             if (quest != null)
             {
-                quest.ResetQuest();
+                quest.Reset();
                 return true;
             }
 
@@ -856,7 +857,7 @@ namespace HelloDev.QuestSystem
             {
                 _questRegistry.MoveFromCompletedToActive(questId);
                 SubscribeToQuestEvents(quest);
-                quest.ResetQuest();
+                quest.Reset();
                 return true;
             }
 
@@ -866,7 +867,7 @@ namespace HelloDev.QuestSystem
             {
                 _questRegistry.MoveFromFailedToActive(questId);
                 SubscribeToQuestEvents(quest);
-                quest.ResetQuest();
+                quest.Reset();
                 return true;
             }
 
@@ -915,7 +916,7 @@ namespace HelloDev.QuestSystem
         private void HandleQuestCompleted(QuestRuntime quest)
         {
             UnsubscribeFromQuestEvents(quest);
-            _questRegistry.MoveToCompleted(quest.QuestId);
+            _questRegistry.MoveToCompleted(quest.MissionId);
             QuestLogger.LogComplete(LogSubsystem.Quest, "Quest", quest.QuestData.DevName);
 
             BeginEventProcessing();
@@ -936,7 +937,7 @@ namespace HelloDev.QuestSystem
         private void HandleQuestFailed(QuestRuntime quest)
         {
             UnsubscribeFromQuestEvents(quest);
-            _questRegistry.MoveToFailed(quest.QuestId);
+            _questRegistry.MoveToFailed(quest.MissionId);
             QuestLogger.LogFail(LogSubsystem.Quest, "Quest", quest.QuestData.DevName);
 
             BeginEventProcessing();
@@ -1466,7 +1467,7 @@ namespace HelloDev.QuestSystem
         public QuestStageRuntime GetCurrentStage(Quest_SO questData)
         {
             var quest = GetActiveQuest(questData);
-            return quest?.CurrentStage;
+            return quest?.CurrentQuestStage;
         }
 
         /// <summary>
@@ -1477,7 +1478,7 @@ namespace HelloDev.QuestSystem
         public QuestStageRuntime GetCurrentStage(Guid questId)
         {
             var quest = GetActiveQuest(questId);
-            return quest?.CurrentStage;
+            return quest?.CurrentQuestStage;
         }
 
         /// <summary>
@@ -1488,7 +1489,7 @@ namespace HelloDev.QuestSystem
         {
             foreach (var quest in _questRegistry.GetAllActive())
             {
-                if (quest.CurrentState == QuestState.NotStarted)
+                if (quest.State == State.NotStarted)
                 {
                     quest.SubscribeToStartQuestEvents();
                     QuestLogger.LogVerbose(LogSubsystem.Quest, $"Re-subscribed '{quest.QuestData.DevName}' to start events");

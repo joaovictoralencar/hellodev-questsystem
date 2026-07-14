@@ -146,7 +146,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Gets whether a tutorial is currently playing.
         /// </summary>
-        public bool IsTutorialActive => _currentTutorial is { CurrentState: ObjectiveState.InProgress };
+        public bool IsTutorialActive => _currentTutorial is { CurrentState: State.InProgress };
 
         /// <summary>
         /// Gets the IDs of all completed tutorials.
@@ -256,7 +256,7 @@ namespace HelloDev.QuestSystem.Tutorials
         private void Update()
         {
             // Update timed steps
-            if (_currentTutorial != null && _currentTutorial.CurrentState == ObjectiveState.InProgress)
+            if (_currentTutorial != null && _currentTutorial.CurrentState == State.InProgress)
             {
                 _currentTutorial.UpdateTime(Time.deltaTime);
             }
@@ -358,7 +358,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
             // Queue or start immediately
             if (allowTutorialQueue && _currentTutorial != null &&
-                _currentTutorial.CurrentState == ObjectiveState.InProgress)
+                _currentTutorial.CurrentState == State.InProgress)
             {
                 _tutorialQueue.Enqueue(runtime);
                 Logger.Log("Tutorial", $"Tutorial '{tutorialData.DevName}' queued.", this);
@@ -726,7 +726,7 @@ namespace HelloDev.QuestSystem.Tutorials
             snapshot.CompletedTutorialIds = GetCompletedTutorialIdsForSave();
 
             // Capture active tutorial if any
-            if (_currentTutorial != null && _currentTutorial.CurrentState == ObjectiveState.InProgress)
+            if (_currentTutorial != null && _currentTutorial.CurrentState == State.InProgress)
             {
                 snapshot.ActiveTutorial = CaptureTutorial(_currentTutorial);
             }
@@ -845,7 +845,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
             // Restore tutorial state and fire events so UI can display current state
             tutorial.RestoreTutorialState(
-                (ObjectiveState)tutorialSnapshot.State,
+                (State)tutorialSnapshot.State,
                 tutorialSnapshot.CurrentStepIndex,
                 fireEvents: true
             );
@@ -897,7 +897,7 @@ namespace HelloDev.QuestSystem.Tutorials
                     continue;
                 }
                 
-                ObjectiveState state = (ObjectiveState)stepSnapshot.State;
+                State state = (State)stepSnapshot.State;
 
                 Logger.Log("Tutorial", $"Restoring step '{step.DevName}' (GUID: {stepId}) to state {stepSnapshot.State}");
 

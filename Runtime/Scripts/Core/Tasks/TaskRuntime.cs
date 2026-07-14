@@ -5,7 +5,6 @@ using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
-using HelloDev.Utils;
 using UnityEngine.Events;
 using UnityEngine.Localization;
 
@@ -14,148 +13,59 @@ namespace HelloDev.QuestSystem.Tasks
     /// <summary>
     /// Represents a single objective within a quest. This abstract class provides the
     /// core functionality for all task types. Specific tasks must inherit from it.
-    /// Implements <see cref="ITask"/> for testability and dependency injection.
-    /// Implements <see cref="IObjective"/> for the unified objectives interface.
+    /// Implements <see cref="ITask"/> (which extends <see cref="IObjective"/>).
     /// </summary>
-    public abstract class TaskRuntime : ITask, IObjective
+    public abstract class TaskRuntime : ITask
     {
-        #region Events
-
-        /// <summary>
-        /// Fired when the task's progress has changed. Provides the task and an update info object.
-        /// </summary>
-        public UnityEvent<TaskRuntime> OnTaskUpdated = new();
-
-        /// <summary>
-        /// Fired specifically when the task is started.
-        /// </summary>
-        public UnityEvent<TaskRuntime> OnTaskStarted = new();
-
-        /// <summary>
-        /// Fired specifically when the task is completed.
-        /// </summary>
-        public UnityEvent<TaskRuntime> OnTaskCompleted = new();
-
-        /// <summary>
-        /// Fired specifically when the task fails.
-        /// </summary>
-        public UnityEvent<TaskRuntime> OnTaskFailed = new();
-
-        #endregion
-
-        #region IObjective Explicit Implementation
-
-        // Backing fields for IObjective Action events
-        private event Action<IObjective> _onStarted;
-        private event Action<IObjective> _onProgressChanged;
-        private event Action<IObjective> _onCompleted;
-        private event Action<IObjective> _onFailed;
+        #region IObjective Events (the only events)
 
         /// <inheritdoc />
-        string IObjective.Id => Data.TaskId.ToString();
+        public UnityEvent<IObjective> Started { get; set; } = new();
 
         /// <inheritdoc />
-        ObjectiveState IObjective.State => MapTaskStateToObjectiveState(CurrentState);
+        public UnityEvent<IObjective> ProgressChanged { get; set; } = new();
 
         /// <inheritdoc />
-        float IObjective.Progress => Progress;
+        public UnityEvent<IObjective> Completed { get; set; } = new();
 
         /// <inheritdoc />
-        bool IObjective.IsComplete => CurrentState == TaskState.Completed;
+        public UnityEvent<IObjective> Failed { get; set; } = new();
 
         /// <inheritdoc />
-        bool IObjective.IsFailed => CurrentState == TaskState.Failed;
-
-        /// <inheritdoc />
-        void IObjective.Start() => StartTask();
-
-        /// <inheritdoc />
-        void IObjective.Complete() => CompleteTask();
-
-        /// <inheritdoc />
-        void IObjective.Fail() => FailTask();
-
-        /// <inheritdoc />
-        void IObjective.Reset() => ResetTask();
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnStarted
-        {
-            add => _onStarted += value;
-            remove => _onStarted -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnProgressChanged
-        {
-            add => _onProgressChanged += value;
-            remove => _onProgressChanged -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnCompleted
-        {
-            add => _onCompleted += value;
-            remove => _onCompleted -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnFailed
-        {
-            add => _onFailed += value;
-            remove => _onFailed -= value;
-        }
-
-        /// <summary>
-        /// Maps TaskState to ObjectiveState for IObjective interface compatibility.
-        /// </summary>
-        private static ObjectiveState MapTaskStateToObjectiveState(TaskState taskState)
-        {
-            return taskState switch
-            {
-                TaskState.NotStarted => ObjectiveState.NotStarted,
-                TaskState.InProgress => ObjectiveState.InProgress,
-                TaskState.Completed => ObjectiveState.Completed,
-                TaskState.Failed => ObjectiveState.Failed,
-                _ => ObjectiveState.NotStarted
-            };
-        }
+        public UnityEvent<IObjective> Updated { get; set; } = new();
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// A unique, permanent identifier for the task instance.
-        /// </summary>
-        public Guid TaskId { get; }
+        /// <inheritdoc />
+        public Guid Id { get; }
 
-        /// <summary>
-        /// A developer-friendly name for the task, used for internal identification.
-        /// </summary>
+        /// <inheritdoc />
         public string DevName { get; private set; }
 
-        /// <summary>
-        /// The localized name of the task for display in the UI.
-        /// </summary>
+        /// <inheritdoc />
         public LocalizedString DisplayName { get; private set; }
 
-        /// <summary>
-        /// The localized description of the task.
-        /// </summary>
+        /// <inheritdoc />
         public LocalizedString Description { get; private set; }
 
-        /// <summary>
-        /// The current state of the task (NotStarted, InProgress, Completed, Failed).
-        /// </summary>
-        public TaskState CurrentState { get; private set; }
-        
+        /// <inheritdoc />
+        public State State { get; private set; }
+
         /// <summary>
         /// The ScriptableObject data that this task was created from.
         /// </summary>
         public Task_SO Data { get; private set; }
-        
+
+        /// <inheritdoc />
         public abstract float Progress { get; }
+
+        /// <inheritdoc />
+        public bool IsComplete => State == State.Completed;
+
+        /// <inheritdoc />
+        public bool IsFailed => State == State.Failed;
 
         #endregion
 
@@ -166,98 +76,125 @@ namespace HelloDev.QuestSystem.Tasks
         protected TaskRuntime(Task_SO data)
         {
             Data = data;
-            TaskId = data.TaskId;
+            Id = data.TaskId;
             DevName = data.DevName;
             DisplayName = data.DisplayName;
             Description = data.TaskDescription;
-            CurrentState = TaskState.NotStarted;
+            State = State.NotStarted;
         }
 
-        /// <summary>
-        /// Attempts to start the task, changing its state to InProgress if possible.
-        /// </summary>
-        public virtual void StartTask()
+        // ---------------------------------------------------------------
+        //  IObjective Lifecycle (the only lifecycle methods)
+        // ---------------------------------------------------------------
+
+        /// <inheritdoc />
+        public virtual void Start()
         {
-            if (CurrentState == TaskState.NotStarted)
+            if (State == State.NotStarted)
             {
-                SetTaskState(TaskState.InProgress);
-
+                SetState(State.InProgress);
                 SubscribeToEvents();
-
-                OnTaskStarted?.SafeInvoke(this);
-                _onStarted?.Invoke(this);
+                Started?.Invoke(this);
             }
         }
 
-        /// <summary>
-        /// Marks the task as completed.
-        /// </summary>
-        public virtual void CompleteTask()
+        /// <inheritdoc />
+        public virtual void Complete()
         {
-            if (CurrentState == TaskState.InProgress)
+            if (State == State.InProgress)
             {
-                SetTaskState(TaskState.Completed);
-
+                SetState(State.Completed);
                 UnsubscribeFromEvents();
                 ForceCompleteState();
+                ProgressChanged?.Invoke(this);
+                Completed?.Invoke(this);
+            }
+        }
 
-                OnTaskUpdated?.SafeInvoke(this);
-                OnTaskCompleted?.SafeInvoke(this);
-                _onProgressChanged?.Invoke(this);
-                _onCompleted?.Invoke(this);
+        /// <inheritdoc />
+        public virtual void Fail()
+        {
+            if (State == State.InProgress)
+            {
+                SetState(State.Failed);
+                UnsubscribeFromEvents();
+                Failed?.Invoke(this);
+            }
+        }
+
+        /// <inheritdoc />
+        public virtual void Reset()
+        {
+            SetState(State.NotStarted);
+            UnsubscribeFromEvents();
+        }
+
+        // ---------------------------------------------------------------
+        //  ITask – Task‑specific methods
+        // ---------------------------------------------------------------
+
+        /// <inheritdoc />
+        public abstract void ForceCompleteState();
+
+        /// <inheritdoc />
+        public void IncrementStep()
+        {
+            if (OnIncrementStep() && State == State.InProgress)
+            {
+                ProgressChanged?.Invoke(this);
+                CheckCompletion(this);
+            }
+        }
+
+        /// <inheritdoc />
+        public void DecrementStep()
+        {
+            if (OnDecrementStep() && State == State.InProgress)
+            {
+                ProgressChanged?.Invoke(this);
+                CheckCompletion(this);
             }
         }
 
         /// <summary>
-        /// Forces the task parameters to a completed state.
-        /// </summary>
-        public abstract void ForceCompleteState();
-        
-        /// <summary>
-        /// Increments the step for the task.
+        /// Template method for increment logic. Returns true if the step was actually modified.
         /// </summary>
         public abstract bool OnIncrementStep();
 
         /// <summary>
-        /// Increments the step for the task.
+        /// Template method for decrement logic. Returns true if the step was actually modified.
         /// </summary>
         public abstract bool OnDecrementStep();
 
-        #region Save/Load
+        #region Save / Load
 
         /// <summary>
         /// Captures task-specific progress data for saving.
-        /// Each task type implements this to serialize its own state.
         /// </summary>
-        /// <param name="progressData">The progress data object to populate.</param>
         public abstract void CaptureProgress(TaskProgressData progressData);
 
         /// <summary>
-        /// Restores task-specific progress data after loading.
-        /// Each task type implements this to deserialize its own state.
-        /// IMPORTANT: This method should NOT fire events to avoid triggering auto-completion.
+        /// Restores task-specific progress data after loading (events not fired).
         /// </summary>
-        /// <param name="progressData">The progress data object to restore from.</param>
         public abstract void RestoreProgress(TaskProgressData progressData);
 
         /// <summary>
         /// Directly sets the task state without triggering events or side effects.
         /// Used during save/load restoration.
         /// </summary>
-        /// <param name="state">The state to set.</param>
-        public void RestoreState(TaskState state)
+        public void RestoreState(State state)
         {
-            CurrentState = state;
+            State = state;
         }
 
         /// <summary>
         /// Resumes a task that was restored to InProgress state.
         /// Subscribes to events so the task can respond to game events.
-        /// Call this AFTER RestoreProgress and RestoreState.
+        /// Call this AFTER <see cref="RestoreProgress"/> and <see cref="RestoreState"/>.
         /// </summary>
         public void ResumeTask()
         {
-            if (CurrentState == TaskState.InProgress)
+            if (State == State.InProgress)
             {
                 SubscribeToEvents();
                 QuestLogger.LogVerbose(LogSubsystem.Task, $"Task '{DevName}' resumed from save");
@@ -265,129 +202,78 @@ namespace HelloDev.QuestSystem.Tasks
         }
 
         #endregion
-        
-        /// <summary>
-        /// Increments the step for the task.
-        /// </summary>
-        public void IncrementStep()
-        {
-            if (OnIncrementStep() && CurrentState == TaskState.InProgress)
-            {
-                OnTaskUpdated.SafeInvoke(this);
-                _onProgressChanged?.Invoke(this);
-            }
-        }
+
+        #region Internal Helpers
 
         /// <summary>
-        /// Increments the step for the task.
-        /// </summary>
-        public void DecrementStep()
-        {
-            if (OnDecrementStep() && CurrentState == TaskState.InProgress)
-            {
-                OnTaskUpdated.SafeInvoke(this);
-                _onProgressChanged?.Invoke(this);
-            }
-        }
-
-        /// <summary>
-        /// Marks the task as failed.
-        /// </summary>
-        public virtual void FailTask()
-        {
-            if (CurrentState == TaskState.InProgress)
-            {
-                SetTaskState(TaskState.Failed);
-
-                UnsubscribeFromEvents();
-
-                OnTaskFailed?.SafeInvoke(this);
-                _onFailed?.Invoke(this);
-            }
-        }
-
-        /// <summary>
-        /// Resets the task to its initial state.
-        /// </summary>
-        public virtual void ResetTask()
-        {
-            SetTaskState(TaskState.NotStarted);
-            UnsubscribeFromEvents();
-        }
-        
-        /// <summary>
-        /// Subscribes to events that can trigger failure checks.
-        /// This method should be implemented by concrete task types.
+        /// Subscribes to conditions that trigger auto‑completion or failure.
         /// </summary>
         protected virtual void SubscribeToEvents()
         {
             foreach (Condition_SO condition in Data.Conditions)
-            {
-                if (condition is IConditionEventDriven conditionEventDriven) 
-                    conditionEventDriven.SubscribeToEvent(CompleteTask);
-            }
-            
+                if (condition is IConditionEventDriven conditionEventDriven)
+                    conditionEventDriven.SubscribeToEvent(Complete);
+
             foreach (Condition_SO condition in Data.FailureConditions)
-            {
-                if (condition is IConditionEventDriven conditionEventDriven) 
-                    conditionEventDriven.SubscribeToEvent(FailTask);
-            }
-            
-            OnTaskUpdated.SafeSubscribe(CheckCompletion);
+                if (condition is IConditionEventDriven conditionEventDriven)
+                    conditionEventDriven.SubscribeToEvent(Fail);
         }
 
-        protected abstract void CheckCompletion(TaskRuntime task);
-
         /// <summary>
-        /// Unsubscribes from events to prevent memory leaks.
+        /// Unsubscribes from all condition events to prevent memory leaks.
         /// </summary>
         protected virtual void UnsubscribeFromEvents()
         {
             foreach (Condition_SO condition in Data.Conditions)
-            {
                 if (condition is IConditionEventDriven conditionEventDriven)
-                    conditionEventDriven.UnsubscribeFromEvent(CompleteTask);
-            }
+                    conditionEventDriven.UnsubscribeFromEvent(Complete);
 
             foreach (Condition_SO condition in Data.FailureConditions)
-            {
                 if (condition is IConditionEventDriven conditionEventDriven)
-                    conditionEventDriven.UnsubscribeFromEvent(FailTask);
-            }
-
-            OnTaskUpdated.SafeUnsubscribe(CheckCompletion);
+                    conditionEventDriven.UnsubscribeFromEvent(Fail);
         }
 
-        private void SetTaskState(TaskState state)
+        /// <summary>
+        /// Concrete task types implement this to check auto‑completion criteria.
+        /// Called after any step increment/decrement.
+        /// </summary>
+        protected abstract void CheckCompletion(IObjective task);
+
+        private void SetState(State state)
         {
-            CurrentState = state;
+            State = state;
             switch (state)
             {
-                case TaskState.InProgress:
+                case State.InProgress:
                     QuestLogger.LogStart(LogSubsystem.Task, "Task", DevName);
                     break;
-                case TaskState.Completed:
+                case State.Completed:
                     QuestLogger.LogComplete(LogSubsystem.Task, "Task", DevName);
                     break;
-                case TaskState.Failed:
+                case State.Failed:
                     QuestLogger.LogFail(LogSubsystem.Task, "Task", DevName);
                     break;
             }
         }
-        
+
+        #endregion
+
+        #region Equality
+
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (obj is TaskRuntime other)
-            {
-                return TaskId == other.TaskId;
-            }
-
+                return Id == other.Id;
             return false;
         }
-        
+
+        /// <inheritdoc />
         public override int GetHashCode()
         {
-            return TaskId.GetHashCode();
+            return Id.GetHashCode();
         }
+
+        #endregion
     }
 }

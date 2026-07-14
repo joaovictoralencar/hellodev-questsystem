@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Bootstrap;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -249,7 +250,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             var groupedQuests = QuestManager.Instance.GetActiveQuests()
                 .Where(q => q.QuestData?.QuestType != null
                          && q.QuestData.QuestType != completedQuestType
-                         && q.CurrentState == QuestState.InProgress)
+                         && q.State == State.InProgress)
                 .GroupBy(q => q.QuestData.QuestType);
 
             foreach (var group in groupedQuests)
@@ -400,7 +401,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             bool added = false;
 
             // Handle quests loaded from save with preserved state
-            if (quest.CurrentState == QuestState.Completed)
+            if (quest.State == State.Completed)
             {
                 if (completedQuestType != null)
                 {
@@ -409,7 +410,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                     added = true;
                 }
             }
-            else if (quest.CurrentState == QuestState.InProgress)
+            else if (quest.State == State.InProgress)
             {
                 var section = GetOrCreateSection(quest.QuestData.QuestType);
                 section.AddQuest(quest, HandleQuestSelected);
@@ -517,7 +518,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             return QuestManager.Instance.GetActiveQuests()
                 .Where(q => q.QuestData?.QuestType == questType
-                         && q.CurrentState == QuestState.InProgress)
+                         && q.State == State.InProgress)
                 .ToList();
         }
 

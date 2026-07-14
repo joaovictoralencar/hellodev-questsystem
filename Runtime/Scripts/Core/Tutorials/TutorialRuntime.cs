@@ -88,7 +88,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Gets the current state of this tutorial.
         /// </summary>
-        public ObjectiveState CurrentState { get; private set; }
+        public State CurrentState { get; private set; }
 
         /// <summary>
         /// Gets all runtime steps in this tutorial.
@@ -117,7 +117,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// Gets the progress of this tutorial (0-1).
         /// Includes partial progress from the current step (substeps, count-based, timed).
         /// </summary>
-        public float Progress
+        public float TutorialProgress
         {
             get
             {
@@ -134,75 +134,75 @@ namespace HelloDev.QuestSystem.Tutorials
         #region IMission Implementation
 
         /// <inheritdoc />
-        Guid IMission.MissionId => TutorialId;
+        public Guid MissionId => TutorialId;
 
         /// <inheritdoc />
-        string IMission.DisplayName => Data.DisplayName?.GetLocalizedString() ?? DevName;
+        public string DisplayName => Data.DisplayName?.GetLocalizedString() ?? DevName;
 
         /// <inheritdoc />
-        ObjectiveState IMission.State => CurrentState;
+        public State State => CurrentState;
 
         /// <inheritdoc />
-        float IMission.Progress => Progress;
+        public float Progress => TutorialProgress;
 
         /// <inheritdoc />
-        IReadOnlyList<IStage> IMission.Stages => _stepsAsStages;
+        public IReadOnlyList<IStage> Stages => _stepsAsStages;
 
         /// <inheritdoc />
-        IStage IMission.CurrentStage => CurrentStep;
+        public IStage CurrentStage => CurrentStep;
 
         /// <inheritdoc />
-        int IMission.CurrentStageIndex => CurrentStepIndex;
+        public int CurrentStageIndex => CurrentStepIndex;
 
         /// <inheritdoc />
-        void IMission.Start() => StartTutorial();
+        public void Start() => StartTutorial();
 
         /// <inheritdoc />
-        void IMission.Complete() => CompleteTutorial();
+        public void Complete() => CompleteTutorial();
 
         /// <inheritdoc />
-        void IMission.Fail() => FailTutorial();
+        public void Fail() => FailTutorial();
 
         /// <inheritdoc />
-        void IMission.Reset() => ResetTutorial();
+        public void Reset() => ResetTutorial();
 
         /// <inheritdoc />
-        event Action<IMission> IMission.OnStarted
+        public event Action<IMission> OnStarted
         {
             add => _onStarted += value;
             remove => _onStarted -= value;
         }
 
         /// <inheritdoc />
-        event Action<IMission> IMission.OnProgressChanged
+        public event Action<IMission> OnProgressChanged
         {
             add => _onProgressChanged += value;
             remove => _onProgressChanged -= value;
         }
 
         /// <inheritdoc />
-        event Action<IMission> IMission.OnCompleted
+        public event Action<IMission> OnCompleted
         {
             add => _onCompleted += value;
             remove => _onCompleted -= value;
         }
 
         /// <inheritdoc />
-        event Action<IMission> IMission.OnFailed
+        public event Action<IMission> OnFailed
         {
             add => _onFailed += value;
             remove => _onFailed -= value;
         }
 
         /// <inheritdoc />
-        event Action<IMission, IStage> IMission.OnStageEntered
+        public event Action<IMission, IStage> OnStageEntered
         {
             add => _onStageEntered += value;
             remove => _onStageEntered -= value;
         }
 
         /// <inheritdoc />
-        event Action<IMission, IStage> IMission.OnStageCompleted
+        public event Action<IMission, IStage> OnStageCompleted
         {
             add => _onStageCompleted += value;
             remove => _onStageCompleted -= value;
@@ -219,7 +219,7 @@ namespace HelloDev.QuestSystem.Tutorials
         public TutorialRuntime(Tutorial_SO data)
         {
             Data = data;
-            CurrentState = ObjectiveState.NotStarted;
+            CurrentState = State.NotStarted;
             WasSkipped = false;
 
             // Create runtime steps
@@ -247,17 +247,17 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void StartTutorial()
         {
-            if (CurrentState != ObjectiveState.NotStarted) return;
+            if (CurrentState != State.NotStarted) return;
             if (Steps.Count == 0)
             {
                 Logger.Log("Tutorial", $"Tutorial '{DevName}' has no steps, completing immediately.");
-                CurrentState = ObjectiveState.Completed;
+                CurrentState = State.Completed;
                 OnTutorialCompleted?.Invoke(this);
                 _onCompleted?.Invoke(this);
                 return;
             }
 
-            CurrentState = ObjectiveState.InProgress;
+            CurrentState = State.InProgress;
             Logger.Log("Tutorial", $"Tutorial '{DevName}' started with {Steps.Count} steps.");
 
             // Fire event BEFORE any step initialization so global setup can happen first
@@ -285,9 +285,9 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void CompleteTutorial()
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
 
-            CurrentState = ObjectiveState.Completed;
+            CurrentState = State.Completed;
             UnsubscribeFromStepEvents();
 
             Logging.Logger.Log("Tutorial", $"Tutorial '{DevName}' completed.");
@@ -303,11 +303,11 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <returns>True if skipped, false if skipping is not allowed.</returns>
         public bool SkipTutorial()
         {
-            if (CurrentState != ObjectiveState.InProgress) return false;
+            if (CurrentState != State.InProgress) return false;
             if (!Data.CanSkip) return false;
 
             WasSkipped = true;
-            CurrentState = ObjectiveState.Completed;
+            CurrentState = State.Completed;
             UnsubscribeFromStepEvents();
 
             Logger.Log("Tutorial", $"Tutorial '{DevName}' skipped.");
@@ -343,7 +343,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <param name="deltaTime">Time since last update.</param>
         public void UpdateTime(float deltaTime)
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
             CurrentStep?.UpdateTime(deltaTime);
         }
 
@@ -352,9 +352,9 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void FailTutorial()
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
 
-            CurrentState = ObjectiveState.Failed;
+            CurrentState = State.Failed;
             UnsubscribeFromStepEvents();
 
             Logging.Logger.Log("Tutorial", $"Tutorial '{DevName}' failed.");
@@ -374,7 +374,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 step.ResetStep();
             }
 
-            CurrentState = ObjectiveState.NotStarted;
+            CurrentState = State.NotStarted;
             CurrentStepIndex = -1;
             WasSkipped = false;
 
@@ -392,13 +392,13 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <param name="state">The state to restore to.</param>
         /// <param name="currentStepIndex">The step index to restore to.</param>
         /// <param name="fireEvents">If true, fires OnTutorialStarting, step restoration, and OnTutorialStarted events so UI can update.</param>
-        public void RestoreTutorialState(ObjectiveState state, int currentStepIndex, bool fireEvents = true)
+        public void RestoreTutorialState(State state, int currentStepIndex, bool fireEvents = true)
         {
             CurrentState = state;
             CurrentStepIndex = currentStepIndex;
 
             // Subscribe to step events for in-progress tutorials
-            if (state == ObjectiveState.InProgress)
+            if (state == State.InProgress)
             {
                 foreach (TutorialStepRuntime step in Steps)
                 {
@@ -407,7 +407,7 @@ namespace HelloDev.QuestSystem.Tutorials
                 }
 
                 // Resume the current step's condition subscription if needed
-                if (CurrentStep != null && CurrentStep.CurrentState == ObjectiveState.InProgress)
+                if (CurrentStep != null && CurrentStep.CurrentState == State.InProgress)
                 {
                     // Fire event BEFORE step resumption so global setup can happen first
                     if (fireEvents)
@@ -481,6 +481,7 @@ namespace HelloDev.QuestSystem.Tutorials
             {
                 return TutorialId == other.TutorialId;
             }
+
             return false;
         }
 

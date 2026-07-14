@@ -5,326 +5,230 @@ using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
-using HelloDev.Utils;
 using UnityEngine.Events;
 
 namespace HelloDev.QuestSystem.TaskGroups
 {
     /// <summary>
     /// Runtime representation of a task group, managing task state and group completion logic.
-    /// Created from a TaskGroup (serialized data) at quest start.
-    /// Implements <see cref="ITaskGroup"/> for testability and dependency injection.
-    /// Implements <see cref="IObjectiveGroup"/> for generic objective system compatibility.
+    /// Implements <see cref="ITaskGroup"/> (and through it <see cref="IObjectiveGroup"/> / <see cref="IObjective"/>).
     /// </summary>
-    public class TaskGroupRuntime : ITaskGroup, IObjectiveGroup
+    public class TaskGroupRuntime : ITaskGroup
     {
-        #region Events
+        // ---------------------------------------------------------------
+        //  IObjective UnityEvents (the only lifecycle events)
+        // ---------------------------------------------------------------
+
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Started { get; set; } = new();
+
+        /// <inheritdoc />
+        public UnityEvent<IObjective> ProgressChanged { get; set; } = new();
+
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Completed { get; set; } = new();
+
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Failed { get; set; } = new();
+
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Updated { get; set; } = new();
+
+        // ---------------------------------------------------------------
+        //  IObjectiveGroup event
+        // ---------------------------------------------------------------
+
+        /// <inheritdoc />
+        public UnityEvent<IObjectiveGroup, IObjective> OnObjectiveCompleted { get; set; } = new();
+
+        // ---------------------------------------------------------------
+        //  Properties (interface implementations)
+        // ---------------------------------------------------------------
+
+        /// <inheritdoc />
+        public Guid Id { get; }
 
         /// <summary>
-        /// Fired when this group starts.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime> OnGroupStarted = new();
-
-        /// <summary>
-        /// Fired when this group completes successfully.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime> OnGroupCompleted = new();
-
-        /// <summary>
-        /// Fired when this group fails.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime> OnGroupFailed = new();
-
-        /// <summary>
-        /// Fired when any task in this group is updated.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupUpdated = new();
-
-        /// <summary>
-        /// Fired when any task in this group completes.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupCompleted = new();
-
-        /// <summary>
-        /// Fired when any task in this group fails.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupFailed = new();
-
-        /// <summary>
-        /// Fired when any task in this group starts.
-        /// </summary>
-        public UnityEvent<TaskGroupRuntime, TaskRuntime> OnTaskInGroupStarted = new();
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// The name of this task group.
+        /// The human‑readable name of this task group.
         /// </summary>
         public string GroupName { get; }
 
-        /// <summary>
-        /// How tasks in this group are executed.
-        /// </summary>
-        public TaskExecutionMode ExecutionMode { get; }
+        /// <inheritdoc />
+        public IReadOnlyList<TaskRuntime> Tasks { get; }
+
+        // IObjectiveGroup.Objectives – returns the same tasks, upcasted.
+        /// <inheritdoc />
+        public IReadOnlyList<IObjective> Objectives => Tasks.Cast<IObjective>().ToList().AsReadOnly();
 
         /// <summary>
-        /// For OptionalXofY mode: minimum number of tasks required to complete.
+        /// Underlying execution mode stored as the task‑system enum.
         /// </summary>
+        private readonly TaskExecutionMode _taskExecutionMode;
+
+        /// <inheritdoc />
+        public ObjectiveExecutionMode ExecutionMode => MapExecutionMode(_taskExecutionMode);
+
+        /// <inheritdoc />
         public int RequiredCount { get; }
 
         /// <summary>
-        /// All runtime tasks in this group.
+        /// Current state stored as the unified <see cref="State"/> enum.
         /// </summary>
-        public IReadOnlyList<TaskRuntime> Tasks { get; }
+        private State _state = State.NotStarted;
+
+        /// <inheritdoc />
+        public State State => _state;
 
         /// <summary>
-        /// Current state of this group.
+        /// Provides backward‑compatible access to the group state using <see cref="TaskGroupState"/>.
         /// </summary>
-        public TaskGroupState CurrentState { get; private set; }
+        public TaskGroupState CurrentState => MapToTaskGroupState(_state);
 
-        /// <summary>
-        /// Returns all tasks that are currently in progress.
-        /// For Sequential mode, this is at most 1 task.
-        /// For Parallel/AnyOrder/OptionalXofY, this can be multiple tasks.
-        /// </summary>
-        public IReadOnlyList<TaskRuntime> CurrentTasks =>
-            Tasks.Where(t => t.CurrentState == TaskState.InProgress).ToList();
-
-        /// <summary>
-        /// Returns all tasks that are available to work on.
-        /// For Sequential: only the current InProgress task.
-        /// For other modes: all InProgress tasks.
-        /// </summary>
-        public IReadOnlyList<TaskRuntime> AvailableTasks => CurrentTasks;
-
-        /// <summary>
-        /// Number of completed tasks in this group.
-        /// </summary>
-        public int CompletedTaskCount => Tasks.Count(t => t.CurrentState == TaskState.Completed);
-
-        /// <summary>
-        /// Number of failed tasks in this group.
-        /// </summary>
-        public int FailedTaskCount => Tasks.Count(t => t.CurrentState == TaskState.Failed);
-
-        /// <summary>
-        /// Number of tasks still in progress or not started.
-        /// </summary>
-        public int RemainingTaskCount => Tasks.Count(t =>
-            t.CurrentState == TaskState.NotStarted || t.CurrentState == TaskState.InProgress);
-
-        /// <summary>
-        /// Progress of this group (0-1).
-        /// For OptionalXofY: based on RequiredCount.
-        /// For others: average of all task progress.
-        /// </summary>
+        /// <inheritdoc />
         public float Progress
         {
             get
             {
                 if (Tasks.Count == 0) return 1f;
-
-                return ExecutionMode switch
+                return _taskExecutionMode switch
                 {
-                    TaskExecutionMode.OptionalXofY =>
-                        Math.Min(1f, (float)CompletedTaskCount / RequiredCount),
+                    TaskExecutionMode.OptionalXofY => Math.Min(1f, (float)CompletedCount / RequiredCount),
                     _ => Tasks.Sum(t => t.Progress) / Tasks.Count
                 };
             }
         }
 
-        #endregion
+        /// <inheritdoc />
+        public bool IsComplete => _state == State.Completed;
 
-        #region Constructor
+        /// <inheritdoc />
+        public bool IsFailed => _state == State.Failed;
 
-        /// <summary>
-        /// Creates a runtime task group from serialized data.
-        /// </summary>
-        /// <param name="groupData">The serialized task group data.</param>
+        /// <inheritdoc />
+        public int CompletedCount => Tasks.Count(t => t.State == State.Completed);
+
+        UnityEvent<IObjectiveGroup, IObjective> IObjectiveGroup.OnObjectiveCompleted { get; set; }
+
+        // Convenience properties retained for backward compatibility
+        private int FailedTaskCount => Tasks.Count(t => t.State == State.Failed);
+        private int RemainingTaskCount => Tasks.Count(t => t.State == State.NotStarted || t.State == State.InProgress);
+
+        // ---------------------------------------------------------------
+        //  Constructor
+        // ---------------------------------------------------------------
+
         public TaskGroupRuntime(TaskGroup groupData)
         {
+            // Ideally Id would come from serialized data; here we generate a runtime Id.
+            Id = Guid.NewGuid();
             GroupName = groupData.GroupName;
-            ExecutionMode = groupData.ExecutionMode;
+            _taskExecutionMode = groupData.ExecutionMode;
             RequiredCount = groupData.RequiredCount;
-            CurrentState = TaskGroupState.NotStarted;
 
-            // Create runtime tasks from Task_SO data
             Tasks = groupData.Tasks
                 .Where(t => t != null)
                 .Select(so => so.GetRuntimeTask())
                 .ToList();
         }
 
-        #endregion
+        // ---------------------------------------------------------------
+        //  IObjective Lifecycle (the only lifecycle entry points)
+        // ---------------------------------------------------------------
 
-        #region Public Methods
-
-        /// <summary>
-        /// Starts this task group based on its execution mode.
-        /// </summary>
-        public void StartGroup()
+        public void Start()
         {
-            if (CurrentState != TaskGroupState.NotStarted)
-            {
-                QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' is already started or completed.");
-                return;
-            }
+            if (_state != State.NotStarted) return;
 
-            CurrentState = TaskGroupState.InProgress;
+            _state = State.InProgress;
             SubscribeToTaskEvents();
 
-            switch (ExecutionMode)
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' started ({_taskExecutionMode}).");
+            Started.Invoke(this);
+
+            switch (_taskExecutionMode)
             {
                 case TaskExecutionMode.Sequential:
-                    // Log group start BEFORE starting the task (correct chronological order)
-                    var firstTask = Tasks.FirstOrDefault();
-                    QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' started (Sequential). First task: {firstTask?.DevName ?? "none"}");
-                    OnGroupStarted.SafeInvoke(this);
-                    firstTask?.StartTask();
+                    Tasks.FirstOrDefault()?.Start();
                     break;
-
-                case TaskExecutionMode.Parallel:
-                case TaskExecutionMode.AnyOrder:
-                case TaskExecutionMode.OptionalXofY:
-                    // Log group start BEFORE starting tasks (correct chronological order)
-                    QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' started ({ExecutionMode}). {Tasks.Count} tasks active.");
-                    OnGroupStarted.SafeInvoke(this);
+                default:
                     foreach (var task in Tasks)
-                    {
-                        task.StartTask();
-                    }
+                        task.Start();
                     break;
             }
         }
 
-        /// <summary>
-        /// Checks if the group completion criteria is met.
-        /// </summary>
-        /// <returns>True if the group should be marked as completed.</returns>
-        public bool CheckCompletion()
+        public void Complete()
         {
-            if (CurrentState != TaskGroupState.InProgress) return false;
+            if (_state != State.InProgress) return;
 
-            return ExecutionMode switch
-            {
-                TaskExecutionMode.OptionalXofY => CompletedTaskCount >= RequiredCount,
-                _ => Tasks.All(t => t.CurrentState == TaskState.Completed)
-            };
-        }
-
-        /// <summary>
-        /// Checks if completion has become impossible due to failures.
-        /// </summary>
-        /// <returns>True if the group can no longer be completed.</returns>
-        public bool IsCompletionImpossible()
-        {
-            if (CurrentState != TaskGroupState.InProgress) return false;
-
-            int remainingPossible = Tasks.Count - FailedTaskCount;
-
-            return ExecutionMode switch
-            {
-                TaskExecutionMode.OptionalXofY => remainingPossible < RequiredCount,
-                _ => FailedTaskCount > 0 // Any failure makes completion impossible for other modes
-            };
-        }
-
-        /// <summary>
-        /// Completes the group successfully.
-        /// </summary>
-        public void CompleteGroup()
-        {
-            if (CurrentState != TaskGroupState.InProgress) return;
-
-            CurrentState = TaskGroupState.Completed;
+            _state = State.Completed;
             UnsubscribeFromTaskEvents();
 
-            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' completed. {CompletedTaskCount}/{Tasks.Count} tasks done.");
-            OnGroupCompleted.SafeInvoke(this);
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' completed.");
+            Completed.Invoke(this);
         }
 
-        /// <summary>
-        /// Fails the group.
-        /// </summary>
-        public void FailGroup()
+        public void Fail()
         {
-            if (CurrentState != TaskGroupState.InProgress) return;
+            if (_state != State.InProgress) return;
 
-            CurrentState = TaskGroupState.Failed;
+            _state = State.Failed;
             UnsubscribeFromTaskEvents();
 
-            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' failed. {FailedTaskCount} tasks failed.");
-            OnGroupFailed.SafeInvoke(this);
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' failed.");
+            Failed.Invoke(this);
         }
 
-        /// <summary>
-        /// Resets all tasks in the group to NotStarted state.
-        /// </summary>
-        public void ResetGroup()
+        public void Reset()
         {
             UnsubscribeFromTaskEvents();
 
             foreach (var task in Tasks)
-            {
-                task.ResetTask();
-            }
+                task.Reset();
 
-            CurrentState = TaskGroupState.NotStarted;
+            _state = State.NotStarted;
             QuestLogger.Log(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' reset.");
         }
 
-        /// <summary>
-        /// Gets a task by its ID.
-        /// </summary>
-        /// <param name="taskId">The task's GUID.</param>
-        /// <returns>The task, or null if not found.</returns>
-        public TaskRuntime GetTask(Guid taskId)
+        // ---------------------------------------------------------------
+        //  ITaskGroup – specific logic
+        // ---------------------------------------------------------------
+
+        public TaskRuntime GetTask(Guid taskId) => Tasks.FirstOrDefault(t => t.Id == taskId);
+
+        public bool CheckCompletion()
         {
-            return Tasks.FirstOrDefault(t => t.TaskId == taskId);
-        }
-
-        #endregion
-
-        #region Save/Load Restoration
-
-        /// <summary>
-        /// Directly sets the group state without triggering events or side effects.
-        /// Used during save/load restoration.
-        /// </summary>
-        /// <param name="state">The state to set.</param>
-        public void RestoreGroupState(TaskGroupState state)
-        {
-            CurrentState = state;
-        }
-
-        /// <summary>
-        /// Resumes a group that was restored to InProgress state.
-        /// Subscribes to task events so the group can respond to task completion.
-        /// Call this AFTER all task states have been restored.
-        /// </summary>
-        public void ResumeGroup()
-        {
-            if (CurrentState == TaskGroupState.InProgress)
+            if (_state != State.InProgress) return false;
+            return _taskExecutionMode switch
             {
-                SubscribeToTaskEvents();
-                QuestLogger.LogVerbose(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' resumed from save");
-            }
+                TaskExecutionMode.OptionalXofY => CompletedCount >= RequiredCount,
+                _ => Tasks.All(t => t.State == State.Completed)
+            };
         }
 
-        #endregion
+        public bool IsCompletionImpossible()
+        {
+            if (_state != State.InProgress) return false;
+            int remainingPossible = Tasks.Count - FailedTaskCount;
+            return _taskExecutionMode switch
+            {
+                TaskExecutionMode.OptionalXofY => remainingPossible < RequiredCount,
+                _ => FailedTaskCount > 0
+            };
+        }
 
-        #region Private Methods
+        // ---------------------------------------------------------------
+        //  Task event subscriptions (internal)
+        // ---------------------------------------------------------------
 
         private void SubscribeToTaskEvents()
         {
             foreach (var task in Tasks)
             {
-                task.OnTaskStarted.SafeSubscribe(HandleTaskStarted);
-                task.OnTaskCompleted.SafeSubscribe(HandleTaskCompleted);
-                task.OnTaskUpdated.SafeSubscribe(HandleTaskUpdated);
-                task.OnTaskFailed.SafeSubscribe(HandleTaskFailed);
+                task.Started.AddListener(OnTaskStarted);
+                task.ProgressChanged.AddListener(OnTaskProgressChanged);
+                task.Completed.AddListener(OnTaskCompleted);
+                task.Failed.AddListener(OnTaskFailed);
             }
         }
 
@@ -332,197 +236,99 @@ namespace HelloDev.QuestSystem.TaskGroups
         {
             foreach (var task in Tasks)
             {
-                task.OnTaskStarted.SafeUnsubscribe(HandleTaskStarted);
-                task.OnTaskCompleted.SafeUnsubscribe(HandleTaskCompleted);
-                task.OnTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
-                task.OnTaskFailed.SafeUnsubscribe(HandleTaskFailed);
+                task.Started.RemoveListener(OnTaskStarted);
+                task.ProgressChanged.RemoveListener(OnTaskProgressChanged);
+                task.Completed.RemoveListener(OnTaskCompleted);
+                task.Failed.RemoveListener(OnTaskFailed);
             }
         }
 
-        private void HandleTaskStarted(TaskRuntime task)
+        private void OnTaskStarted(IObjective task)
         {
-            OnTaskInGroupStarted.SafeInvoke(this, task);
+            // No group‑level event for individual task starts –
+            // consumers can subscribe to task.Started directly.
         }
 
-        private void HandleTaskCompleted(TaskRuntime task)
+        private void OnTaskProgressChanged(IObjective task)
         {
-            OnTaskInGroupCompleted.SafeInvoke(this, task);
+            ProgressChanged.Invoke(this);
+        }
+
+        private void OnTaskCompleted(IObjective task)
+        {
+            OnObjectiveCompleted?.Invoke(this, task);
 
             if (CheckCompletion())
             {
-                CompleteGroup();
+                Complete();
             }
-            else if (ExecutionMode == TaskExecutionMode.Sequential)
+            else if (_taskExecutionMode == TaskExecutionMode.Sequential)
             {
-                // Start next task in sequence
-                var nextTask = Tasks.FirstOrDefault(t => t.CurrentState == TaskState.NotStarted);
+                var nextTask = Tasks.FirstOrDefault(t => t.State == State.NotStarted);
                 if (nextTask != null)
                 {
-                    nextTask.StartTask();
+                    nextTask.Start();
                     QuestLogger.Log(LogSubsystem.TaskGroup, $"Starting next task '{nextTask.DevName}' in group '{GroupName}'.");
                 }
             }
         }
 
-        private void HandleTaskUpdated(TaskRuntime task)
+        private void OnTaskFailed(IObjective task)
         {
-            OnTaskInGroupUpdated.SafeInvoke(this, task);
-        }
-
-        private void HandleTaskFailed(TaskRuntime task)
-        {
-            QuestLogger.Log(LogSubsystem.TaskGroup, $"Task '{task.DevName}' failed in group '{GroupName}'.");
-            OnTaskInGroupFailed.SafeInvoke(this, task);
-
-            // Check if completion has become impossible
+            QuestLogger.Log(LogSubsystem.TaskGroup, $"Task '{((TaskRuntime)task).DevName}' failed in group '{GroupName}'.");
             if (IsCompletionImpossible())
             {
-                FailGroup();
+                Fail();
             }
-            // Otherwise, other tasks continue (for OptionalXofY mode)
         }
 
-        #endregion
+        // ---------------------------------------------------------------
+        //  Save / Load
+        // ---------------------------------------------------------------
 
-        #region Explicit IObjectiveGroup Implementation
-
-        // Backing fields for Action events
-        private event Action<IObjectiveGroup> _onStarted;
-        private event Action<IObjectiveGroup> _onProgressChanged;
-        private event Action<IObjectiveGroup> _onCompleted;
-        private event Action<IObjectiveGroup> _onFailed;
-        private event Action<IObjectiveGroup, IObjective> _onObjectiveCompleted;
-
-        /// <summary>
-        /// Gets the unique identifier for this group.
-        /// </summary>
-        string IObjectiveGroup.Id => GroupName;
-
-        /// <summary>
-        /// Gets the current state mapped to ObjectiveState.
-        /// </summary>
-        ObjectiveState IObjectiveGroup.State => MapTaskGroupStateToObjectiveState(CurrentState);
-
-        /// <summary>
-        /// Gets the overall progress of this group.
-        /// </summary>
-        float IObjectiveGroup.Progress => Progress;
-
-        /// <summary>
-        /// Gets the list of objectives (tasks) in this group.
-        /// </summary>
-        IReadOnlyList<IObjective> IObjectiveGroup.Objectives => Tasks.Cast<IObjective>().ToList();
-
-        /// <summary>
-        /// Gets the execution mode mapped to ObjectiveExecutionMode.
-        /// </summary>
-        ObjectiveExecutionMode IObjectiveGroup.ExecutionMode => MapTaskExecutionModeToObjectiveExecutionMode(ExecutionMode);
-
-        /// <summary>
-        /// Gets the number of objectives required to complete this group.
-        /// </summary>
-        int IObjectiveGroup.RequiredCount => RequiredCount;
-
-        /// <summary>
-        /// Gets the number of objectives that have been completed.
-        /// </summary>
-        int IObjectiveGroup.CompletedCount => CompletedTaskCount;
-
-        /// <summary>
-        /// Fired when the group starts.
-        /// </summary>
-        event Action<IObjectiveGroup> IObjectiveGroup.OnStarted
+        public void RestoreGroupState(TaskGroupState state)
         {
-            add
+            _state = MapToState(state);
+        }
+
+        public void ResumeGroup()
+        {
+            if (_state == State.InProgress)
             {
-                _onStarted += value;
-                OnGroupStarted.SafeSubscribe(_ => value?.Invoke(this));
+                SubscribeToTaskEvents();
+                QuestLogger.LogVerbose(LogSubsystem.TaskGroup, $"TaskGroup '{GroupName}' resumed from save");
             }
-            remove => _onStarted -= value;
         }
 
-        /// <summary>
-        /// Fired when the group's progress changes.
-        /// </summary>
-        event Action<IObjectiveGroup> IObjectiveGroup.OnProgressChanged
+        // ---------------------------------------------------------------
+        //  Mapping helpers
+        // ---------------------------------------------------------------
+
+        private static State MapToState(TaskGroupState tgs) => tgs switch
         {
-            add
-            {
-                _onProgressChanged += value;
-                OnTaskInGroupUpdated.AddListener((_, _) => value?.Invoke(this));
-            }
-            remove => _onProgressChanged -= value;
-        }
+            TaskGroupState.NotStarted => State.NotStarted,
+            TaskGroupState.InProgress => State.InProgress,
+            TaskGroupState.Completed => State.Completed,
+            TaskGroupState.Failed => State.Failed,
+            _ => State.NotStarted
+        };
 
-        /// <summary>
-        /// Fired when the group is completed.
-        /// </summary>
-        event Action<IObjectiveGroup> IObjectiveGroup.OnCompleted
+        private static TaskGroupState MapToTaskGroupState(State s) => s switch
         {
-            add
-            {
-                _onCompleted += value;
-                OnGroupCompleted.AddListener(_ => value?.Invoke(this));
-            }
-            remove => _onCompleted -= value;
-        }
+            State.NotStarted => TaskGroupState.NotStarted,
+            State.InProgress => TaskGroupState.InProgress,
+            State.Completed => TaskGroupState.Completed,
+            State.Failed => TaskGroupState.Failed,
+            _ => TaskGroupState.NotStarted
+        };
 
-        /// <summary>
-        /// Fired when the group fails.
-        /// </summary>
-        event Action<IObjectiveGroup> IObjectiveGroup.OnFailed
+        private static ObjectiveExecutionMode MapExecutionMode(TaskExecutionMode mode) => mode switch
         {
-            add
-            {
-                _onFailed += value;
-                OnGroupFailed.AddListener(_ => value?.Invoke(this));
-            }
-            remove => _onFailed -= value;
-        }
-
-        /// <summary>
-        /// Fired when an individual objective within the group is completed.
-        /// </summary>
-        event Action<IObjectiveGroup, IObjective> IObjectiveGroup.OnObjectiveCompleted
-        {
-            add
-            {
-                _onObjectiveCompleted += value;
-                OnTaskInGroupCompleted.AddListener((_, task) => value?.Invoke(this, task));
-            }
-            remove => _onObjectiveCompleted -= value;
-        }
-
-        /// <summary>
-        /// Maps TaskGroupState to ObjectiveState.
-        /// </summary>
-        private static ObjectiveState MapTaskGroupStateToObjectiveState(TaskGroupState state)
-        {
-            return state switch
-            {
-                TaskGroupState.NotStarted => ObjectiveState.NotStarted,
-                TaskGroupState.InProgress => ObjectiveState.InProgress,
-                TaskGroupState.Completed => ObjectiveState.Completed,
-                TaskGroupState.Failed => ObjectiveState.Failed,
-                _ => ObjectiveState.NotStarted
-            };
-        }
-
-        /// <summary>
-        /// Maps TaskExecutionMode to ObjectiveExecutionMode.
-        /// </summary>
-        private static ObjectiveExecutionMode MapTaskExecutionModeToObjectiveExecutionMode(TaskExecutionMode mode)
-        {
-            return mode switch
-            {
-                TaskExecutionMode.Sequential => ObjectiveExecutionMode.Sequential,
-                TaskExecutionMode.Parallel => ObjectiveExecutionMode.Parallel,
-                TaskExecutionMode.AnyOrder => ObjectiveExecutionMode.AnyOrder,
-                TaskExecutionMode.OptionalXofY => ObjectiveExecutionMode.OptionalXOfY,
-                _ => ObjectiveExecutionMode.Sequential
-            };
-        }
-
-        #endregion
+            TaskExecutionMode.Sequential => ObjectiveExecutionMode.Sequential,
+            TaskExecutionMode.Parallel => ObjectiveExecutionMode.Parallel,
+            TaskExecutionMode.AnyOrder => ObjectiveExecutionMode.AnyOrder,
+            TaskExecutionMode.OptionalXofY => ObjectiveExecutionMode.OptionalXOfY,
+            _ => ObjectiveExecutionMode.Sequential
+        };
     }
 }

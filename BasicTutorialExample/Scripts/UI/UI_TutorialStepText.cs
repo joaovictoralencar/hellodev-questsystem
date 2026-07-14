@@ -441,7 +441,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
                 {
                     if (_step != null && _step.HasSubsteps)
                     {
-                        if (_step.CurrentState != ObjectiveState.Completed) return;
+                        if (_step.CurrentState != State.Completed) return;
                     }
 
                     Completed?.Invoke();

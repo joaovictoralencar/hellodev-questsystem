@@ -25,7 +25,7 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets the unique identifier for this stage.
         /// </summary>
-        string Id { get; }
+        string Name { get; }
 
         #endregion
 
@@ -34,7 +34,7 @@ namespace HelloDev.Objectives
         /// <summary>
         /// Gets the current state of the stage.
         /// </summary>
-        ObjectiveState State { get; }
+        State State { get; }
 
         /// <summary>
         /// Gets the progress of this stage as a value from 0.0 to 1.0.

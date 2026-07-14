@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 #if UNITY_EDITOR
+using HelloDev.Objectives;
 using UnityEditor;
 #endif
 
@@ -409,14 +410,14 @@ namespace HelloDev.QuestSystem.ScriptableObjects
             return $"{prefix}{cond.TargetState}";
         }
 
-        private Color GetConditionColor(QuestState state)
+        private Color GetConditionColor(State state)
         {
             return state switch
             {
-                QuestState.Completed => new Color(0.4f, 0.75f, 0.4f),
-                QuestState.InProgress => new Color(0.4f, 0.6f, 0.9f),
-                QuestState.Failed => new Color(0.9f, 0.4f, 0.4f),
-                QuestState.NotStarted => new Color(0.5f, 0.5f, 0.5f),
+                State.Completed => new Color(0.4f, 0.75f, 0.4f),
+                State.InProgress => new Color(0.4f, 0.6f, 0.9f),
+                State.Failed => new Color(0.9f, 0.4f, 0.4f),
+                State.NotStarted => new Color(0.5f, 0.5f, 0.5f),
                 _ => new Color(0.5f, 0.5f, 0.5f)
             };
         }
@@ -2246,7 +2247,7 @@ namespace HelloDev.QuestSystem.ScriptableObjects
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
             if (questToCheckField != null) questToCheckField.SetValue(condition, prerequisiteQuest);
-            if (targetStateField != null) targetStateField.SetValue(condition, QuestState.Completed);
+            if (targetStateField != null) targetStateField.SetValue(condition, State.Completed);
 
             // Save the asset
             var conditionName = $"SO_Condition_Requires_{prerequisiteQuest.DevName}Completed.asset";

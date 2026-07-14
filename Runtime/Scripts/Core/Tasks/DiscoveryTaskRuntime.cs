@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -79,12 +80,12 @@ namespace HelloDev.QuestSystem.Tasks
                 {
                     if (condition is IConditionEventDriven eventCondition)
                     {
-                        eventCondition.SubscribeToEvent(FailTask);
+                        eventCondition.SubscribeToEvent(Fail);
                     }
                 }
             }
 
-            OnTaskUpdated.SafeSubscribe(CheckCompletion);
+            Updated.SafeSubscribe(CheckCompletion);
         }
 
         /// <summary>
@@ -92,12 +93,12 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         private void OnConditionFulfilled(Condition_SO condition)
         {
-            if (CurrentState != TaskState.InProgress) return;
+            if (State != Objectives.State.InProgress) return;
             if (_fulfilledConditions.Contains(condition)) return; // Duplicate protection
 
             _fulfilledConditions.Add(condition);
             QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' - Condition fulfilled. Progress: {DiscoveredCount}/{RequiredDiscoveries}");
-            OnTaskUpdated?.SafeInvoke(this);
+            Updated?.SafeInvoke(this);
         }
 
         public override void ForceCompleteState()
@@ -115,7 +116,7 @@ namespace HelloDev.QuestSystem.Tasks
         public override bool OnIncrementStep()
         {
             // For discovery tasks, incrementing marks the next unfulfilled condition
-            if (CurrentState != TaskState.InProgress) return false;
+            if (State != Objectives.State.InProgress) return false;
             if (Data.Conditions == null || _fulfilledConditions.Count >= RequiredDiscoveries) return false;
 
             var nextUnfulfilled = Data.Conditions.FirstOrDefault(c => !_fulfilledConditions.Contains(c));
@@ -132,7 +133,7 @@ namespace HelloDev.QuestSystem.Tasks
         public override bool OnDecrementStep()
         {
             // For discovery tasks, decrementing removes the last fulfilled condition
-            if (CurrentState != TaskState.InProgress) return false;
+            if (State != Objectives.State.InProgress) return false;
             if (_fulfilledConditions.Count == 0) return false;
 
             var lastFulfilled = _fulfilledConditions.LastOrDefault();
@@ -149,18 +150,18 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Resets the task's state and clears all fulfilled conditions.
         /// </summary>
-        public override void ResetTask()
+        public override void Reset()
         {
-            base.ResetTask();
+            base.Reset();
             _fulfilledConditions.Clear();
-            OnTaskUpdated?.SafeInvoke(this);
+            Updated?.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(TaskRuntime task)
+        protected override void CheckCompletion(IObjective task)
         {
             if (_fulfilledConditions.Count >= RequiredDiscoveries)
             {
-                CompleteTask();
+                Complete();
             }
         }
 
@@ -215,7 +216,7 @@ namespace HelloDev.QuestSystem.Tasks
                 }
             }
 
-            OnTaskUpdated.SafeInvoke(this);
+            Updated.SafeInvoke(this);
         }
 
         #endregion

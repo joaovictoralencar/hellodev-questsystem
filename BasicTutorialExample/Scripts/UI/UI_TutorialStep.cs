@@ -170,7 +170,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
         {
             if (step == null) return;
 
-            if (step.CurrentState != ObjectiveState.Completed)
+            if (step.CurrentState != State.Completed)
             {
                 if (firstShow)
                 {

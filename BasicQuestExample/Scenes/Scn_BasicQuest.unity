@@ -432,7 +432,7 @@ GameObject:
   - component: {fileID: 1583650962}
   - component: {fileID: 1583650963}
   m_Layer: 0
-  m_Name: SaveMananger
+  m_Name: SaveManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -465,7 +465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44bdecb616a5a9d4a82ef65c371487f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HelloDev.Saving::HelloDev.Saving.UnifiedSaveManager
-  settings: {fileID: 11400000, guid: bdd24dbbe7f3d134bb27a4b6f9cab295, type: 2}
+  settings: {fileID: 11400000, guid: d75d6d6fa8076774196024a90993ddc5, type: 2}
   selfInitialize: 0
   persistent: 1
   defaultSlotKey: autosave

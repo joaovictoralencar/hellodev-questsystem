@@ -1,3 +1,4 @@
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 
@@ -26,12 +27,12 @@ namespace HelloDev.QuestSystem.Tasks
             _stringTaskData = taskData as TaskString_SO;
         }
 
-        public override float Progress => CurrentState == TaskState.Completed ? 1f : 0f;
+        public override float Progress => State == Objectives.State.Completed ? 1f : 0f;
 
         public override void ForceCompleteState()
         {
             _currentValue = TargetValue;
-            CompleteTask();
+            Complete();
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace HelloDev.QuestSystem.Tasks
         public override bool OnIncrementStep()
         {
             // For string tasks, increment completes the task directly
-            CompleteTask();
+            Complete();
             return true;
         }
 
@@ -58,14 +59,14 @@ namespace HelloDev.QuestSystem.Tasks
             return true;
         }
 
-        protected override void CheckCompletion(TaskRuntime task)
+        protected override void CheckCompletion(IObjective task)
         {
-            if (CurrentState != TaskState.InProgress) return;
+            if (State != State.InProgress) return;
 
             // Compare current value with target value (case-sensitive)
             if (_currentValue == TargetValue)
             {
-                CompleteTask();
+                Complete();
             }
         }
 

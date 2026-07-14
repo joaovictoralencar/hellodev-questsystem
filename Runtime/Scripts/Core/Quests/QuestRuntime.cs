@@ -15,13 +15,13 @@ using UnityEngine.Events;
 namespace HelloDev.QuestSystem.Quests
 {
     /// <summary>
-    /// Represents a runtime quest instance. This class provides the core structure and
+    /// Represents a runtime quest instance. Provides core structure and
     /// state management for all quests. Supports both legacy (flat task groups) and
-    /// stage-based quests (Skyrim-style multi-phase).
+    /// stage-based quests (Skyrim‑style multi‑phase).
     /// Implements <see cref="IQuest"/> for testability and dependency injection.
     /// Implements <see cref="IMission"/> for unified objective system compatibility.
     /// </summary>
-    public class QuestRuntime : IQuest, IMission
+    public class QuestRuntime : IQuest
     {
         #region Events - Quest Lifecycle
 
@@ -37,135 +37,145 @@ namespace HelloDev.QuestSystem.Quests
         /// <summary>Fired when the quest is reset and restarted.</summary>
         public UnityEvent<QuestRuntime> OnQuestRestarted = new();
 
-        /// <summary>Fired when quest progress changes (stage advances, group advances, task completes, etc.).</summary>
+        /// <summary>Fired when quest progress changes.</summary>
         public UnityEvent<QuestRuntime> OnQuestUpdated = new();
 
         #endregion
 
         #region Events - Tasks
 
-        /// <summary>Fired when any task in this quest starts.</summary>
         public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskStarted = new();
-
-        /// <summary>Fired when any task in this quest is updated.</summary>
         public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskUpdated = new();
-
-        /// <summary>Fired when any task in this quest completes.</summary>
         public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskCompleted = new();
-
-        /// <summary>Fired when any task in this quest fails.</summary>
         public UnityEvent<QuestRuntime, TaskRuntime> OnAnyTaskFailed = new();
 
         #endregion
 
         #region Events - Stages
 
-        /// <summary>Fired when a stage is entered.</summary>
-        public UnityEvent<QuestRuntime, QuestStageRuntime> OnStageEntered = new();
-
-        /// <summary>Fired when a stage is completed.</summary>
-        public UnityEvent<QuestRuntime, QuestStageRuntime> OnStageCompleted = new();
-
-        /// <summary>Fired when a stage transition occurs.</summary>
+        public UnityEvent<QuestRuntime, QuestStageRuntime> OnQuestStageEntered = new();
+        public UnityEvent<QuestRuntime, QuestStageRuntime> OnQuestStageCompleted = new();
         public UnityEvent<QuestRuntime, StageTransitionInfo> OnStageTransition = new();
 
         #endregion
 
         #region Events - Player Choices
 
-        /// <summary>
-        /// Fired when a stage with player choices becomes active.
-        /// Game systems (UI, dialogue, etc.) can subscribe to present choices.
-        /// The list contains all PlayerChoice transitions for the current stage.
-        /// </summary>
         public UnityEvent<QuestRuntime, List<StageTransition>> OnChoicesAvailable = new();
-
-        /// <summary>
-        /// Fired when a player choice is made (either explicitly via SelectChoice or implicitly via conditions).
-        /// </summary>
         public UnityEvent<QuestRuntime, StageTransition> OnChoiceMade = new();
-
-        /// <summary>
-        /// Fired when a player choice's availability changes (conditions met/unmet).
-        /// Useful for updating UI to enable/disable choice buttons.
-        /// </summary>
         public UnityEvent<QuestRuntime, StageTransition, bool> OnChoiceAvailabilityChanged = new();
+
+        #endregion
+
+        #region Events - Mission (IMission Action events)
+
+        private event Action<IMission> _onStarted;
+        private event Action<IMission> _onProgressChanged;
+        private event Action<IMission> _onCompleted;
+        private event Action<IMission> _onFailed;
+        private event Action<IMission, IStage> _onStageEntered;
+        private event Action<IMission, IStage> _onStageCompleted;
+
+        public event Action<IMission> OnStarted
+        {
+            add => _onStarted += value;
+            remove => _onStarted -= value;
+        }
+
+        public event Action<IMission> OnProgressChanged
+        {
+            add => _onProgressChanged += value;
+            remove => _onProgressChanged -= value;
+        }
+
+        public event Action<IMission> OnCompleted
+        {
+            add => _onCompleted += value;
+            remove => _onCompleted -= value;
+        }
+
+        public event Action<IMission> OnFailed
+        {
+            add => _onFailed += value;
+            remove => _onFailed -= value;
+        }
+
+        public event Action<IMission, IStage> OnStageEntered
+        {
+            add => _onStageEntered += value;
+            remove => _onStageEntered -= value;
+        }
+
+        public event Action<IMission, IStage> OnStageCompleted
+        {
+            add => _onStageCompleted += value;
+            remove => _onStageCompleted -= value;
+        }
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Gets the unique identifier for this quest.
-        /// </summary>
-        public Guid QuestId { get; }
+        /// <inheritdoc />
+        public Guid MissionId { get; }
 
-        /// <summary>
-        /// Gets the current state of this quest.
-        /// </summary>
-        public QuestState CurrentState { get; private set; }
+        /// <inheritdoc />
+        public string DisplayName => QuestData.DisplayName?.GetLocalizedString() ?? QuestData.DevName;
+
+        /// <inheritdoc />
+        public State State { get; private set; }
 
         /// <summary>
         /// Gets the ScriptableObject data for this quest.
         /// </summary>
         public Quest_SO QuestData { get; }
 
-        /// <summary>
-        /// Gets all stages in this quest.
-        /// </summary>
-        public IReadOnlyList<QuestStageRuntime> Stages { get; }
+        /// <inheritdoc />
+        public IReadOnlyList<IStage> Stages { get; }
 
         /// <summary>
-        /// Gets the currently active stage, or null if quest is not in progress.
+        /// Gets all concrete quest stages in this quest.
         /// </summary>
-        public QuestStageRuntime CurrentStage { get; private set; }
+        public IReadOnlyList<QuestStageRuntime> QuestStages { get; }
+
+        /// <inheritdoc />
+        public IStage CurrentStage => CurrentQuestStage;
 
         /// <summary>
-        /// Gets the index of the current stage.
+        /// Gets the currently active quest stage, or null if quest is not in progress.
         /// </summary>
-        public int CurrentStageIndex => CurrentStage?.StageIndex ?? -1;
+        public QuestStageRuntime CurrentQuestStage { get; private set; }
 
-        /// <summary>
-        /// Gets all task groups across all stages (flattened for backward compatibility).
-        /// </summary>
-        public IReadOnlyList<TaskGroupRuntime> TaskGroups => Stages.SelectMany(s => s.TaskGroups).ToList();
+        /// <inheritdoc />
+        public int CurrentStageIndex => CurrentQuestStage?.StageIndex ?? -1;
 
-        /// <summary>
-        /// Gets the currently active task group from the current stage.
-        /// </summary>
-        public TaskGroupRuntime CurrentGroup => CurrentStage?.CurrentGroup;
+        /// <inheritdoc />
+        public IReadOnlyList<TaskGroupRuntime> TaskGroups =>
+            QuestStages.SelectMany(s => s.TaskGroups).ToList();
 
-        /// <summary>
-        /// Gets all tasks that are currently in progress (can be multiple for parallel groups).
-        /// </summary>
+        /// <inheritdoc />
+        public TaskGroupRuntime CurrentGroup => CurrentQuestStage?.CurrentGroup;
+
+        /// <inheritdoc />
         public IReadOnlyList<TaskRuntime> CurrentTasks =>
-            CurrentStage?.CurrentTasks ?? Array.Empty<TaskRuntime>();
+            CurrentQuestStage?.CurrentTasks ?? Array.Empty<TaskRuntime>();
 
-        /// <summary>
-        /// Gets the first currently in-progress task, or null if none.
-        /// Use CurrentTasks for parallel groups where multiple tasks may be active.
-        /// </summary>
+        /// <inheritdoc />
         public TaskRuntime CurrentTask => CurrentTasks.FirstOrDefault();
 
-        /// <summary>
-        /// Gets all tasks across all stages and groups (flattened list for backward compatibility).
-        /// </summary>
-        public IReadOnlyList<TaskRuntime> Tasks => Stages.SelectMany(s => s.AllTasks).ToList();
+        /// <inheritdoc />
+        public IReadOnlyList<TaskRuntime> Tasks =>
+            QuestStages.SelectMany(s => s.AllTasks).ToList();
 
-        /// <summary>
-        /// Gets the overall progress of this quest (0-1).
-        /// Calculated as the weighted average of stage progress.
-        /// </summary>
-        public float CurrentProgress
+        /// <inheritdoc />
+        public float Progress
         {
             get
             {
-                if (Stages.Count == 0) return CurrentState == QuestState.Completed ? 1f : 0f;
-
+                if (QuestStages.Count == 0) return State == State.Completed ? 1f : 0f;
                 float totalProgress = 0f;
                 int totalTaskCount = 0;
-
-                foreach (var stage in Stages)
+                foreach (var stage in QuestStages)
                 {
                     int stageTaskCount = stage.AllTasks.Count;
                     totalProgress += stage.Progress * stageTaskCount;
@@ -176,83 +186,42 @@ namespace HelloDev.QuestSystem.Quests
             }
         }
 
-        /// <summary>
-        /// Dictionary tracking which branch decisions were made (for branching quests).
-        /// Key is branch ID, value is choice ID.
-        /// </summary>
+        /// <inheritdoc />
         public Dictionary<string, string> BranchDecisions { get; } = new();
 
-        /// <summary>
-        /// When true, TryStartQuestIfConditionsMet will not start the quest.
-        /// Used during restore to prevent events from triggering auto-start.
-        /// </summary>
+        /// <inheritdoc />
+        public bool CurrentStageRequiresChoice =>
+            CurrentQuestStage?.Data.RequiresPlayerChoice ?? false;
+
         private bool _blockAutoStart;
-
-        /// <summary>
-        /// Tracks tasks that have been subscribed to, preventing double-subscription
-        /// when groups are started multiple times (e.g., after reset).
-        /// </summary>
         private readonly HashSet<TaskRuntime> _subscribedTasks = new();
-
-        /// <summary>
-        /// True while transitioning between stages. Used to prevent saving during
-        /// stage transitions which could capture inconsistent state.
-        /// </summary>
         private bool _isTransitioningStage;
-
-        /// <summary>
-        /// Returns true if the quest is currently transitioning between stages.
-        /// Save operations should check this and defer if true.
-        /// </summary>
         public bool IsTransitioningStage => _isTransitioningStage;
 
-        /// <summary>
-        /// Stores player choice condition subscriptions for proper cleanup.
-        /// </summary>
         private readonly List<(IConditionEventDriven Condition, System.Action Callback)> _playerChoiceSubscriptions = new();
-
-        /// <summary>
-        /// Tracks the availability state of each choice to detect changes.
-        /// Key is choice ID, value is whether it was available.
-        /// </summary>
         private readonly Dictionary<string, bool> _choiceAvailabilityCache = new();
 
         #endregion
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="QuestRuntime"/> class.
-        /// </summary>
-        /// <param name="questData">The quest data.</param>
-        /// <remarks>
-        /// This constructor creates a runtime instance from a Quest_SO asset.
-        /// Creates QuestStageRuntime instances from the quest's stages.
-        /// Legacy quests (without stages) are auto-wrapped in a single stage.
-        /// </remarks>
         public QuestRuntime(Quest_SO questData)
         {
             QuestData = questData;
-            QuestId = questData.QuestId;
-            CurrentState = QuestState.NotStarted;
+            MissionId = questData.QuestId;
+            State = State.NotStarted;
 
-            // Create runtime stages from the quest data
-            // Quest_SO.Stages already handles legacy mode by returning a single auto-generated stage
-            Stages = questData.Stages
+            QuestStages = questData.Stages
                 .Select(stageData => new QuestStageRuntime(stageData))
                 .ToList();
+            Stages = QuestStages.Cast<IStage>().ToList();
         }
 
-        private void UpdateQuestState(QuestState newState)
-        {
-            CurrentState = newState;
-        }
+        // ---------------------------------------------------------------
+        //  IMission / IQuest Lifecycle (the only lifecycle entry points)
+        // ---------------------------------------------------------------
 
-        /// <summary>
-        /// Attempts to start the quest, changing its state to InProgress if possible.
-        /// Starts the first stage.
-        /// </summary>
-        public void StartQuest()
+        public void Start()
         {
-            if (CurrentState != QuestState.NotStarted)
+            if (State != State.NotStarted)
             {
                 QuestLogger.LogVerbose(LogSubsystem.Quest, $"'{QuestData.DevName}' already in progress");
                 return;
@@ -260,38 +229,32 @@ namespace HelloDev.QuestSystem.Quests
 
             UnsubscribeFromStartConditions();
             SubscribeToAllEvents();
+            State = State.InProgress;
 
-            UpdateQuestState(QuestState.InProgress);
-
-            // Start the first stage (lowest index)
             var firstStage = GetStageByIndex(GetFirstStageIndex());
             if (firstStage != null)
             {
-                // Log quest start BEFORE starting the stage (correct chronological order)
                 QuestLogger.LogStart(LogSubsystem.Quest, "Quest", QuestData.DevName);
                 OnQuestStarted.SafeInvoke(this);
+                _onStarted?.Invoke(this);
                 TransitionToStage(firstStage);
             }
             else
             {
-                // Quest has no stages - auto-complete immediately
-                QuestLogger.LogWarning(LogSubsystem.Quest, $"Quest '{QuestData.DevName}' has no stages, auto-completing");
+                QuestLogger.LogWarning(LogSubsystem.Quest,
+                    $"Quest '{QuestData.DevName}' has no stages, auto-completing");
                 OnQuestStarted.SafeInvoke(this);
-                CompleteQuest();
+                _onStarted?.Invoke(this);
+                Complete();
             }
         }
 
-        /// <summary>
-        /// Marks the quest as completed, changing its state to Completed.
-        /// Distributes all rewards and fires completion events.
-        /// </summary>
-        public void CompleteQuest()
+        public void Complete()
         {
-            if (CurrentState == QuestState.InProgress)
+            if (State == State.InProgress)
             {
                 UnsubscribeFromAllEvents();
 
-                // Distribute rewards
                 if (QuestData.Rewards != null)
                 {
                     foreach (var reward in QuestData.Rewards)
@@ -299,136 +262,94 @@ namespace HelloDev.QuestSystem.Quests
                         if (reward.RewardType != null && reward.Amount > 0)
                         {
                             reward.RewardType.GiveReward(reward.Amount);
-                            QuestLogger.LogVerbose(LogSubsystem.Quest, $"Reward: {reward.RewardType.name} x{reward.Amount}");
+                            QuestLogger.LogVerbose(LogSubsystem.Quest,
+                                $"Reward: {reward.RewardType.name} x{reward.Amount}");
                         }
                     }
                 }
 
-                OnQuestUpdated.SafeInvoke(this);
-                UpdateQuestState(QuestState.Completed);
+                NotifyQuestUpdated();
+                State = State.Completed;
                 QuestLogger.LogComplete(LogSubsystem.Quest, "Quest", QuestData.DevName);
                 OnQuestCompleted.SafeInvoke(this);
+                _onCompleted?.Invoke(this);
             }
         }
 
-        /// <summary>
-        /// Marks the quest as failed, changing its state to Failed.
-        /// </summary>
-        public void FailQuest()
+        public void Fail()
         {
-            if (CurrentState == QuestState.InProgress)
+            if (State == State.InProgress)
             {
-                UpdateQuestState(QuestState.Failed);
+                State = State.Failed;
                 UnsubscribeFromAllEvents();
                 QuestLogger.LogFail(LogSubsystem.Quest, "Quest", QuestData.DevName);
                 OnQuestFailed.SafeInvoke(this);
+                _onFailed?.Invoke(this);
             }
         }
 
-        /// <summary>
-        /// Resets the quest to its initial state and restarts it.
-        /// </summary>
-        public void ResetQuest()
+        public void Reset()
         {
             UnsubscribeFromAllEvents();
-
-            // Clear subscribed tasks tracking so fresh subscriptions happen on restart
             _subscribedTasks.Clear();
 
-            // Reset all stages
-            foreach (var stage in Stages)
-            {
+            foreach (var stage in QuestStages)
                 stage.Reset();
-            }
 
-            CurrentStage = null;
+            CurrentQuestStage = null;
             BranchDecisions.Clear();
-            UpdateQuestState(QuestState.NotStarted);
-            StartQuest();
+            State = State.NotStarted;
+            Start();
             OnQuestRestarted.SafeInvoke(this);
         }
 
-        #region Save/Load Restoration
+        #region Save / Load
 
-        /// <summary>
-        /// Directly sets the quest state and current stage without triggering events or side effects.
-        /// Used during save/load restoration.
-        /// </summary>
-        /// <param name="state">The state to set.</param>
-        /// <param name="stageIndex">The current stage index to set (-1 for no stage).</param>
-        public void RestoreQuestState(QuestState state, int stageIndex)
+        public void RestoreQuestState(State state, int stageIndex)
         {
-            CurrentState = state;
-            CurrentStage = stageIndex >= 0 ? GetStageByIndex(stageIndex) : null;
+            State = state;
+            CurrentQuestStage = stageIndex >= 0 ? GetStageByIndex(stageIndex) : null;
         }
 
-        /// <summary>
-        /// Resumes a quest that was restored to InProgress state.
-        /// Subscribes to events so the quest can respond to game events.
-        /// Call this AFTER all task and stage states have been restored.
-        /// </summary>
         public void ResumeQuest()
         {
-            if (CurrentState == QuestState.InProgress)
+            if (State != State.InProgress) return;
+
+            UnsubscribeFromStartConditions();
+            SubscribeToAllEvents();
+
+            CurrentQuestStage?.ResumeStage();
+            if (CurrentQuestStage != null)
+                QuestManager.Instance?.NotifyStageEntered(this, CurrentQuestStage);
+
+            foreach (var stage in QuestStages)
             {
-                // Unsubscribe from start conditions (quest already started)
-                UnsubscribeFromStartConditions();
-
-                // Subscribe to stage events
-                SubscribeToAllEvents();
-
-                // Resume the current stage
-                CurrentStage?.ResumeStage();
-
-                // Notify QuestManager of stage enter on resume
-                if (CurrentStage != null)
+                foreach (var group in stage.TaskGroups)
                 {
-                    QuestManager.Instance?.NotifyStageEntered(this, CurrentStage);
-                }
-
-                // Resume all InProgress groups and tasks
-                foreach (var stage in Stages)
-                {
-                    foreach (var group in stage.TaskGroups)
+                    if (group.CurrentState == TaskGroupState.InProgress)
                     {
-                        if (group.CurrentState == TaskGroupState.InProgress)
-                        {
-                            // Set up task event subscriptions for this group
-                            // (normally done when group starts, but after load we need to reconnect)
-                            HandleGroupInStageStarted(stage, group);
-                            group.ResumeGroup();
-                        }
-
-                        foreach (var task in group.Tasks)
-                        {
-                            task.ResumeTask();
-                        }
+                        HandleGroupInStageStarted(stage, group);
+                        group.ResumeGroup();
                     }
-                }
 
-                // If the current stage has player choices, set up choice handling
-                if (CurrentStage?.Data.HasPlayerChoices == true)
-                {
-                    SubscribeToPlayerChoiceConditions();
+                    foreach (var task in group.Tasks)
+                        task.ResumeTask();
                 }
-
-                QuestLogger.LogVerbose(LogSubsystem.Quest, $"Quest '{QuestData.DevName}' resumed from save");
             }
+
+            if (CurrentQuestStage?.Data.HasPlayerChoices == true)
+                SubscribeToPlayerChoiceConditions();
+
+            QuestLogger.LogVerbose(LogSubsystem.Quest, $"Quest '{QuestData.DevName}' resumed from save");
         }
 
         #endregion
 
         #region Stage Management
 
-        /// <summary>
-        /// Attempts to set the quest to a specific stage by index.
-        /// Used for manual stage transitions (e.g., from dialogue).
-        /// </summary>
-        /// <param name="stageIndex">The index of the stage to transition to.</param>
-        /// <returns>True if transition was successful.</returns>
         public bool TrySetStage(int stageIndex)
         {
-            if (CurrentState != QuestState.InProgress)
+            if (State != State.InProgress)
             {
                 QuestLogger.LogWarning(LogSubsystem.Stage, $"Cannot set stage: '{QuestData.DevName}' not in progress");
                 return false;
@@ -444,60 +365,42 @@ namespace HelloDev.QuestSystem.Quests
             int previousIndex = CurrentStageIndex;
             TransitionToStage(targetStage);
             OnStageTransition.SafeInvoke(this, new StageTransitionInfo(previousIndex, stageIndex));
-
             return true;
         }
 
-        /// <summary>
-        /// Gets a stage by its index.
-        /// </summary>
-        /// <param name="stageIndex">The stage index.</param>
-        /// <returns>The stage, or null if not found.</returns>
         public QuestStageRuntime GetStageByIndex(int stageIndex)
         {
-            return Stages.FirstOrDefault(s => s.StageIndex == stageIndex);
+            return QuestStages.FirstOrDefault(s => s.StageIndex == stageIndex);
         }
 
-        /// <summary>
-        /// Gets the first stage index (lowest number).
-        /// </summary>
         private int GetFirstStageIndex()
         {
-            return Stages.Count > 0 ? Stages.Min(s => s.StageIndex) : -1;
+            return QuestStages.Count > 0 ? QuestStages.Min(s => s.StageIndex) : -1;
         }
 
-        /// <summary>
-        /// Transitions to a new stage.
-        /// </summary>
         private void TransitionToStage(QuestStageRuntime targetStage)
         {
-            // Mark transition in progress to prevent save during this critical section
             _isTransitioningStage = true;
             try
             {
-                // Unsubscribe from previous stage's choice conditions
                 UnsubscribeFromPlayerChoiceConditions();
 
-                // Complete current stage if it's still in progress
-                if (CurrentStage?.CurrentState == StageState.InProgress)
+                if (CurrentQuestStage?.CurrentState == StageState.InProgress)
                 {
-                    // Notify QuestManager of stage exit before completing
-                    QuestManager.Instance?.NotifyStageExited(this, CurrentStage);
-
-                    CurrentStage.Complete();
-                    OnStageCompleted.SafeInvoke(this, CurrentStage);
+                    QuestManager.Instance?.NotifyStageExited(this, CurrentQuestStage);
+                    CurrentQuestStage.Complete();
+                    OnQuestStageCompleted.SafeInvoke(this, CurrentQuestStage);
+                    _onStageCompleted?.Invoke(this, CurrentQuestStage);
                 }
 
-                CurrentStage = targetStage;
+                CurrentQuestStage = targetStage;
                 targetStage.Enter();
 
-                // Notify QuestManager of stage enter after entering
                 QuestManager.Instance?.NotifyStageEntered(this, targetStage);
-
-                OnStageEntered.SafeInvoke(this, targetStage);
+                OnQuestStageEntered.SafeInvoke(this, targetStage);
+                _onStageEntered?.Invoke(this, targetStage);
                 NotifyQuestUpdated();
 
-                // If the new stage has player choices, set up choice handling
                 if (targetStage.Data.HasPlayerChoices)
                 {
                     SubscribeToPlayerChoiceConditions();
@@ -514,45 +417,20 @@ namespace HelloDev.QuestSystem.Quests
 
         #region Player Choice Methods
 
-        /// <summary>
-        /// Gets all player choices available in the current stage.
-        /// Returns only choices whose conditions are met.
-        /// </summary>
-        /// <returns>List of available player choice transitions.</returns>
         public List<StageTransition> GetAvailableChoices()
         {
-            if (CurrentStage == null || CurrentState != QuestState.InProgress)
+            if (CurrentQuestStage == null || State != State.InProgress)
                 return new List<StageTransition>();
-
-            return CurrentStage.Data.GetAvailablePlayerChoices();
+            return CurrentQuestStage.Data.GetAvailablePlayerChoices();
         }
 
-        /// <summary>
-        /// Gets all player choices in the current stage, regardless of condition state.
-        /// Useful for displaying all options with some potentially greyed out.
-        /// </summary>
-        /// <returns>List of all player choice transitions.</returns>
         public List<StageTransition> GetAllChoices()
         {
-            if (CurrentStage == null || CurrentState != QuestState.InProgress)
+            if (CurrentQuestStage == null || State != State.InProgress)
                 return new List<StageTransition>();
-
-            return CurrentStage.Data.GetAllPlayerChoices();
+            return CurrentQuestStage.Data.GetAllPlayerChoices();
         }
 
-        /// <summary>
-        /// Checks if the current stage requires the player to make a choice before progressing.
-        /// </summary>
-        public bool CurrentStageRequiresChoice =>
-            CurrentStage?.Data.RequiresPlayerChoice ?? false;
-
-        /// <summary>
-        /// Selects a player choice, triggering the associated transition.
-        /// </summary>
-        /// <param name="choice">The choice transition to select.</param>
-        /// <param name="bypassConditions">If true, skips condition evaluation. Used for UI-based choices (Option B)
-        /// where conditions are for gameplay triggers (Option C), not for gating UI availability.</param>
-        /// <returns>True if the choice was valid and executed.</returns>
         public bool SelectChoice(StageTransition choice, bool bypassConditions = false)
         {
             if (choice == null)
@@ -561,13 +439,13 @@ namespace HelloDev.QuestSystem.Quests
                 return false;
             }
 
-            if (CurrentState != QuestState.InProgress)
+            if (State != State.InProgress)
             {
                 QuestLogger.LogWarning(LogSubsystem.Choice, $"Quest '{QuestData.DevName}' not in progress");
                 return false;
             }
 
-            if (CurrentStage == null)
+            if (CurrentQuestStage == null)
             {
                 QuestLogger.LogWarning(LogSubsystem.Choice, $"No current stage in '{QuestData.DevName}'");
                 return false;
@@ -585,29 +463,24 @@ namespace HelloDev.QuestSystem.Quests
                 return false;
             }
 
-            // Record the decision
             string stageKey = $"stage_{CurrentStageIndex}";
             BranchDecisions[stageKey] = choice.ChoiceId;
-            
-            QuestLogger.Log(LogSubsystem.Choice, $"Choice <b>'{choice.ChoiceId}'</b> selected in quest <b>'{QuestData.DevName}'</b>");
 
-            // Complete any in-progress tasks in the current stage (decision tasks)
+            QuestLogger.Log(LogSubsystem.Choice,
+                $"Choice <b>'{choice.ChoiceId}'</b> selected in quest <b>'{QuestData.DevName}'</b>");
+
             foreach (var task in CurrentTasks)
             {
-                if (task.CurrentState == TaskState.InProgress)
+                if (task.State == State.InProgress)
                 {
                     QuestLogger.Log(LogSubsystem.Task, $"Completing decision task '{task.DevName}' due to player choice");
-                    task.CompleteTask();
+                    task.Complete();
                 }
             }
 
-            // Apply transition effects (consequences of the choice)
             choice.ApplyEffects();
-
-            // Fire event before transition
             OnChoiceMade.SafeInvoke(this, choice);
 
-            // Execute the transition
             int previousIndex = CurrentStageIndex;
             var targetStage = GetStageByIndex(choice.TargetStageIndex);
 
@@ -615,21 +488,16 @@ namespace HelloDev.QuestSystem.Quests
             {
                 TransitionToStage(targetStage);
                 OnStageTransition.SafeInvoke(this, new StageTransitionInfo(previousIndex, choice.TargetStageIndex));
-                return true;
             }
             else
             {
                 QuestLogger.LogVerbose(LogSubsystem.Stage, $"Target stage {choice.TargetStageIndex} not found, completing quest");
-                CompleteQuest();
-                return true;
+                Complete();
             }
+
+            return true;
         }
 
-        /// <summary>
-        /// Selects a player choice by its ID.
-        /// </summary>
-        /// <param name="choiceId">The choice ID to select.</param>
-        /// <returns>True if the choice was found and executed.</returns>
         public bool SelectChoiceById(string choiceId)
         {
             if (string.IsNullOrEmpty(choiceId))
@@ -638,13 +506,13 @@ namespace HelloDev.QuestSystem.Quests
                 return false;
             }
 
-            if (CurrentStage == null)
+            if (CurrentQuestStage == null)
             {
                 QuestLogger.LogWarning(LogSubsystem.Choice, $"No current stage in '{QuestData.DevName}'");
                 return false;
             }
 
-            var choice = CurrentStage.Data.GetPlayerChoiceById(choiceId);
+            var choice = CurrentQuestStage.Data.GetPlayerChoiceById(choiceId);
             if (choice == null)
             {
                 QuestLogger.LogWarning(LogSubsystem.Choice, $"Choice '{choiceId}' not found");
@@ -654,64 +522,43 @@ namespace HelloDev.QuestSystem.Quests
             return SelectChoice(choice);
         }
 
-        /// <summary>
-        /// Checks if a specific choice is currently available.
-        /// </summary>
-        /// <param name="choiceId">The choice ID to check.</param>
-        /// <returns>True if the choice exists and its conditions are met.</returns>
         public bool IsChoiceAvailable(string choiceId)
         {
-            if (CurrentStage == null) return false;
-            return CurrentStage.Data.IsChoiceAvailable(choiceId);
+            if (CurrentQuestStage == null) return false;
+            return CurrentQuestStage.Data.IsChoiceAvailable(choiceId);
         }
 
-        /// <summary>
-        /// Fires the OnChoicesAvailable event for the current stage if it has player choices.
-        /// Called when a stage with choices is entered.
-        /// </summary>
         private void NotifyChoicesAvailable()
         {
-            if (CurrentStage == null) return;
-
-            var choices = CurrentStage.Data.GetAllPlayerChoices();
+            if (CurrentQuestStage == null) return;
+            var choices = CurrentQuestStage.Data.GetAllPlayerChoices();
             if (choices.Count > 0)
             {
-                QuestLogger.Log(LogSubsystem.Choice, $"<b>{choices.Count}</b> choices available in <b>'{CurrentStage.StageName}'</b>");
+                QuestLogger.Log(LogSubsystem.Choice,
+                    $"<b>{choices.Count}</b> choices available in <b>'{CurrentQuestStage.StageName}'</b>");
                 OnChoicesAvailable.SafeInvoke(this, choices);
             }
         }
 
-        /// <summary>
-        /// Subscribes to player choice conditions for implicit choice detection.
-        /// When a choice's conditions become met through game events, the choice is auto-selected.
-        /// </summary>
         private void SubscribeToPlayerChoiceConditions()
         {
-            if (CurrentStage == null) return;
+            if (CurrentQuestStage == null) return;
+            var choices = CurrentQuestStage.Data.GetAllPlayerChoices();
 
-            var choices = CurrentStage.Data.GetAllPlayerChoices();
-
-            // Capture initial availability state for all choices
             _choiceAvailabilityCache.Clear();
             foreach (var choice in choices)
             {
                 if (!string.IsNullOrEmpty(choice.ChoiceId))
-                {
                     _choiceAvailabilityCache[choice.ChoiceId] = choice.EvaluateConditions();
-                }
             }
 
-            // Subscribe to conditions
             foreach (var choice in choices)
             {
                 if (choice.Conditions == null) continue;
-
                 foreach (var condition in choice.Conditions)
                 {
                     if (condition is IConditionEventDriven eventDriven)
                     {
-                        // Store callback for proper unsubscription
-                        // When any condition fires, re-evaluate ALL choices
                         System.Action callback = () => HandleChoiceConditionChanged();
                         eventDriven.SubscribeToEvent(callback);
                         _playerChoiceSubscriptions.Add((eventDriven, callback));
@@ -720,29 +567,19 @@ namespace HelloDev.QuestSystem.Quests
             }
         }
 
-        /// <summary>
-        /// Unsubscribes from player choice conditions.
-        /// </summary>
         private void UnsubscribeFromPlayerChoiceConditions()
         {
             foreach (var (condition, callback) in _playerChoiceSubscriptions)
-            {
                 condition.UnsubscribeFromEvent(callback);
-            }
             _playerChoiceSubscriptions.Clear();
             _choiceAvailabilityCache.Clear();
         }
 
-        /// <summary>
-        /// Called when any player choice condition fires.
-        /// Re-evaluates ALL choices and fires OnChoiceAvailabilityChanged for any that changed.
-        /// </summary>
         private void HandleChoiceConditionChanged()
         {
-            if (CurrentState != QuestState.InProgress) return;
-            if (CurrentStage == null) return;
+            if (State != State.InProgress || CurrentQuestStage == null) return;
 
-            var choices = CurrentStage.Data.GetAllPlayerChoices();
+            var choices = CurrentQuestStage.Data.GetAllPlayerChoices();
             StageTransition newlyAvailableImplicitChoice = null;
 
             foreach (var choice in choices)
@@ -752,7 +589,6 @@ namespace HelloDev.QuestSystem.Quests
                 bool currentlyAvailable = choice.EvaluateConditions();
                 bool wasAvailable = _choiceAvailabilityCache.TryGetValue(choice.ChoiceId, out var cached) && cached;
 
-                // Only fire event if availability actually changed
                 if (currentlyAvailable != wasAvailable)
                 {
                     _choiceAvailabilityCache[choice.ChoiceId] = currentlyAvailable;
@@ -761,19 +597,15 @@ namespace HelloDev.QuestSystem.Quests
                     QuestLogger.LogVerbose(LogSubsystem.Choice,
                         $"Choice '{choice.ChoiceId}' availability changed: {wasAvailable} → {currentlyAvailable}");
 
-                    // Track if this newly available choice is an implicit choice
                     if (currentlyAvailable)
                     {
-                        var implicitChoice = CurrentStage.Data.GetImplicitlySelectedChoice();
+                        var implicitChoice = CurrentQuestStage.Data.GetImplicitlySelectedChoice();
                         if (implicitChoice == choice)
-                        {
                             newlyAvailableImplicitChoice = choice;
-                        }
                     }
                 }
             }
 
-            // Handle implicit choice selection (after all events fired)
             if (newlyAvailableImplicitChoice != null)
             {
                 QuestLogger.LogVerbose(LogSubsystem.Choice, $"Implicit choice '{newlyAvailableImplicitChoice.ChoiceId}' triggered");
@@ -787,8 +619,7 @@ namespace HelloDev.QuestSystem.Quests
 
         private void SubscribeToAllEvents()
         {
-            // Subscribe to stage events
-            foreach (var stage in Stages)
+            foreach (var stage in QuestStages)
             {
                 stage.OnStageEntered.SafeSubscribe(HandleStageEntered);
                 stage.OnStageCompleted.SafeSubscribe(HandleStageCompleted);
@@ -800,23 +631,19 @@ namespace HelloDev.QuestSystem.Quests
                 stage.OnGroupInStageFailed.SafeSubscribe(HandleGroupInStageFailed);
             }
 
-            // Subscribe to global task failure conditions
             if (QuestData.GlobalTaskFailureConditions != null)
             {
                 foreach (Condition_SO condition in QuestData.GlobalTaskFailureConditions)
                 {
                     if (condition is IConditionEventDriven conditionEventDriven)
-                    {
                         conditionEventDriven.SubscribeToEvent(HandleGlobalTaskFailure);
-                    }
                 }
             }
         }
 
         private void UnsubscribeFromAllEvents()
         {
-            // Unsubscribe from stage events
-            foreach (var stage in Stages)
+            foreach (var stage in QuestStages)
             {
                 stage.OnStageEntered.SafeUnsubscribe(HandleStageEntered);
                 stage.OnStageCompleted.SafeUnsubscribe(HandleStageCompleted);
@@ -828,26 +655,21 @@ namespace HelloDev.QuestSystem.Quests
                 stage.OnGroupInStageFailed.SafeUnsubscribe(HandleGroupInStageFailed);
             }
 
-            // Unsubscribe from global task failure conditions
             if (QuestData.GlobalTaskFailureConditions != null)
             {
                 foreach (Condition_SO condition in QuestData.GlobalTaskFailureConditions)
                 {
                     if (condition is IConditionEventDriven conditionEventDriven)
-                    {
                         conditionEventDriven.UnsubscribeFromEvent(HandleGlobalTaskFailure);
-                    }
                 }
             }
 
-            // Unsubscribe from player choice conditions
             UnsubscribeFromPlayerChoiceConditions();
         }
 
         private void UnsubscribeFromStartConditions()
         {
             if (QuestData.StartConditions == null) return;
-
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
                 if (condition is IConditionEventDriven conditionEventDriven)
@@ -855,31 +677,17 @@ namespace HelloDev.QuestSystem.Quests
             }
         }
 
-        /// <summary>
-        /// Subscribes to start condition events so the quest can auto-start when conditions are met.
-        /// </summary>
-        /// <param name="blockAutoStart">If true, prevents auto-start even if conditions are met during subscription.
-        /// Used during restore to prevent events from triggering auto-start before restore completes.</param>
         public void SubscribeToStartQuestEvents(bool blockAutoStart = false)
         {
             _blockAutoStart = blockAutoStart;
-
-            if (QuestData.StartConditions == null)
-                return;
-
+            if (QuestData.StartConditions == null) return;
             foreach (Condition_SO condition in QuestData.StartConditions)
             {
                 if (condition is IConditionEventDriven conditionEventDriven)
-                {
                     conditionEventDriven.SubscribeToEvent(TryStartQuestIfConditionsMet);
-                }
             }
         }
 
-        /// <summary>
-        /// Clears the auto-start block, allowing future events to trigger quest start.
-        /// Call this after restore is complete.
-        /// </summary>
         public void UnblockAutoStart()
         {
             _blockAutoStart = false;
@@ -891,25 +699,21 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleStageEntered(QuestStageRuntime stage)
         {
-            // Logged by stage itself
         }
 
         private void HandleStageCompleted(QuestStageRuntime stage)
         {
-            // Notify QuestManager of stage exit (for terminal stages that complete without transition)
-            // Note: Non-terminal stages notify exit during TransitionToStage
             if (stage.Data.IsTerminal)
             {
                 QuestManager.Instance?.NotifyStageExited(this, stage);
-                CompleteQuest();
+                Complete();
             }
         }
 
         private void HandleStageFailed(QuestStageRuntime stage)
         {
-            // Notify QuestManager of stage exit
             QuestManager.Instance?.NotifyStageExited(this, stage);
-            FailQuest();
+            Fail();
         }
 
         private void HandleTransitionReady(QuestStageRuntime stage, int targetStageIndex)
@@ -924,7 +728,7 @@ namespace HelloDev.QuestSystem.Quests
             else
             {
                 QuestLogger.LogVerbose(LogSubsystem.Stage, $"Target stage {targetStageIndex} not found, completing quest");
-                CompleteQuest();
+                Complete();
             }
         }
 
@@ -936,18 +740,14 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleGroupInStageStarted(QuestStageRuntime stage, TaskGroupRuntime group)
         {
-            // Subscribe to task events for this group
-            // Track subscribed tasks to prevent double-subscription on group restart
             foreach (var task in group.Tasks)
             {
                 if (_subscribedTasks.Contains(task))
-                {
-                    continue; // Already subscribed
-                }
+                    continue;
 
-                task.OnTaskStarted.SafeSubscribe(t => OnAnyTaskStarted.SafeInvoke(this, t));
-                task.OnTaskCompleted.SafeSubscribe(t => OnAnyTaskCompleted.SafeInvoke(this, t));
-                task.OnTaskFailed.SafeSubscribe(t => OnAnyTaskFailed.SafeInvoke(this, t));
+                task.Started.SafeSubscribe(t => OnAnyTaskStarted.SafeInvoke(this, t as TaskRuntime));
+                task.Completed.SafeSubscribe(t => OnAnyTaskCompleted.SafeInvoke(this, t as TaskRuntime));
+                task.Failed.SafeSubscribe(t => OnAnyTaskFailed.SafeInvoke(this, t as TaskRuntime));
                 _subscribedTasks.Add(task);
             }
         }
@@ -959,48 +759,35 @@ namespace HelloDev.QuestSystem.Quests
 
         private void HandleGroupInStageFailed(QuestStageRuntime stage, TaskGroupRuntime group)
         {
-            // Logged by group itself
         }
 
         #endregion
 
-        #region Other Event Handlers
+        #region Other Handlers
 
         private void HandleGlobalTaskFailure()
         {
-            var currentTasks = CurrentTasks;
-            if (currentTasks.Count > 0)
-            {
-                foreach (var task in currentTasks)
-                {
-                    task.FailTask();
-                }
-            }
+            foreach (var task in CurrentTasks)
+                task.Fail();
         }
 
         private void TryStartQuestIfConditionsMet()
         {
-            if (_blockAutoStart)
-                return;
-
-            if (CurrentState != QuestState.NotStarted)
-                return;
-
+            if (_blockAutoStart) return;
+            if (State != State.NotStarted) return;
             if (CheckStartConditions())
             {
                 QuestLogger.Log(LogSubsystem.Quest, $"Chain trigger starting quest <b>'{QuestData.DevName}'</b>");
-                StartQuest();
+                Start();
             }
         }
 
         #endregion
 
-        /// <summary>
-        /// Single point for firing OnQuestUpdated to prevent double-fires.
-        /// </summary>
         private void NotifyQuestUpdated()
         {
             OnQuestUpdated.SafeInvoke(this);
+            _onProgressChanged?.Invoke(this);
         }
 
         #region Condition Checking
@@ -1009,9 +796,10 @@ namespace HelloDev.QuestSystem.Quests
         {
             if (CheckStartConditions())
             {
-                StartQuest();
+                Start();
                 return true;
             }
+
             return false;
         }
 
@@ -1025,6 +813,7 @@ namespace HelloDev.QuestSystem.Quests
                 if (condition == null || !condition.Evaluate())
                     return false;
             }
+
             return true;
         }
 
@@ -1032,53 +821,28 @@ namespace HelloDev.QuestSystem.Quests
 
         #region Convenience Methods
 
-        /// <summary>
-        /// Increments the current task's step. No-op if no task is in progress.
-        /// </summary>
         public void IncrementCurrentTask() => CurrentTask?.IncrementStep();
-
-        /// <summary>
-        /// Decrements the current task's step. No-op if no task is in progress.
-        /// </summary>
         public void DecrementCurrentTask() => CurrentTask?.DecrementStep();
 
-        /// <summary>
-        /// Force completes all remaining tasks and the quest.
-        /// Useful for debugging or skip functionality.
-        /// Ensures all world flags are applied via CompleteQuest().
-        /// </summary>
         public void ForceComplete()
         {
             foreach (var task in Tasks)
             {
-                if (task.CurrentState != TaskState.Completed)
-                {
-                    task.CompleteTask();
-                }
+                if (task.State != State.Completed)
+                    task.Complete();
             }
 
-            // Notify stage exit before completing quest
-            if (CurrentState == QuestState.InProgress && CurrentStage?.CurrentState == StageState.InProgress)
-            {
-                QuestManager.Instance?.NotifyStageExited(this, CurrentStage);
-            }
+            if (State == State.InProgress && CurrentQuestStage?.CurrentState == StageState.InProgress)
+                QuestManager.Instance?.NotifyStageExited(this, CurrentQuestStage);
 
-            // Ensure quest is properly completed
-            if (CurrentState == QuestState.InProgress)
-            {
-                CompleteQuest();
-            }
+            if (State == State.InProgress)
+                Complete();
         }
 
         #endregion
 
-        #region Event Subscription Helpers
+        #region Bulk Subscription Helpers
 
-        /// <summary>
-        /// Subscribes a single handler to all quest lifecycle events (Started, Completed, Failed, Restarted, Updated).
-        /// Reduces boilerplate when you need to respond to any quest state change.
-        /// </summary>
-        /// <param name="handler">Handler that receives the quest for any lifecycle event.</param>
         public void SubscribeToLifecycleEvents(UnityAction<QuestRuntime> handler)
         {
             OnQuestStarted.SafeSubscribe(handler);
@@ -1088,10 +852,6 @@ namespace HelloDev.QuestSystem.Quests
             OnQuestUpdated.SafeSubscribe(handler);
         }
 
-        /// <summary>
-        /// Unsubscribes a handler from all quest lifecycle events.
-        /// </summary>
-        /// <param name="handler">Handler to unsubscribe.</param>
         public void UnsubscribeFromLifecycleEvents(UnityAction<QuestRuntime> handler)
         {
             OnQuestStarted.SafeUnsubscribe(handler);
@@ -1101,11 +861,6 @@ namespace HelloDev.QuestSystem.Quests
             OnQuestUpdated.SafeUnsubscribe(handler);
         }
 
-        /// <summary>
-        /// Subscribes a single handler to all task events (Started, Updated, Completed, Failed).
-        /// Reduces boilerplate when you need to respond to any task change.
-        /// </summary>
-        /// <param name="handler">Handler that receives the quest and task for any task event.</param>
         public void SubscribeToTaskEvents(UnityAction<QuestRuntime, TaskRuntime> handler)
         {
             OnAnyTaskStarted.SafeSubscribe(handler);
@@ -1114,10 +869,6 @@ namespace HelloDev.QuestSystem.Quests
             OnAnyTaskFailed.SafeSubscribe(handler);
         }
 
-        /// <summary>
-        /// Unsubscribes a handler from all task events.
-        /// </summary>
-        /// <param name="handler">Handler to unsubscribe.</param>
         public void UnsubscribeFromTaskEvents(UnityAction<QuestRuntime, TaskRuntime> handler)
         {
             OnAnyTaskStarted.SafeUnsubscribe(handler);
@@ -1126,42 +877,32 @@ namespace HelloDev.QuestSystem.Quests
             OnAnyTaskFailed.SafeUnsubscribe(handler);
         }
 
-        /// <summary>
-        /// Subscribes a single handler to all stage events (Entered, Completed, Transition).
-        /// </summary>
-        /// <param name="stageHandler">Handler for stage entered/completed events.</param>
-        /// <param name="transitionHandler">Handler for stage transition events.</param>
         public void SubscribeToStageEvents(
             UnityAction<QuestRuntime, QuestStageRuntime> stageHandler,
             UnityAction<QuestRuntime, StageTransitionInfo> transitionHandler)
         {
             if (stageHandler != null)
             {
-                OnStageEntered.SafeSubscribe(stageHandler);
-                OnStageCompleted.SafeSubscribe(stageHandler);
+                OnQuestStageEntered.SafeSubscribe(stageHandler);
+                OnQuestStageCompleted.SafeSubscribe(stageHandler);
             }
+
             if (transitionHandler != null)
-            {
                 OnStageTransition.SafeSubscribe(transitionHandler);
-            }
         }
 
-        /// <summary>
-        /// Unsubscribes handlers from all stage events.
-        /// </summary>
         public void UnsubscribeFromStageEvents(
             UnityAction<QuestRuntime, QuestStageRuntime> stageHandler,
             UnityAction<QuestRuntime, StageTransitionInfo> transitionHandler)
         {
             if (stageHandler != null)
             {
-                OnStageEntered.SafeUnsubscribe(stageHandler);
-                OnStageCompleted.SafeUnsubscribe(stageHandler);
+                OnQuestStageEntered.SafeUnsubscribe(stageHandler);
+                OnQuestStageCompleted.SafeUnsubscribe(stageHandler);
             }
+
             if (transitionHandler != null)
-            {
                 OnStageTransition.SafeUnsubscribe(transitionHandler);
-            }
         }
 
         #endregion
@@ -1171,150 +912,13 @@ namespace HelloDev.QuestSystem.Quests
         public override bool Equals(object obj)
         {
             if (obj is QuestRuntime other)
-            {
-                return QuestId == other.QuestId;
-            }
+                return MissionId == other.MissionId;
             return false;
         }
 
         public override int GetHashCode()
         {
-            return QuestId.GetHashCode();
-        }
-
-        #endregion
-
-        #region IMission Explicit Implementation
-
-        /// <summary>
-        /// Maps QuestState to ObjectiveState.
-        /// </summary>
-        private static ObjectiveState MapQuestStateToObjectiveState(QuestState questState)
-        {
-            return questState switch
-            {
-                QuestState.NotStarted => ObjectiveState.NotStarted,
-                QuestState.InProgress => ObjectiveState.InProgress,
-                QuestState.Completed => ObjectiveState.Completed,
-                QuestState.Failed => ObjectiveState.Failed,
-                _ => ObjectiveState.NotStarted
-            };
-        }
-
-        // IMission.MissionId => QuestId
-        Guid IMission.MissionId => QuestId;
-
-        // IMission.DisplayName => localized display name from data
-        string IMission.DisplayName => QuestData.DisplayName?.GetLocalizedString() ?? QuestData.DevName;
-
-        // IMission.State => mapped QuestState
-        ObjectiveState IMission.State => MapQuestStateToObjectiveState(CurrentState);
-
-        // IMission.Progress => CurrentProgress
-        float IMission.Progress => CurrentProgress;
-
-        // IMission.Stages => cast QuestStageRuntime to IStage
-        // Note: Requires QuestStageRuntime to implement IStage for this to return valid results
-        IReadOnlyList<IStage> IMission.Stages => Stages.OfType<IStage>().ToList();
-
-        // IMission.CurrentStage => CurrentStage as IStage
-        // Note: Requires QuestStageRuntime to implement IStage for this to return non-null
-        IStage IMission.CurrentStage => CurrentStage as IStage;
-
-        // IMission.CurrentStageIndex => CurrentStageIndex (already matching)
-        int IMission.CurrentStageIndex => CurrentStageIndex;
-
-        // IMission lifecycle methods - delegate to existing methods
-        void IMission.Start() => StartQuest();
-        void IMission.Complete() => CompleteQuest();
-        void IMission.Fail() => FailQuest();
-        void IMission.Reset() => ResetQuest();
-
-        // IMission events - backing fields for Action events
-        private event Action<IMission> _onMissionStarted;
-        private event Action<IMission> _onMissionProgressChanged;
-        private event Action<IMission> _onMissionCompleted;
-        private event Action<IMission> _onMissionFailed;
-        private event Action<IMission, IStage> _onMissionStageEntered;
-        private event Action<IMission, IStage> _onMissionStageCompleted;
-
-        event Action<IMission> IMission.OnStarted
-        {
-            add
-            {
-                _onMissionStarted += value;
-                // Also subscribe to the UnityEvent to forward it
-                if (value != null)
-                {
-                    OnQuestStarted.SafeSubscribe(_ => value(this));
-                }
-            }
-            remove => _onMissionStarted -= value;
-        }
-
-        event Action<IMission> IMission.OnProgressChanged
-        {
-            add
-            {
-                _onMissionProgressChanged += value;
-                if (value != null)
-                {
-                    OnQuestUpdated.SafeSubscribe(_ => value(this));
-                }
-            }
-            remove => _onMissionProgressChanged -= value;
-        }
-
-        event Action<IMission> IMission.OnCompleted
-        {
-            add
-            {
-                _onMissionCompleted += value;
-                if (value != null)
-                {
-                    OnQuestCompleted.SafeSubscribe(_ => value(this));
-                }
-            }
-            remove => _onMissionCompleted -= value;
-        }
-
-        event Action<IMission> IMission.OnFailed
-        {
-            add
-            {
-                _onMissionFailed += value;
-                if (value != null)
-                {
-                    OnQuestFailed.SafeSubscribe(_ => value(this));
-                }
-            }
-            remove => _onMissionFailed -= value;
-        }
-
-        event Action<IMission, IStage> IMission.OnStageEntered
-        {
-            add
-            {
-                _onMissionStageEntered += value;
-                if (value != null)
-                {
-                    OnStageEntered.SafeSubscribe((_, stage) => value(this, stage as IStage));
-                }
-            }
-            remove => _onMissionStageEntered -= value;
-        }
-
-        event Action<IMission, IStage> IMission.OnStageCompleted
-        {
-            add
-            {
-                _onMissionStageCompleted += value;
-                if (value != null)
-                {
-                    OnStageCompleted.SafeSubscribe((_, stage) => value(this, stage as IStage));
-                }
-            }
-            remove => _onMissionStageCompleted -= value;
+            return MissionId.GetHashCode();
         }
 
         #endregion

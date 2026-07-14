@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using HelloDev.Objectives;
 using PrimeTween;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
@@ -184,7 +185,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         private void HandleQuestUpdated(QuestRuntime updatedQuest)
         {
             if (progressionText != null)
-                progressionText.text = $"{QuestUtils.GetPercentage(updatedQuest.CurrentProgress)}%";
+                progressionText.text = $"{QuestUtils.GetPercentage(updatedQuest.Progress)}%";
         }
 
         private void HandleQuestCompleted(QuestRuntime questData)
@@ -208,7 +209,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             ClearStatusText();
             questData.OnQuestCompleted.SafeSubscribe(HandleQuestCompleted);
 
-            TaskRuntime nextTask = questData.Tasks.FirstOrDefault(t => t.CurrentState == TaskState.InProgress);
+            TaskRuntime nextTask = questData.Tasks.FirstOrDefault(t => t.State == State.InProgress);
             if (nextTask != null)
                 DisplayNextTask(nextTask);
         }
@@ -235,22 +236,22 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 levelText.text = _quest.QuestData.RecommendedLevel.ToString();
 
             if (progressionText != null)
-                progressionText.text = $"{QuestUtils.GetPercentage(_quest.CurrentProgress)}%";
+                progressionText.text = $"{QuestUtils.GetPercentage(_quest.Progress)}%";
         }
 
         private void SetupQuestStateVisuals()
         {
-            switch (_quest.CurrentState)
+            switch (_quest.State)
             {
-                case QuestState.NotStarted:
+                case State.NotStarted:
                     break;
-                case QuestState.InProgress:
+                case State.InProgress:
                     HandleQuestInProgress(_quest);
                     break;
-                case QuestState.Completed:
+                case State.Completed:
                     HandleQuestCompleted(_quest);
                     break;
-                case QuestState.Failed:
+                case State.Failed:
                     HandleQuestFailed(_quest);
                     break;
             }

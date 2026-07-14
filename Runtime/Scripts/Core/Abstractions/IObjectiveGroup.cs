@@ -1,94 +1,53 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 namespace HelloDev.Objectives
 {
     /// <summary>
-    /// Represents a group of objectives with execution mode logic.
+    /// Represents a group of objectives that collectively behave as a single objective.
     /// <para>
-    /// An objective group contains multiple objectives and defines how they
-    /// should be executed (sequential, parallel, any order, or X of Y).
+    /// An objective group contains multiple <see cref="IObjective"/> children and defines
+    /// how they are executed (sequential, parallel, any order, X of Y). The group itself
+    /// is an <see cref="IObjective"/>—its state and progress derive from its children.
     /// </para>
     /// <para>
     /// Implemented by: TaskGroupRuntime, AchievementRuntime
     /// </para>
     /// </summary>
-    public interface IObjectiveGroup
+    public interface IObjectiveGroup : IObjective
     {
-        #region Identity
+        #region Children
 
         /// <summary>
-        /// Gets the unique identifier for this group.
-        /// </summary>
-        string Id { get; }
-
-        #endregion
-
-        #region State
-
-        /// <summary>
-        /// Gets the current state of the group.
-        /// </summary>
-        ObjectiveState State { get; }
-
-        /// <summary>
-        /// Gets the overall progress of this group as a value from 0.0 to 1.0.
-        /// </summary>
-        float Progress { get; }
-
-        #endregion
-
-        #region Objectives
-
-        /// <summary>
-        /// Gets the list of objectives in this group.
+        /// Gets the list of child objectives in this group.
         /// </summary>
         IReadOnlyList<IObjective> Objectives { get; }
 
         /// <summary>
-        /// Gets the execution mode for objectives in this group.
+        /// Gets the execution mode that governs how children are completed.
         /// </summary>
         ObjectiveExecutionMode ExecutionMode { get; }
 
         /// <summary>
-        /// Gets the number of objectives required to complete this group.
-        /// Used primarily for OptionalXOfY mode.
+        /// Gets the number of child objectives that must be completed to finish the group.
+        /// Relevant mainly for <see cref="ObjectiveExecutionMode.OptionalXOfY"/>.
         /// </summary>
         int RequiredCount { get; }
 
         /// <summary>
-        /// Gets the number of objectives that have been completed.
+        /// Gets the number of child objectives that have been completed.
         /// </summary>
         int CompletedCount { get; }
 
         #endregion
 
-        #region Events
-
-        /// <summary>
-        /// Fired when the group starts.
-        /// </summary>
-        event Action<IObjectiveGroup> OnStarted;
-
-        /// <summary>
-        /// Fired when the group's progress changes.
-        /// </summary>
-        event Action<IObjectiveGroup> OnProgressChanged;
-
-        /// <summary>
-        /// Fired when the group is completed.
-        /// </summary>
-        event Action<IObjectiveGroup> OnCompleted;
-
-        /// <summary>
-        /// Fired when the group fails.
-        /// </summary>
-        event Action<IObjectiveGroup> OnFailed;
+        #region Child events
 
         /// <summary>
         /// Fired when an individual objective within the group is completed.
         /// </summary>
-        event Action<IObjectiveGroup, IObjective> OnObjectiveCompleted;
+        UnityEvent<IObjectiveGroup, IObjective> OnObjectiveCompleted { get; set; }
 
         #endregion
     }

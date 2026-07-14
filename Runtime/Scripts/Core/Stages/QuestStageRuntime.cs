@@ -112,7 +112,7 @@ namespace HelloDev.QuestSystem.Stages
         /// Gets all tasks that are currently in progress.
         /// </summary>
         public IReadOnlyList<TaskRuntime> CurrentTasks =>
-            CurrentGroup?.CurrentTasks ?? Array.Empty<TaskRuntime>();
+            CurrentGroup?.Tasks ?? Array.Empty<TaskRuntime>();
 
         /// <summary>
         /// Gets all tasks across all groups in this stage (flattened).
@@ -239,7 +239,7 @@ namespace HelloDev.QuestSystem.Stages
                 QuestLogger.LogStart(LogSubsystem.Stage, "Stage", StageName);
                 OnStageEntered.SafeInvoke(this);
                 RaiseIStageOnEntered();
-                TaskGroups[0].StartGroup();
+                TaskGroups[0].Start();
             }
             else
             {
@@ -314,7 +314,7 @@ namespace HelloDev.QuestSystem.Stages
 
             foreach (var group in TaskGroups)
             {
-                group.ResetGroup();
+                group.Reset();
             }
 
             _currentGroupIndex = -1;
@@ -393,10 +393,10 @@ namespace HelloDev.QuestSystem.Stages
         {
             foreach (var group in TaskGroups)
             {
-                group.OnGroupStarted.SafeSubscribe(HandleGroupStarted);
-                group.OnGroupCompleted.SafeSubscribe(HandleGroupCompleted);
-                group.OnGroupFailed.SafeSubscribe(HandleGroupFailed);
-                group.OnTaskInGroupUpdated.SafeSubscribe(HandleTaskInGroupUpdated);
+                group.Started.SafeSubscribe(HandleGroupStarted);
+                group.Completed.SafeSubscribe(HandleGroupCompleted);
+                group.Failed.SafeSubscribe(HandleGroupFailed);
+                group.OnObjectiveCompleted.SafeSubscribe(HandleTaskInGroupUpdated);
             }
         }
 
@@ -404,10 +404,10 @@ namespace HelloDev.QuestSystem.Stages
         {
             foreach (var group in TaskGroups)
             {
-                group.OnGroupStarted.SafeUnsubscribe(HandleGroupStarted);
-                group.OnGroupCompleted.SafeUnsubscribe(HandleGroupCompleted);
-                group.OnGroupFailed.SafeUnsubscribe(HandleGroupFailed);
-                group.OnTaskInGroupUpdated.SafeUnsubscribe(HandleTaskInGroupUpdated);
+                group.Started.SafeUnsubscribe(HandleGroupStarted);
+                group.Completed.SafeUnsubscribe(HandleGroupCompleted);
+                group.Failed.SafeUnsubscribe(HandleGroupFailed);
+                group.OnObjectiveCompleted.SafeUnsubscribe(HandleTaskInGroupUpdated);
             }
         }
 
@@ -448,14 +448,14 @@ namespace HelloDev.QuestSystem.Stages
             UnsubscribeFromConditionTransitions();
         }
 
-        private void HandleGroupStarted(TaskGroupRuntime group)
+        private void HandleGroupStarted(IObjective group)
         {
-            OnGroupInStageStarted.SafeInvoke(this, group);
+            OnGroupInStageStarted.SafeInvoke(this, group as TaskGroupRuntime);
         }
 
-        private void HandleGroupCompleted(TaskGroupRuntime group)
+        private void HandleGroupCompleted(IObjective group)
         {
-            OnGroupInStageCompleted.SafeInvoke(this, group);
+            OnGroupInStageCompleted.SafeInvoke(this, group as TaskGroupRuntime);
 
             if (AreAllGroupsCompleted())
             {
@@ -467,25 +467,25 @@ namespace HelloDev.QuestSystem.Stages
                 _currentGroupIndex++;
                 if (_currentGroupIndex < TaskGroups.Count)
                 {
-                    TaskGroups[_currentGroupIndex].StartGroup();
+                    TaskGroups[_currentGroupIndex].Start();
                 }
                 OnStageUpdated.SafeInvoke(this);
                 RaiseIStageOnProgressChanged();
             }
         }
 
-        private void HandleGroupFailed(TaskGroupRuntime group)
+        private void HandleGroupFailed(IObjective group)
         {
-            QuestLogger.LogFail(LogSubsystem.Group, "Group", group.GroupName);
-            OnGroupInStageFailed.SafeInvoke(this, group);
+            QuestLogger.LogFail(LogSubsystem.Group, "Group", group.Id.ToString());
+            OnGroupInStageFailed.SafeInvoke(this, group as TaskGroupRuntime);
 
             // Stage fails if any group fails
             Fail();
         }
 
-        private void HandleTaskInGroupUpdated(TaskGroupRuntime group, TaskRuntime task)
+        private void HandleTaskInGroupUpdated(IObjectiveGroup group, IObjective task)
         {
-            OnTaskInStageUpdated.SafeInvoke(this, task);
+            OnTaskInStageUpdated.SafeInvoke(this, task as TaskRuntime);
             OnStageUpdated.SafeInvoke(this);
             RaiseIStageOnProgressChanged();
         }
@@ -562,19 +562,19 @@ namespace HelloDev.QuestSystem.Stages
         /// Gets the unique identifier for this stage.
         /// Uses the stage name as the ID since QuestStage doesn't have a separate stageId field.
         /// </summary>
-        string IStage.Id => StageName;
+        string IStage.Name => StageName;
 
         /// <summary>
-        /// Gets the current state mapped to ObjectiveState.
+        /// Gets the current state mapped to State.
         /// </summary>
-        ObjectiveState IStage.State => CurrentState switch
+        State IStage.State => CurrentState switch
         {
-            StageState.NotReached => ObjectiveState.NotStarted,
-            StageState.InProgress => ObjectiveState.InProgress,
-            StageState.Completed => ObjectiveState.Completed,
-            StageState.Failed => ObjectiveState.Failed,
-            StageState.Skipped => ObjectiveState.Completed, // Treat skipped as completed for IStage
-            _ => ObjectiveState.NotStarted
+            StageState.NotReached => State.NotStarted,
+            StageState.InProgress => State.InProgress,
+            StageState.Completed => State.Completed,
+            StageState.Failed => State.Failed,
+            StageState.Skipped => State.Completed, // Treat skipped as completed for IStage
+            _ => State.NotStarted
         };
 
         /// <summary>
@@ -656,19 +656,19 @@ namespace HelloDev.QuestSystem.Stages
         private void RaiseIStageOnEntered() => _onEntered?.Invoke(this);
 
         /// <summary>
-        /// Raises the IStage.OnProgressChanged event.
+        /// Raises the IStage.ProgressChanged event.
         /// Called internally when stage progress changes.
         /// </summary>
         private void RaiseIStageOnProgressChanged() => _onProgressChanged?.Invoke(this);
 
         /// <summary>
-        /// Raises the IStage.OnCompleted event.
+        /// Raises the IStage.Completed event.
         /// Called internally when stage completes.
         /// </summary>
         private void RaiseIStageOnCompleted() => _onCompleted?.Invoke(this);
 
         /// <summary>
-        /// Raises the IStage.OnFailed event.
+        /// Raises the IStage.Failed event.
         /// Called internally when stage fails.
         /// </summary>
         private void RaiseIStageOnFailed() => _onFailed?.Invoke(this);

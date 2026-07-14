@@ -3,7 +3,7 @@ namespace HelloDev.Objectives
     /// <summary>
     /// Represents the current state of an objective, group, stage, or mission.
     /// </summary>
-    public enum ObjectiveState
+    public enum State
     {
         /// <summary>The objective has not been started yet.</summary>
         NotStarted,

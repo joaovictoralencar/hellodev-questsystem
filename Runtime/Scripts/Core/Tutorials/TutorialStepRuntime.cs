@@ -84,7 +84,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Gets the current state of this step.
         /// </summary>
-        public ObjectiveState CurrentState { get; private set; }
+        public State CurrentState { get; private set; }
 
         /// <summary>
         /// Gets whether this step was skipped (completed via skip, not normal completion).
@@ -167,8 +167,8 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             get
             {
-                if (CurrentState == ObjectiveState.Completed) return 1f;
-                if (CurrentState != ObjectiveState.InProgress) return 0f;
+                if (CurrentState == State.Completed) return 1f;
+                if (CurrentState != State.InProgress) return 0f;
 
                 // Substep-based progress
                 if (HasSubsteps)
@@ -201,10 +201,10 @@ namespace HelloDev.QuestSystem.Tutorials
         int IStage.Index => StepIndex;
 
         /// <inheritdoc />
-        string IStage.Id => StepId.ToString();
+        string IStage.Name => StepId.ToString();
 
         /// <inheritdoc />
-        ObjectiveState IStage.State => CurrentState;
+        State IStage.State => CurrentState;
 
         /// <inheritdoc />
         float IStage.Progress => Progress;
@@ -267,7 +267,7 @@ namespace HelloDev.QuestSystem.Tutorials
         public TutorialStepRuntime(TutorialStep_SO data)
         {
             Data = data;
-            CurrentState = ObjectiveState.NotStarted;
+            CurrentState = State.NotStarted;
             WasSkipped = false;
             ElapsedTime = 0f;
             _currentCount = 0;
@@ -297,12 +297,12 @@ namespace HelloDev.QuestSystem.Tutorials
         /// Centralized state setter that automatically fires lifecycle hooks on transitions.
         /// Do NOT use for RestoreStepState (raw save/load) or constructor (initial state).
         /// </summary>
-        private void SetState(ObjectiveState newState)
+        private void SetState(State newState)
         {
-            ObjectiveState oldState = CurrentState;
+            State oldState = CurrentState;
 
             // Fire exit hooks when leaving InProgress
-            if (oldState == ObjectiveState.InProgress && newState != ObjectiveState.InProgress)
+            if (oldState == State.InProgress && newState != State.InProgress)
             {
                 OnExitHook();
                 TutorialManager.Instance?.NotifyStepExiting(this);
@@ -311,7 +311,7 @@ namespace HelloDev.QuestSystem.Tutorials
             CurrentState = newState;
 
             // Fire enter hooks when entering InProgress
-            if (newState == ObjectiveState.InProgress && oldState != ObjectiveState.InProgress)
+            if (newState == State.InProgress && oldState != State.InProgress)
             {
                 OnEnterHook();
                 TutorialManager.Instance?.NotifyStepEntering(this);
@@ -323,9 +323,9 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void StartStep()
         {
-            if (CurrentState != ObjectiveState.NotStarted) return;
+            if (CurrentState != State.NotStarted) return;
 
-            SetState(ObjectiveState.InProgress);
+            SetState(State.InProgress);
 
             // Subscribe based on step type
             if (HasSubsteps)
@@ -353,11 +353,11 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void CompleteStep()
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
 
             UnsubscribeFromAllConditions();
 
-            SetState(ObjectiveState.Completed);
+            SetState(State.Completed);
             Logger.Log("Tutorial", $"Tutorial step '{DevName}' completed.");
 
             _onProgressChanged?.Invoke(this);
@@ -372,13 +372,13 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <returns>True if the step was skipped, false if skipping is not allowed.</returns>
         public bool SkipStep()
         {
-            if (CurrentState != ObjectiveState.InProgress) return false;
+            if (CurrentState != State.InProgress) return false;
             if (!Data.CanSkip) return false;
 
             UnsubscribeFromAllConditions();
 
             WasSkipped = true;
-            SetState(ObjectiveState.Completed);
+            SetState(State.Completed);
             Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' skipped.");
 
             _onProgressChanged?.Invoke(this);
@@ -396,7 +396,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <returns>True if a substep was skipped, false if not applicable or not allowed.</returns>
         public bool SkipCurrentSubstep()
         {
-            if (CurrentState != ObjectiveState.InProgress) return false;
+            if (CurrentState != State.InProgress) return false;
             if (!Data.CanSkip) return false;
             if (!HasSubsteps) return false;
 
@@ -434,7 +434,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <returns>True if the count was incremented, false if not applicable or not allowed.</returns>
         public bool IncrementCount()
         {
-            if (CurrentState != ObjectiveState.InProgress) return false;
+            if (CurrentState != State.InProgress) return false;
             if (!Data.CanSkip) return false;
             if (!IsCountBased) return false;
             if (_currentCount >= RequiredCount) return false;
@@ -460,7 +460,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <param name="deltaTime">Time since last update.</param>
         public void UpdateTime(float deltaTime)
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
             if (!Data.IsTimedStep) return;
 
             ElapsedTime += deltaTime;
@@ -477,11 +477,11 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void FailStep()
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
 
             UnsubscribeFromAllConditions();
 
-            SetState(ObjectiveState.Failed);
+            SetState(State.Failed);
             Logging.Logger.Log("Tutorial", $"Tutorial step '{DevName}' failed.");
 
             _onProgressChanged?.Invoke(this);
@@ -496,7 +496,7 @@ namespace HelloDev.QuestSystem.Tutorials
         {
             UnsubscribeFromAllConditions();
 
-            SetState(ObjectiveState.NotStarted);
+            SetState(State.NotStarted);
             WasSkipped = false;
             ElapsedTime = 0f;
             _currentCount = 0;
@@ -579,7 +579,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
         private void OnSubstepConditionMet(TutorialSubstep_SO substep)
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
             if (_completedSubstepIds.Contains(substep.SubstepId)) return;
 
             _completedSubstepIds.Add(substep.SubstepId);
@@ -606,7 +606,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
         private void OnCountConditionMet()
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
             if (_currentCount >= RequiredCount) return;
 
             _currentCount++;
@@ -634,7 +634,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <param name="elapsedTime">The elapsed time to restore (for timed steps).</param>
         /// <param name="currentCount">The current count to restore (for count-based steps).</param>
         /// <param name="completedSubstepIds">The completed substep IDs to restore.</param>
-        public void RestoreStepState(ObjectiveState state, float elapsedTime, int currentCount = 0, IEnumerable<Guid> completedSubstepIds = null)
+        public void RestoreStepState(State state, float elapsedTime, int currentCount = 0, IEnumerable<Guid> completedSubstepIds = null)
         {
             CurrentState = state;
             ElapsedTime = elapsedTime;
@@ -655,7 +655,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Overload for backward compatibility.
         /// </summary>
-        public void RestoreStepState(ObjectiveState state, float elapsedTime)
+        public void RestoreStepState(State state, float elapsedTime)
         {
             RestoreStepState(state, elapsedTime, 0, null);
         }
@@ -666,7 +666,7 @@ namespace HelloDev.QuestSystem.Tutorials
         /// </summary>
         public void ResumeStep()
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (CurrentState != State.InProgress) return;
 
             if (HasSubsteps)
             {

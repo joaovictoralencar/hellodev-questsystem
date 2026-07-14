@@ -34,10 +34,10 @@ namespace HelloDev.QuestSystem
         private List<string> ActiveQuestNames => _questRegistry.ActiveQuestsEnumerable
             .Select(q =>
             {
-                var stageInfo = q.CurrentStage != null
-                    ? $" | Stage: {q.CurrentStage.StageName}"
+                var stageInfo = q.CurrentQuestStage != null
+                    ? $" | Stage: {q.CurrentQuestStage.StageName}"
                     : "";
-                return $"{q.QuestData.DevName} ({q.CurrentState}{stageInfo}) | Progress: {q.CurrentProgress:P0}";
+                return $"{q.QuestData.DevName} ({q.State}{stageInfo}) | Progress: {q.Progress:P0}";
             })
             .ToList();
 
@@ -138,7 +138,7 @@ namespace HelloDev.QuestSystem
             var quests = _questRegistry.ActiveQuestsEnumerable.ToList();
             foreach (var quest in quests)
             {
-                quest.FailQuest();
+                quest.Fail();
             }
             Debug.Log("[QuestManager] All active quests failed.");
         }
@@ -184,7 +184,7 @@ namespace HelloDev.QuestSystem
             foreach (var quest in _questRegistry.ActiveQuestsEnumerable)
             {
                 var currentTask = quest.CurrentTask;
-                Debug.Log($"  - {quest.QuestData.DevName}: {quest.CurrentState} | Current Task: {currentTask?.DevName ?? "None"} | Progress: {quest.CurrentProgress:P0}");
+                Debug.Log($"  - {quest.QuestData.DevName}: {quest.State} | Current Task: {currentTask?.DevName ?? "None"} | Progress: {quest.Progress:P0}");
             }
             Debug.Log($"Completed Quests ({CompletedQuestCount}):");
             foreach (var quest in _questRegistry.CompletedQuestsEnumerable)

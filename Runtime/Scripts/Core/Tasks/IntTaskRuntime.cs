@@ -1,4 +1,5 @@
 using HelloDev.Conditions;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Interfaces;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -61,12 +62,12 @@ namespace HelloDev.QuestSystem.Tasks
                 {
                     if (condition is IConditionEventDriven eventCondition)
                     {
-                        eventCondition.SubscribeToEvent(FailTask);
+                        eventCondition.SubscribeToEvent(Fail);
                     }
                 }
             }
 
-            OnTaskUpdated.SafeSubscribe(CheckCompletion);
+            Updated.SafeSubscribe(CheckCompletion);
         }
 
         /// <summary>
@@ -76,7 +77,7 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (IncrementCount())
             {
-                OnTaskUpdated.SafeInvoke(this);
+                Updated?.Invoke(this);
             }
         }
 
@@ -86,7 +87,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         private bool IncrementCount()
         {
-            if (CurrentState != TaskState.InProgress || _currentCount >= RequiredCount)
+            if (State != Objectives.State.InProgress || _currentCount >= RequiredCount)
             {
                 return false;
             }
@@ -102,7 +103,7 @@ namespace HelloDev.QuestSystem.Tasks
         /// </summary>
         private bool DecrementCount()
         {
-            if (CurrentState != TaskState.InProgress || _currentCount >= RequiredCount || _currentCount == 0)
+            if (State != Objectives.State.InProgress || _currentCount >= RequiredCount || _currentCount == 0)
             {
                 return false;
             }
@@ -120,7 +121,7 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (IncrementCount())
             {
-                OnTaskUpdated.SafeInvoke(this);
+                Updated.SafeInvoke(this);
                 return true;
             }
             return false;
@@ -130,7 +131,7 @@ namespace HelloDev.QuestSystem.Tasks
         {
             if (DecrementCount())
             {
-                OnTaskUpdated.SafeInvoke(this);
+                Updated.SafeInvoke(this);
                 return true;
             }
             return false;
@@ -139,18 +140,18 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Resets the task's state and counter to its initial values.
         /// </summary>
-        public override void ResetTask()
+        public override void Reset()
         {
-            base.ResetTask();
+            base.Reset();
             _currentCount = 0;
-            OnTaskUpdated.SafeInvoke(this);
+            Updated.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(TaskRuntime task)
+        protected override void CheckCompletion(IObjective task)
         {
             if (_currentCount >= RequiredCount)
             {
-                CompleteTask();
+                Complete();
             }
         }
 

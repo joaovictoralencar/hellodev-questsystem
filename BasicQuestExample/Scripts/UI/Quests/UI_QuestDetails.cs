@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using HelloDev.Objectives;
 using PrimeTween;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Stages;
@@ -285,7 +286,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
                 levelText.text = quest.QuestData.RecommendedLevel.ToString();
 
             if (progressionText != null)
-                progressionText.text = $"{QuestUtils.GetPercentage(quest.CurrentProgress)}%";
+                progressionText.text = $"{QuestUtils.GetPercentage(quest.Progress)}%";
 
             if (questImage != null && quest.QuestData.QuestSprite != null)
                 questImage.sprite = quest.QuestData.QuestSprite;
@@ -304,7 +305,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             }
 
             if (stageNameText != null)
-                stageNameText.text = quest.CurrentStage.StageName;
+                stageNameText.text = quest.CurrentStage.Name;
 
             if (stageProgressText != null)
             {
@@ -320,7 +321,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             foreach (TaskRuntime task in quest.Tasks)
             {
                 // Skip not-started tasks
-                if (task.CurrentState == TaskState.NotStarted)
+                if (task.State == State.NotStarted)
                     continue;
 
                 var taskItem = Instantiate(taskItemPrefab, tasksHolder);
@@ -359,11 +360,11 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private bool IsValidInitialTask(QuestRuntime quest, TaskRuntime task)
         {
-            return quest.CurrentState switch
+            return quest.State switch
             {
-                QuestState.InProgress => task.CurrentState == TaskState.InProgress,
-                QuestState.Completed => task.CurrentState == TaskState.Completed,
-                QuestState.Failed => task.CurrentState == TaskState.Failed,
+                State.InProgress => task.State == State.InProgress,
+                State.Completed => task.State == State.Completed,
+                State.Failed => task.State == State.Failed,
                 _ => false
             };
         }
@@ -478,7 +479,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             // Update progress display
             if (progressionText != null)
-                progressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.CurrentProgress)}%";
+                progressionText.text = $"{QuestUtils.GetPercentage(_currentQuest.Progress)}%";
 
             // Update stage info (stage progress may have changed)
             UpdateStageInfo(_currentQuest);
@@ -496,7 +497,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (_currentQuest == null) return;
 
             var inProgressTasks = _currentQuest.Tasks
-                .Where(t => t.CurrentState == TaskState.InProgress)
+                .Where(t => t.State == State.InProgress)
                 .ToList();
 
             bool addedNew = false;
@@ -516,9 +517,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             }
 
             // Auto-select first new task if current task is no longer in progress
-            if (addedNew && _currentTask?.CurrentState != TaskState.InProgress)
+            if (addedNew && _currentTask?.State != State.InProgress)
             {
-                var firstInProgress = _taskItems.FirstOrDefault(item => item.Task.CurrentState == TaskState.InProgress);
+                var firstInProgress = _taskItems.FirstOrDefault(item => item.Task.State == State.InProgress);
                 firstInProgress?.SelectTask();
             }
         }
@@ -636,7 +637,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_currentQuest?.CurrentStage == null) return;
 
-            var choices = _currentQuest.CurrentStage.Data.GetAllPlayerChoices();
+            if (_currentQuest.CurrentStage is not QuestStageRuntime stage) return;
+            
+            List<StageTransition> choices = stage.Data.GetAllPlayerChoices();
             if (choices.Count == 0) return;
 
             Log(LogSubsystem.UI, $"[UI_QuestDetails] Stage has {choices.Count} pending choice(s)");

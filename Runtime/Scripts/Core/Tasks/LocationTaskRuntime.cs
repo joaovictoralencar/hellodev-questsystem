@@ -1,3 +1,4 @@
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Utils;
@@ -38,7 +39,7 @@ namespace HelloDev.QuestSystem.Tasks
         public override bool OnIncrementStep()
         {
             // Location task completes on increment
-            if (CurrentState != TaskState.InProgress || _hasReached) return false;
+            if (State != Objectives.State.InProgress || _hasReached) return false;
 
             _hasReached = true;
             QuestLogger.Log(LogSubsystem.Task, $"Task '{DevName}' manually marked as reached.");
@@ -54,18 +55,18 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Resets the task's state to its initial values.
         /// </summary>
-        public override void ResetTask()
+        public override void Reset()
         {
-            base.ResetTask();
+            base.Reset();
             _hasReached = false;
-            OnTaskUpdated.SafeInvoke(this);
+            Updated.SafeInvoke(this);
         }
 
-        protected override void CheckCompletion(TaskRuntime task)
+        protected override void CheckCompletion(IObjective task)
         {
             if (_hasReached)
             {
-                CompleteTask();
+                Complete();
             }
         }
 

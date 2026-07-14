@@ -1,3 +1,4 @@
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.Utils;
@@ -34,7 +35,7 @@ namespace HelloDev.QuestSystem.Conditions
 #endif
         [Tooltip("The target state to compare against.")]
         [SerializeField]
-        private QuestState targetState = QuestState.Completed;
+        private State targetState = State.Completed;
 
 #if ODIN_INSPECTOR
         [TitleGroup("Condition Settings")]
@@ -55,7 +56,7 @@ namespace HelloDev.QuestSystem.Conditions
         /// <summary>
         /// Gets the target state this condition is checking for.
         /// </summary>
-        public QuestState TargetState => targetState;
+        public State TargetState => targetState;
 
         /// <summary>
         /// Gets the comparison type used for evaluation.
@@ -104,7 +105,7 @@ namespace HelloDev.QuestSystem.Conditions
                 return false;
             }
 
-            QuestState currentState = GetQuestCurrentState();
+            State currentState = GetQuestCurrentState();
             return EvaluateComparison(currentState, targetState);
         }
 
@@ -112,24 +113,24 @@ namespace HelloDev.QuestSystem.Conditions
 
         #region Private Methods
 
-        private QuestState GetQuestCurrentState()
+        private State GetQuestCurrentState()
         {
             if (QuestManager.Instance == null || questToCheck == null)
-                return QuestState.NotStarted;
+                return State.NotStarted;
 
             if (QuestManager.Instance.IsQuestCompleted(questToCheck))
-                return QuestState.Completed;
+                return State.Completed;
 
             if (QuestManager.Instance.IsQuestFailed(questToCheck))
-                return QuestState.Failed;
+                return State.Failed;
 
             if (QuestManager.Instance.IsQuestActive(questToCheck))
-                return QuestState.InProgress;
+                return State.InProgress;
 
-            return QuestState.NotStarted;
+            return State.NotStarted;
         }
 
-        private bool EvaluateComparison(QuestState currentState, QuestState target)
+        private bool EvaluateComparison(State currentState, State target)
         {
             return comparisonType switch
             {
@@ -163,7 +164,7 @@ namespace HelloDev.QuestSystem.Conditions
                 return;
             }
 
-            QuestState currentState = GetQuestCurrentState();
+            State currentState = GetQuestCurrentState();
             bool result = Evaluate();
             Debug.Log($"[ConditionQuestState_SO] '{name}': Quest '{questToCheck?.name}' is {currentState}, target is {targetState} ({comparisonType}). Result: {result}");
         }

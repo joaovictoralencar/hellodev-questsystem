@@ -48,7 +48,7 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
 
         private void OnStepCompleted(TutorialRuntime tutorialRuntime, TutorialStepRuntime stepRuntime)
         {
-            if (tutorialRuntime.Steps.Last().CurrentState != ObjectiveState.Completed)
+            if (tutorialRuntime.Steps.Last().CurrentState != State.Completed)
             {
                 PlayStepCompletedSound();
             }

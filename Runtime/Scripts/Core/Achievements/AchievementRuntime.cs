@@ -9,45 +9,33 @@ namespace HelloDev.QuestSystem.Achievements
 {
     /// <summary>
     /// Runtime representation of an achievement.
-    /// Implements IObjective and IObjectiveGroup for unified objective system compatibility.
+    /// Implements <see cref="IObjectiveGroup"/> (which extends <see cref="IObjective"/>).
     /// </summary>
-    public class AchievementRuntime : IObjective, IObjectiveGroup
+    public class AchievementRuntime : IObjectiveGroup
     {
-        #region Events
+        #region IObjective Events (UnityEvents)
 
-        /// <summary>
-        /// Fired when this achievement is unlocked.
-        /// </summary>
-        public UnityEvent<AchievementRuntime> OnAchievementUnlocked = new();
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Started { get; set; } = new();
 
-        /// <summary>
-        /// Fired when progress changes (for progressive achievements).
-        /// </summary>
-        public UnityEvent<AchievementRuntime> OnProgressUpdated = new();
+        /// <inheritdoc />
+        public UnityEvent<IObjective> ProgressChanged { get; set; } = new();
 
-        #endregion
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Completed { get; set; } = new();
 
-        #region IObjective Backing Fields
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Failed { get; set; } = new();
 
-        private event Action<IObjective> _onObjectiveStarted;
-        private event Action<IObjective> _onObjectiveProgressChanged;
-        private event Action<IObjective> _onObjectiveCompleted;
-        private event Action<IObjective> _onObjectiveFailed;
+        /// <inheritdoc />
+        public UnityEvent<IObjective> Updated { get; set; } = new();
 
         #endregion
 
-        #region IObjectiveGroup Backing Fields
+        #region IObjectiveGroup – additional child‑completion event
 
-        private event Action<IObjectiveGroup> _onGroupStarted;
-        private event Action<IObjectiveGroup> _onGroupProgressChanged;
-        private event Action<IObjectiveGroup> _onGroupCompleted;
-        private event Action<IObjectiveGroup> _onGroupFailed;
-        private event Action<IObjectiveGroup, IObjective> _onObjectiveInGroupCompleted;
-
-        /// <summary>
-        /// Empty list for IObjectiveGroup.Objectives (achievements don't contain sub-objectives).
-        /// </summary>
-        private static readonly IReadOnlyList<IObjective> EmptyObjectives = Array.Empty<IObjective>();
+        /// <inheritdoc />
+        public UnityEvent<IObjectiveGroup, IObjective> OnObjectiveCompleted { get; set; }
 
         #endregion
 
@@ -58,20 +46,16 @@ namespace HelloDev.QuestSystem.Achievements
         /// </summary>
         public Achievement_SO Data { get; }
 
-        /// <summary>
-        /// Gets the unique identifier.
-        /// </summary>
-        public Guid AchievementId => Data.AchievementId;
+        /// <inheritdoc />
+        public Guid Id { get; }
 
         /// <summary>
-        /// Gets the developer name.
+        /// Gets the developer‑friendly name.
         /// </summary>
         public string DevName => Data.DevName;
 
-        /// <summary>
-        /// Gets the current state.
-        /// </summary>
-        public ObjectiveState CurrentState { get; private set; }
+        /// <inheritdoc />
+        public State State { get; private set; }
 
         /// <summary>
         /// Gets the current progress value (for progressive achievements).
@@ -83,157 +67,66 @@ namespace HelloDev.QuestSystem.Achievements
         /// </summary>
         public int TargetValue => Data.TargetValue;
 
-        /// <summary>
-        /// Gets whether this achievement is unlocked.
-        /// </summary>
-        public bool IsUnlocked => CurrentState == ObjectiveState.Completed;
+        /// <inheritdoc />
+        public float Progress => Data.AchievementType == AchievementType.Progressive && TargetValue > 0
+            ? Math.Min(1f, (float)CurrentValue / TargetValue)
+            : IsComplete ? 1f : 0f;
+
+        /// <inheritdoc />
+        public bool IsComplete => State == State.Completed;
+
+        /// <inheritdoc />
+        public bool IsFailed => State == State.Failed;
 
         /// <summary>
         /// Gets the unlock timestamp (if unlocked).
         /// </summary>
         public DateTime? UnlockTime { get; private set; }
 
-        /// <summary>
-        /// Gets the progress as a float (0-1).
-        /// </summary>
-        public float Progress => Data.AchievementType == AchievementType.Progressive && TargetValue > 0
-            ? Math.Min(1f, (float)CurrentValue / TargetValue)
-            : IsUnlocked ? 1f : 0f;
-
         #endregion
 
-        #region IObjective Implementation
+        #region IObjectiveGroup – child management (stub, achievements have no children)
 
         /// <inheritdoc />
-        string IObjective.Id => AchievementId.ToString();
+        public IReadOnlyList<IObjective> Objectives { get; } = Array.Empty<IObjective>();
 
         /// <inheritdoc />
-        ObjectiveState IObjective.State => CurrentState;
+        public ObjectiveExecutionMode ExecutionMode => ObjectiveExecutionMode.Sequential;
 
         /// <inheritdoc />
-        float IObjective.Progress => Progress;
+        public int RequiredCount => 1;
 
         /// <inheritdoc />
-        bool IObjective.IsComplete => IsUnlocked;
+        public int CompletedCount => IsComplete ? 1 : 0;
 
-        /// <inheritdoc />
-        bool IObjective.IsFailed => CurrentState == ObjectiveState.Failed;
-
-        /// <inheritdoc />
-        void IObjective.Start() => StartTracking();
-
-        /// <inheritdoc />
-        void IObjective.Complete() => Unlock();
-
-        /// <inheritdoc />
-        void IObjective.Fail() { } // Achievements don't fail
-
-        /// <inheritdoc />
-        void IObjective.Reset() => ResetProgress();
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnStarted
-        {
-            add => _onObjectiveStarted += value;
-            remove => _onObjectiveStarted -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnProgressChanged
-        {
-            add => _onObjectiveProgressChanged += value;
-            remove => _onObjectiveProgressChanged -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnCompleted
-        {
-            add => _onObjectiveCompleted += value;
-            remove => _onObjectiveCompleted -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjective> IObjective.OnFailed
-        {
-            add => _onObjectiveFailed += value;
-            remove => _onObjectiveFailed -= value;
-        }
 
         #endregion
-
-        #region IObjectiveGroup Implementation
-
-        /// <inheritdoc />
-        string IObjectiveGroup.Id => AchievementId.ToString();
-
-        /// <inheritdoc />
-        ObjectiveState IObjectiveGroup.State => CurrentState;
-
-        /// <inheritdoc />
-        float IObjectiveGroup.Progress => Progress;
-
-        /// <inheritdoc />
-        IReadOnlyList<IObjective> IObjectiveGroup.Objectives => EmptyObjectives;
-
-        /// <inheritdoc />
-        ObjectiveExecutionMode IObjectiveGroup.ExecutionMode => ObjectiveExecutionMode.Sequential;
-
-        /// <inheritdoc />
-        int IObjectiveGroup.RequiredCount => 1;
-
-        /// <inheritdoc />
-        int IObjectiveGroup.CompletedCount => IsUnlocked ? 1 : 0;
-
-        /// <inheritdoc />
-        event Action<IObjectiveGroup> IObjectiveGroup.OnStarted
-        {
-            add => _onGroupStarted += value;
-            remove => _onGroupStarted -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjectiveGroup> IObjectiveGroup.OnProgressChanged
-        {
-            add => _onGroupProgressChanged += value;
-            remove => _onGroupProgressChanged -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjectiveGroup> IObjectiveGroup.OnCompleted
-        {
-            add => _onGroupCompleted += value;
-            remove => _onGroupCompleted -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjectiveGroup> IObjectiveGroup.OnFailed
-        {
-            add => _onGroupFailed += value;
-            remove => _onGroupFailed -= value;
-        }
-
-        /// <inheritdoc />
-        event Action<IObjectiveGroup, IObjective> IObjectiveGroup.OnObjectiveCompleted
-        {
-            add => _onObjectiveInGroupCompleted += value;
-            remove => _onObjectiveInGroupCompleted -= value;
-        }
-
-        #endregion
-
-        #region Constructor
 
         /// <summary>
         /// Creates a new runtime achievement from ScriptableObject data.
         /// </summary>
-        /// <param name="data">The ScriptableObject containing achievement configuration.</param>
         public AchievementRuntime(Achievement_SO data)
         {
             Data = data;
-            CurrentState = ObjectiveState.NotStarted;
+            Id = data.AchievementId;
+            State = State.NotStarted;
             CurrentValue = data.StartValue;
             UnlockTime = null;
         }
+
+        #region IObjective Lifecycle
+
+        /// <inheritdoc />
+        public void Start() => StartTracking();
+
+        /// <inheritdoc />
+        public void Complete() => Unlock();
+
+        /// <inheritdoc />
+        public void Fail() { /* Achievements don't fail */ }
+
+        /// <inheritdoc />
+        public void Reset() => ResetProgress();
 
         #endregion
 
@@ -244,19 +137,15 @@ namespace HelloDev.QuestSystem.Achievements
         /// </summary>
         public void StartTracking()
         {
-            if (CurrentState != ObjectiveState.NotStarted) return;
+            if (State != State.NotStarted) return;
 
-            CurrentState = ObjectiveState.InProgress;
+            State = State.InProgress;
 
-            // Subscribe to unlock condition if available
             if (Data.UnlockCondition is IConditionEventDriven eventCondition)
-            {
                 eventCondition.SubscribeToEvent(Unlock);
-            }
 
             QuestLogger.Log(LogSubsystem.Achievement, $"Achievement '{DevName}' tracking started.");
-            _onObjectiveStarted?.Invoke(this);
-            _onGroupStarted?.Invoke(this);
+            Started.Invoke(this);
         }
 
         /// <summary>
@@ -264,86 +153,68 @@ namespace HelloDev.QuestSystem.Achievements
         /// </summary>
         public void Unlock()
         {
-            if (CurrentState == ObjectiveState.Completed) return;
+            if (State == State.Completed) return;
 
-            // Unsubscribe from condition
             if (Data.UnlockCondition is IConditionEventDriven eventCondition)
-            {
                 eventCondition.UnsubscribeFromEvent(Unlock);
-            }
 
-            CurrentState = ObjectiveState.Completed;
+            State = State.Completed;
             CurrentValue = TargetValue;
             UnlockTime = DateTime.UtcNow;
 
             QuestLogger.Log(LogSubsystem.Achievement, $"Achievement '{DevName}' unlocked!");
 
-            _onObjectiveProgressChanged?.Invoke(this);
-            _onGroupProgressChanged?.Invoke(this);
-            OnAchievementUnlocked?.Invoke(this);
-            _onObjectiveCompleted?.Invoke(this);
-            _onGroupCompleted?.Invoke(this);
-            _onObjectiveInGroupCompleted?.Invoke(this, this);
+            ProgressChanged.Invoke(this);
+            Completed.Invoke(this);
         }
 
         /// <summary>
         /// Increments progress (for progressive achievements).
         /// </summary>
-        /// <param name="amount">Amount to add.</param>
         public void IncrementProgress(int amount = 1)
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (State != State.InProgress) return;
             if (Data.AchievementType != AchievementType.Progressive) return;
 
             CurrentValue = Math.Min(CurrentValue + amount, TargetValue);
-            QuestLogger.LogVerbose(LogSubsystem.Achievement, $"Achievement '{DevName}' progress: {CurrentValue}/{TargetValue}");
+            QuestLogger.LogVerbose(LogSubsystem.Achievement,
+                $"Achievement '{DevName}' progress: {CurrentValue}/{TargetValue}");
 
-            _onObjectiveProgressChanged?.Invoke(this);
-            _onGroupProgressChanged?.Invoke(this);
-            OnProgressUpdated?.Invoke(this);
+            ProgressChanged.Invoke(this);
+            Updated.Invoke(this);
 
-            // Check for completion
             if (CurrentValue >= TargetValue)
-            {
                 Unlock();
-            }
         }
 
         /// <summary>
-        /// Sets progress to a specific value (for progressive achievements).
+        /// Sets progress to a specific value.
         /// </summary>
-        /// <param name="value">The value to set.</param>
         public void SetProgress(int value)
         {
-            if (CurrentState != ObjectiveState.InProgress) return;
+            if (State != State.InProgress) return;
             if (Data.AchievementType != AchievementType.Progressive) return;
 
             CurrentValue = Math.Clamp(value, 0, TargetValue);
-            QuestLogger.LogVerbose(LogSubsystem.Achievement, $"Achievement '{DevName}' progress set: {CurrentValue}/{TargetValue}");
+            QuestLogger.LogVerbose(LogSubsystem.Achievement,
+                $"Achievement '{DevName}' progress set: {CurrentValue}/{TargetValue}");
 
-            _onObjectiveProgressChanged?.Invoke(this);
-            _onGroupProgressChanged?.Invoke(this);
-            OnProgressUpdated?.Invoke(this);
+            ProgressChanged.Invoke(this);
+            Updated.Invoke(this);
 
-            // Check for completion
             if (CurrentValue >= TargetValue)
-            {
                 Unlock();
-            }
         }
 
         /// <summary>
-        /// Resets this achievement to initial state.
+        /// Resets this achievement to its initial state.
         /// </summary>
         public void ResetProgress()
         {
-            // Unsubscribe from condition
             if (Data.UnlockCondition is IConditionEventDriven eventCondition)
-            {
                 eventCondition.UnsubscribeFromEvent(Unlock);
-            }
 
-            CurrentState = ObjectiveState.NotStarted;
+            State = State.NotStarted;
             CurrentValue = Data.StartValue;
             UnlockTime = null;
 
@@ -352,42 +223,32 @@ namespace HelloDev.QuestSystem.Achievements
 
         #endregion
 
-        #region Save/Load Support
+        #region Save / Load
 
         /// <summary>
         /// Restores achievement state from a save.
         /// </summary>
-        /// <param name="isUnlocked">Whether the achievement was unlocked.</param>
-        /// <param name="currentValue">The saved progress value.</param>
-        /// <param name="unlockTime">The saved unlock time (if unlocked).</param>
         public void RestoreState(bool isUnlocked, int currentValue, DateTime? unlockTime)
         {
-            // First unsubscribe from any existing condition subscription
             if (Data.UnlockCondition is IConditionEventDriven eventCondition)
-            {
                 eventCondition.UnsubscribeFromEvent(Unlock);
-            }
 
             CurrentValue = currentValue;
             UnlockTime = unlockTime;
 
             if (isUnlocked)
             {
-                CurrentState = ObjectiveState.Completed;
+                State = State.Completed;
             }
             else if (currentValue > Data.StartValue)
             {
-                CurrentState = ObjectiveState.InProgress;
-
-                // Re-subscribe to condition if we're in progress
+                State = State.InProgress;
                 if (Data.UnlockCondition is IConditionEventDriven eventCond)
-                {
                     eventCond.SubscribeToEvent(Unlock);
-                }
             }
             else
             {
-                CurrentState = ObjectiveState.NotStarted;
+                State = State.NotStarted;
             }
         }
 
@@ -395,19 +256,10 @@ namespace HelloDev.QuestSystem.Achievements
 
         #region Equality
 
-        public override bool Equals(object obj)
-        {
-            if (obj is AchievementRuntime other)
-            {
-                return AchievementId == other.AchievementId;
-            }
-            return false;
-        }
+        public override bool Equals(object obj) =>
+            obj is AchievementRuntime other && Id == other.Id;
 
-        public override int GetHashCode()
-        {
-            return AchievementId.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
         #endregion
     }

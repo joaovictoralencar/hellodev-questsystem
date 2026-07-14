@@ -100,13 +100,13 @@ namespace HelloDev.QuestSystem.Achievements
         /// Gets all unlocked achievements.
         /// </summary>
         public IReadOnlyCollection<AchievementRuntime> UnlockedAchievements =>
-            _achievements.Values.Where(a => a.IsUnlocked).ToList();
+            _achievements.Values.Where(a => a.IsComplete).ToList();
 
         /// <summary>
         /// Gets the total achievement points earned.
         /// </summary>
         public int TotalPointsEarned =>
-            _achievements.Values.Where(a => a.IsUnlocked).Sum(a => a.Data.Points);
+            _achievements.Values.Where(a => a.IsComplete).Sum(a => a.Data.Points);
 
         /// <summary>
         /// Gets the total possible achievement points.
@@ -148,8 +148,8 @@ namespace HelloDev.QuestSystem.Achievements
             // Unsubscribe from all achievement events
             foreach (var achievement in _achievements.Values)
             {
-                achievement.OnAchievementUnlocked.SafeUnsubscribe(HandleAchievementUnlocked);
-                achievement.OnProgressUpdated.SafeUnsubscribe(HandleProgressUpdated);
+                achievement.Completed.SafeUnsubscribe(HandleAchievementUnlocked);
+                achievement.Updated.SafeUnsubscribe(HandleProgressUpdated);
             }
         }
 
@@ -172,8 +172,8 @@ namespace HelloDev.QuestSystem.Achievements
                 _achievements[achievementData.AchievementId] = runtime;
 
                 // Subscribe to events
-                runtime.OnAchievementUnlocked.SafeSubscribe(HandleAchievementUnlocked);
-                runtime.OnProgressUpdated.SafeSubscribe(HandleProgressUpdated);
+                runtime.Completed.SafeSubscribe(HandleAchievementUnlocked);
+                runtime.Updated.SafeSubscribe(HandleProgressUpdated);
 
                 // Auto-start tracking if enabled
                 if (autoStartTracking)
@@ -219,7 +219,7 @@ namespace HelloDev.QuestSystem.Achievements
         {
             var achievement = GetAchievement(achievementId);
             if (achievement == null) return false;
-            if (achievement.IsUnlocked) return false;
+            if (achievement.IsComplete) return false;
 
             achievement.Unlock();
             return true;
@@ -277,7 +277,7 @@ namespace HelloDev.QuestSystem.Achievements
         public bool IsAchievementUnlocked(Guid achievementId)
         {
             var achievement = GetAchievement(achievementId);
-            return achievement?.IsUnlocked ?? false;
+            return achievement?.IsComplete ?? false;
         }
 
         /// <summary>
@@ -326,8 +326,8 @@ namespace HelloDev.QuestSystem.Achievements
         {
             return _achievements.Values.Select(a => new AchievementSaveData
             {
-                AchievementId = a.AchievementId.ToString(),
-                IsUnlocked = a.IsUnlocked,
+                AchievementId = a.Id.ToString(),
+                IsUnlocked = a.IsComplete,
                 CurrentValue = a.CurrentValue,
                 UnlockTime = a.UnlockTime?.ToString("O")
             }).ToList();
@@ -363,14 +363,14 @@ namespace HelloDev.QuestSystem.Achievements
 
         #region Event Handlers
 
-        private void HandleAchievementUnlocked(AchievementRuntime achievement)
+        private void HandleAchievementUnlocked(IObjective achievement)
         {
-            OnAchievementUnlocked?.Invoke(achievement);
+            OnAchievementUnlocked?.Invoke(achievement as AchievementRuntime);
         }
 
-        private void HandleProgressUpdated(AchievementRuntime achievement)
+        private void HandleProgressUpdated(IObjective achievement)
         {
-            OnAchievementProgressChanged?.Invoke(achievement);
+            OnAchievementProgressChanged?.Invoke(achievement as AchievementRuntime);
         }
 
         #endregion
@@ -383,7 +383,7 @@ namespace HelloDev.QuestSystem.Achievements
         {
             if (_achievements.Count > 0)
             {
-                var first = _achievements.Values.FirstOrDefault(a => !a.IsUnlocked);
+                var first = _achievements.Values.FirstOrDefault(a => !a.IsComplete);
                 first?.Unlock();
             }
         }
@@ -392,7 +392,7 @@ namespace HelloDev.QuestSystem.Achievements
         private void DebugIncrementFirst()
         {
             var progressive = _achievements.Values
-                .FirstOrDefault(a => a.Data.AchievementType == AchievementType.Progressive && !a.IsUnlocked);
+                .FirstOrDefault(a => a.Data.AchievementType == AchievementType.Progressive && !a.IsComplete);
             progressive?.IncrementProgress();
         }
 

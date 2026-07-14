@@ -137,7 +137,7 @@ namespace HelloDev.QuestSystem.QuestLines
             if (quest == null) return;
 
             // Track completion
-            _completedQuestIds.Add(quest.QuestId);
+            _completedQuestIds.Add(quest.MissionId);
 
             // Fire event
             OnQuestInLineCompleted.SafeInvoke(this, quest);

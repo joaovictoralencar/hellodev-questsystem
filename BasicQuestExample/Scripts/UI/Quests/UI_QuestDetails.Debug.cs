@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System.Linq;
 using HelloDev.Conditions;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.Tasks;
 using HelloDev.QuestSystem.Utils;
@@ -33,14 +34,14 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [PropertyOrder(41)]
         [ShowInInspector, ReadOnly]
         [ShowIf("@UnityEngine.Application.isPlaying && _currentQuest != null")]
-        private string CurrentQuestState => _currentQuest?.CurrentState.ToString() ?? "N/A";
+        private string CurrentQuestState => _currentQuest?.Progress.ToString() ?? "N/A";
 
         [TitleGroup("Runtime State")]
         [PropertyOrder(42)]
         [ShowInInspector, ReadOnly]
         [ShowIf("@UnityEngine.Application.isPlaying && _currentQuest != null")]
         [ProgressBar(0, 1, ColorGetter = nameof(GetProgressColor))]
-        private float CurrentQuestProgress => _currentQuest?.CurrentProgress ?? 0f;
+        private float CurrentQuestProgress => _currentQuest?.Progress ?? 0f;
 
         [TitleGroup("Runtime State")]
         [PropertyOrder(43)]
@@ -52,16 +53,16 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [PropertyOrder(44)]
         [ShowInInspector, ReadOnly]
         [ShowIf("@UnityEngine.Application.isPlaying && _currentTask != null")]
-        private string CurrentTaskState => _currentTask?.CurrentState.ToString() ?? "N/A";
+        private string CurrentTaskState => _currentTask?.State.ToString() ?? "N/A";
 
         private Color GetProgressColor()
         {
             if (_currentQuest == null) return Color.gray;
-            return _currentQuest.CurrentState switch
+            return _currentQuest.State switch
             {
-                QuestState.Completed => Color.green,
-                QuestState.Failed => Color.red,
-                QuestState.InProgress => new Color(0.2f, 0.6f, 1f),
+                State.Completed => Color.green,
+                State.Failed => Color.red,
+                State.InProgress => new Color(0.2f, 0.6f, 1f),
                 _ => Color.gray
             };
         }
@@ -147,49 +148,49 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [TitleGroup("Debug/Quick Actions")]
         [PropertyOrder(70)]
         [Button("Complete Current Task", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
-        private void QuickCompleteTask() => _currentTask?.CompleteTask();
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
+        private void QuickCompleteTask() => _currentTask?.Complete();
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Quick Actions")]
         [PropertyOrder(71)]
         [Button("Fail Current Task", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
-        private void QuickFailTask() => _currentTask?.FailTask();
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
+        private void QuickFailTask() => _currentTask?.Fail();
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Quick Actions")]
         [PropertyOrder(72)]
         [Button("Increment Task", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask != null && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
         private void QuickIncrementTask() => _currentTask?.IncrementStep();
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Quick Actions")]
         [PropertyOrder(73)]
         [Button("Complete Current Quest", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.Objectives.State.InProgress")]
         private void QuickCompleteQuest() => DebugCompleteQuest();
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Quick Actions")]
         [PropertyOrder(74)]
         [Button("Fail Current Quest", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
-        private void QuickFailQuest() => _currentQuest?.FailQuest();
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.Objectives.State.InProgress")]
+        private void QuickFailQuest() => _currentQuest?.Fail();
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Location Task")]
         [PropertyOrder(80)]
         [Button("Trigger Location Reached", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is LocationTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is LocationTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
         private void QuickTriggerLocation() => _currentTask?.IncrementStep();
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Timed Task")]
         [PropertyOrder(81)]
         [Button("Add 30 Seconds", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
         private void QuickAddTime()
         {
             if (_currentTask is TimedTaskRuntime timedTask)
@@ -200,7 +201,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [TitleGroup("Debug/Timed Task")]
         [PropertyOrder(82)]
         [Button("Expire Timer", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
         private void QuickExpireTimer()
         {
             if (_currentTask is TimedTaskRuntime timedTask)
@@ -211,7 +212,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [TitleGroup("Debug/Timed Task")]
         [PropertyOrder(83)]
         [Button("Complete Timed Objective", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is TimedTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
         private void QuickCompleteTimedObjective()
         {
             if (_currentTask is TimedTaskRuntime timedTask)
@@ -222,7 +223,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [TitleGroup("Debug/Discovery Task")]
         [PropertyOrder(84)]
         [Button("Discover Next Item", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is DiscoveryTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.TaskState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentTask is DiscoveryTaskRuntime && _currentTask.CurrentState == HelloDev.QuestSystem.Tasks.State.InProgress")]
         private void QuickDiscoverItem()
         {
             if (_currentTask is DiscoveryTaskRuntime discoveryTask)
@@ -233,21 +234,21 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         [TitleGroup("Debug/Player Choices")]
         [PropertyOrder(90)]
         [Button("Select Choice 1", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.Objectives.State.InProgress")]
         private void QuickSelectChoice1() => DebugSelectChoice(0);
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Player Choices")]
         [PropertyOrder(91)]
         [Button("Select Choice 2", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.Objectives.State.InProgress")]
         private void QuickSelectChoice2() => DebugSelectChoice(1);
 
         [FoldoutGroup("Debug")]
         [TitleGroup("Debug/Player Choices")]
         [PropertyOrder(92)]
         [Button("Select Choice 3", ButtonSizes.Medium)]
-        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.QuestSystem.Quests.QuestState.InProgress")]
+        [EnableIf("@UnityEngine.Application.isPlaying && _currentQuest != null && _currentQuest.CurrentState == HelloDev.Objectives.State.InProgress")]
         private void QuickSelectChoice3() => DebugSelectChoice(2);
 #endif
 
@@ -297,23 +298,23 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_currentTask != null)
             {
-                bool isInProgress = _currentTask.CurrentState == TaskState.InProgress;
-                bool isCompleted = _currentTask.CurrentState == TaskState.Completed;
+                bool isInProgress = _currentTask.State == State.InProgress;
+                bool isCompleted = _currentTask.State == State.Completed;
 
                 CompleteCurrentTaskButton?.SetInteractable(isInProgress);
                 IncrementCurrentTaskButton?.SetInteractable(isInProgress);
                 DecrementCurrentTaskButton?.SetInteractable(isInProgress || isCompleted);
                 FailCurrentTaskButton?.SetInteractable(isInProgress || isCompleted);
-                ResetCurrentTaskButton?.SetInteractable(_currentTask.CurrentState != TaskState.NotStarted);
+                ResetCurrentTaskButton?.SetInteractable(_currentTask.State != State.NotStarted);
             }
 
             if (_currentQuest != null)
             {
-                bool isInProgress = _currentQuest.CurrentState == QuestState.InProgress;
+                bool isInProgress = _currentQuest.State == State.InProgress;
 
                 CompleteCurrentQuestButton?.SetInteractable(isInProgress);
                 FailCurrentQuestButton?.SetInteractable(isInProgress);
-                ResetCurrentQuestButton?.SetInteractable(_currentQuest.CurrentState != QuestState.NotStarted);
+                ResetCurrentQuestButton?.SetInteractable(_currentQuest.State != State.NotStarted);
             }
         }
 
@@ -322,7 +323,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             _currentQuest?.ForceComplete();
         }
 
-        private void DebugFailQuest() => _currentQuest?.FailQuest();
+        private void DebugFailQuest() => _currentQuest?.Fail();
 
         private void DebugResetQuest()
         {
@@ -330,9 +331,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             QuestManager.Instance.RestartQuest(_currentQuest.QuestData);
         }
 
-        private void DebugCompleteTask() => _currentTask?.CompleteTask();
+        private void DebugCompleteTask() => _currentTask?.Complete();
 
-        private void DebugFailTask() => _currentTask?.FailTask();
+        private void DebugFailTask() => _currentTask?.Fail();
 
         private void DebugResetTask()
         {
@@ -342,9 +343,9 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             int index = tasks.Select((t, i) => (Task: t, Index: i))
                 .FirstOrDefault(x => x.Task == _currentTask).Index;
             for (int i = index; i < tasks.Count; i++)
-                tasks[i].ResetTask();
+                tasks[i].Reset();
 
-            _currentTask.StartTask();
+            _currentTask.Start();
         }
 
         private void DebugIncrementTask() => _currentTask?.IncrementStep();
@@ -353,7 +354,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugEventTask()
         {
-            if (_currentTask == null || _currentTask.CurrentState != TaskState.InProgress)
+            if (_currentTask == null || _currentTask.State != State.InProgress)
             {
                 Log(LogSubsystem.UI, $"[DebugEventTask] Skipped - task is null or not in progress.");
                 return;
@@ -404,13 +405,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private void DebugSelectChoice(int choiceIndex)
         {
-            if (_currentQuest == null || _currentQuest.CurrentState != QuestState.InProgress)
+            if (_currentQuest == null || _currentQuest.State != State.InProgress)
             {
                 Log(LogSubsystem.UI, "[DebugSelectChoice] No active quest");
                 return;
             }
 
-            var currentStage = _currentQuest.CurrentStage;
+            var currentStage = _currentQuest.CurrentQuestStage;
             if (currentStage == null)
             {
                 Log(LogSubsystem.UI, "[DebugSelectChoice] No current stage");

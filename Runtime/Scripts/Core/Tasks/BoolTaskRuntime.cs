@@ -1,4 +1,5 @@
 using System.Linq;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.ScriptableObjects;
 
@@ -14,12 +15,12 @@ namespace HelloDev.QuestSystem.Tasks
         /// <summary>
         /// Gets the progress of this task. Returns 1 if completed, 0 otherwise.
         /// </summary>
-        public override float Progress => CurrentState == TaskState.Completed ? 1 : 0;
+        public override float Progress => State == Objectives.State.Completed ? 1 : 0;
 
         /// <summary>
         /// Gets whether the task is completed. Used for save/load.
         /// </summary>
-        public bool IsCompleted => CurrentState == TaskState.Completed;
+        public bool IsCompleted => State == Objectives.State.Completed;
 
         /// <summary>
         /// Initializes a new instance of the BoolTaskRuntime class.
@@ -42,8 +43,8 @@ namespace HelloDev.QuestSystem.Tasks
         /// <returns>True if the task was successfully completed, false if not in progress.</returns>
         public override bool OnIncrementStep()
         {
-            if (CurrentState != TaskState.InProgress) return false;
-            CompleteTask();
+            if (State != Objectives.State.InProgress) return false;
+            Complete();
             return true;
         }
 
@@ -61,11 +62,12 @@ namespace HelloDev.QuestSystem.Tasks
         /// Called automatically when subscribed condition events fire.
         /// </summary>
         /// <param name="task">The task being checked (this instance).</param>
-        protected override void CheckCompletion(TaskRuntime task)
+        protected override void CheckCompletion(IObjective task)
         {
-            if (task.Data.Conditions.All(condition => condition.Evaluate()))
+            TaskRuntime taskRuntime = (TaskRuntime)task;
+            if (taskRuntime.Data.Conditions.All(condition => condition.Evaluate()))
             {
-                CompleteTask();
+                Complete();
             }
         }
 

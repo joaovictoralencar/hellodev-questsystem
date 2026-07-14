@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HelloDev.Conditions.WorldFlags;
+using HelloDev.Objectives;
 using HelloDev.QuestSystem.Quests;
 using HelloDev.QuestSystem.ScriptableObjects;
 using HelloDev.QuestSystem.Stages;
@@ -86,7 +87,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// <param name="findQuestByGuid">Function to find Quest_SO by GUID.</param>
         public static void RestoreQuests(
             List<QuestSnapshot> questSnapshots,
-            QuestState targetState,
+            State targetState,
             QuestManager questManager,
             System.Func<string, Quest_SO> findQuestByGuid)
         {
@@ -106,7 +107,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 }
 
                 // Get the captured state from the snapshot
-                var capturedState = (QuestState)snapshot.State;
+                var capturedState = (State)snapshot.State;
 
                 // Add quest for restore (will be NotStarted initially, no events subscribed)
                 // skipAutoStart and skipEventSubscription prevent any automatic behavior during restore
@@ -137,29 +138,29 @@ namespace HelloDev.QuestSystem.SaveLoad
                 // STEP 5: Handle terminal states or resume
                 switch (targetState)
                 {
-                    case QuestState.InProgress:
+                    case State.InProgress:
                         // Resume the quest - this subscribes to events
                         quest.ResumeQuest();
                         break;
 
-                    case QuestState.Completed:
+                    case State.Completed:
                         // Quest is already complete, no need to subscribe to events
                         // Just ensure all tasks are marked complete
                         foreach (var task in quest.Tasks)
                         {
-                            if (task.CurrentState != TaskState.Completed)
+                            if (task.State != State.Completed)
                             {
-                                task.RestoreState(TaskState.Completed);
+                                task.RestoreState(State.Completed);
                             }
                         }
                         // Move quest from active registry to completed registry
-                        questManager.QuestRegistry.MoveToCompleted(quest.QuestId);
+                        questManager.QuestRegistry.MoveToCompleted(quest.MissionId);
                         break;
 
-                    case QuestState.Failed:
+                    case State.Failed:
                         // Quest is already failed, no need to subscribe to events
                         // Move quest from active registry to failed registry
-                        questManager.QuestRegistry.MoveToFailed(quest.QuestId);
+                        questManager.QuestRegistry.MoveToFailed(quest.MissionId);
                         break;
                 }
 
@@ -172,9 +173,9 @@ namespace HelloDev.QuestSystem.SaveLoad
             {
                 string stateLabel = targetState switch
                 {
-                    QuestState.InProgress => "in-progress",
-                    QuestState.Completed => "completed",
-                    QuestState.Failed => "failed",
+                    State.InProgress => "in-progress",
+                    State.Completed => "completed",
+                    State.Failed => "failed",
                     _ => targetState.ToString().ToLower()
                 };
                 QuestLogger.Log(LogSubsystem.Save, $"Restored {restored} {stateLabel} quests ({totalTasks} tasks)");
@@ -187,7 +188,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         private static void RestoreStageAndGroupStates(QuestRuntime quest, QuestSnapshot snapshot)
         {
             // Determine which stages should be in which state
-            foreach (var stage in quest.Stages)
+            foreach (var stage in quest.QuestStages)
             {
                 if (stage.StageIndex < snapshot.CurrentStageIndex)
                 {
@@ -242,12 +243,12 @@ namespace HelloDev.QuestSystem.SaveLoad
                     var taskSnapshot = taskSnapshots.Find(t => t.TaskGuid == task.Data.TaskId.ToString());
                     if (taskSnapshot != null)
                     {
-                        var taskState = (TaskState)taskSnapshot.State;
-                        if (taskState == TaskState.InProgress || taskState == TaskState.NotStarted)
+                        var taskState = (State)taskSnapshot.State;
+                        if (taskState == State.InProgress || taskState == State.NotStarted)
                         {
                             hasInProgressOrNotStarted = true;
                         }
-                        if (taskState != TaskState.Completed)
+                        if (taskState != State.Completed)
                         {
                             allCompleted = false;
                         }
@@ -303,7 +304,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                     continue;
                 }
 
-                TaskState targetState = (TaskState)taskSnapshot.State;
+                State targetState = (State)taskSnapshot.State;
 
                 // Individual task logs are verbose only
                 QuestLogger.LogVerbose(LogSubsystem.Save, $"Task '{task.DevName}': {targetState}, progress={taskSnapshot.ProgressData.IntValue}");

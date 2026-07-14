@@ -1,15 +1,13 @@
 using System;
+using HelloDev.Objectives;
 using PrimeTween;
 using HelloDev.QuestSystem.Tasks;
-using HelloDev.QuestSystem.Utils;
 using HelloDev.UI.Default;
 using HelloDev.Utils;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
-using static HelloDev.QuestSystem.Utils.QuestLogger;
 
 namespace HelloDev.QuestSystem.BasicQuestExample.UI
 {
@@ -40,7 +38,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         private TaskRuntime _task;
         private Action<TaskRuntime> _onTaskSelectedCallback;
-        private UnityAction<TaskRuntime> _onTaskStartedHandler;
+        private UnityAction<IObjective> _onTaskStartedHandler;
         private bool _isInitialized;
 
         #endregion
@@ -99,7 +97,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             }
 
             SetupLocalizedText();
-            ApplyStateVisuals(task.CurrentState);
+            ApplyStateVisuals(task.State);
             SubscribeToTaskEvents();
 
             _isInitialized = true;
@@ -155,16 +153,18 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         #region Private Methods - Task State
 
-        private void HandleTaskUpdated(TaskRuntime task)
+        private void HandleTaskUpdated(IObjective task)
         {
-            if (task?.Data == null || taskNameText?.StringReference == null) return;
+            var taskRuntime = task as TaskRuntime;
+            
+            if (taskRuntime?.Data == null || taskNameText?.StringReference == null) return;
 
             // Update variables on the existing StringReference and refresh
-            task.Data.SetupTaskLocalizedVariables(taskNameText.StringReference, task);
+            taskRuntime.Data.SetupTaskLocalizedVariables(taskNameText.StringReference, taskRuntime);
             taskNameText.RefreshString();
         }
 
-        private void HandleTaskCompleted(TaskRuntime task)
+        private void HandleTaskCompleted(IObjective task)
         {
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(true);
@@ -172,7 +172,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             toggle?.SetInteractable(true);
         }
 
-        private void HandleTaskFailed(TaskRuntime task)
+        private void HandleTaskFailed(IObjective task)
         {
             gameObject.SetActive(true);
             if (taskCheckmark != null) taskCheckmark.SetActive(false);
@@ -189,7 +189,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
             if (_onTaskStartedHandler != null && _task != null)
             {
-                _task.OnTaskStarted.SafeUnsubscribe(_onTaskStartedHandler);
+                _task.Started.SafeUnsubscribe(_onTaskStartedHandler);
                 _onTaskStartedHandler = null;
             }
         }
@@ -199,7 +199,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             gameObject.SetActive(false);
 
             _onTaskStartedHandler = _ => HandleTaskInProgress();
-            _task.OnTaskStarted.SafeSubscribe(_onTaskStartedHandler);
+            _task.Started.SafeSubscribe(_onTaskStartedHandler);
         }
 
         #endregion
@@ -218,20 +218,20 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             taskNameText.StringReference = _task.Data.DisplayName;
         }
 
-        private void ApplyStateVisuals(TaskState state)
+        private void ApplyStateVisuals(State state)
         {
             switch (state)
             {
-                case TaskState.NotStarted:
+                case State.NotStarted:
                     HandleTaskNotStarted();
                     break;
-                case TaskState.InProgress:
+                case State.InProgress:
                     HandleTaskInProgress();
                     break;
-                case TaskState.Completed:
+                case State.Completed:
                     HandleTaskCompleted(_task);
                     break;
-                case TaskState.Failed:
+                case State.Failed:
                     HandleTaskFailed(_task);
                     break;
             }
@@ -241,22 +241,22 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_task == null) return;
 
-            _task.OnTaskUpdated.SafeSubscribe(HandleTaskUpdated);
-            _task.OnTaskCompleted.SafeSubscribe(HandleTaskCompleted);
-            _task.OnTaskFailed.SafeSubscribe(HandleTaskFailed);
+            _task.Updated.SafeSubscribe(HandleTaskUpdated);
+            _task.Completed.SafeSubscribe(HandleTaskCompleted);
+            _task.Failed.SafeSubscribe(HandleTaskFailed);
         }
 
         private void UnsubscribeFromTaskEvents()
         {
             if (_task == null) return;
 
-            _task.OnTaskUpdated.SafeUnsubscribe(HandleTaskUpdated);
-            _task.OnTaskCompleted.SafeUnsubscribe(HandleTaskCompleted);
-            _task.OnTaskFailed.SafeUnsubscribe(HandleTaskFailed);
+            _task.Updated.SafeUnsubscribe(HandleTaskUpdated);
+            _task.Completed.SafeUnsubscribe(HandleTaskCompleted);
+            _task.Failed.SafeUnsubscribe(HandleTaskFailed);
 
             if (_onTaskStartedHandler != null)
             {
-                _task.OnTaskStarted.SafeUnsubscribe(_onTaskStartedHandler);
+                _task.Started.SafeUnsubscribe(_onTaskStartedHandler);
                 _onTaskStartedHandler = null;
             }
         }
