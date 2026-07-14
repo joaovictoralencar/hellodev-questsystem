@@ -6,12 +6,10 @@
         "HelloDev.Saving",
         "HelloDev.Conditions",
         "HelloDev.Conditions.WorldFlags",
-        "HelloDev.Events",
         "HelloDev.IDs",
         "Unity.Localization",
         "QuestSystem.Utils",
         "HelloDev.Conditions.Types",
-        "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
         "HelloDev.Bootstrap"
     ],
     "includePlatforms": [],
