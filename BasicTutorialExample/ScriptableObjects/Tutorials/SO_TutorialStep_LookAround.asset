@@ -28,7 +28,7 @@ MonoBehaviour:
   isTimedStep: 0
   duration: 3
   canSkip: 1
-  completionCondition: {fileID: 11400000, guid: ad8a53e606575634c8f1b5f989fe1f63, type: 2}
+  completionCondition: {fileID: 11400000, guid: 9b9f7f28a3196d241a9cc4573304e87b, type: 2}
   substeps: []
   requiredCount: 1
   references:

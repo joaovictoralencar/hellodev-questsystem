@@ -34,7 +34,7 @@ MonoBehaviour:
   isTimedStep: 0
   duration: 3
   canSkip: 1
-  completionCondition: {fileID: 11400000, guid: 695e632d8f3d0fc419c6cdee3da07092, type: 2}
+  completionCondition: {fileID: 11400000, guid: 9d9b3c189bcf92a459da039a88b0e6d7, type: 2}
   substeps: []
   requiredCount: 3
   references:

@@ -124,10 +124,6 @@ namespace HelloDev.QuestSystem.BasicTutorialExample.UI
             TweenService.SetProvider(new PrimeTweenProvider());
             ValidateReferences();
             Initialize();
-        }
-
-        private void Start()
-        {
             SubscribeToManagerEvents();
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using HelloDev.QuestSystem.Tutorials;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,6 +18,9 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
         [SerializeField, Tooltip("The tutorial to start when t key is pressed.")]
         private Tutorial_SO tutorial;
 
+        [SerializeField, Tooltip("Automatically start the tutorial when the game starts.")]
+        private bool autoStart;
+
         [Header("Debug")]
         [SerializeField, Tooltip("Log messages to console.")]
         private bool logMessages = true;
@@ -25,10 +29,15 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
 
         #region Unity Lifecycle
 
-        private void Start()
+        private IEnumerator Start()
         {
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = false;
+            if (autoStart)
+            {
+                yield return new WaitForSeconds(1f);
+                StartTutorial();
+            }
         }
 
         private void Update()

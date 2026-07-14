@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a99e9aa70ead4a641bfc44b9d3e021fe, type: 3}
+  m_Script: {fileID: 11500000, guid: 89e337265d60b8144b94dc2fdeb26bb9, type: 3}
   m_Name: SO_Event_MoveBackward
   m_EditorClassIdentifier: HelloDev.Events::HelloDev.Events.GameEventVoid_SO
   _description: Describe what this scriptable object represents

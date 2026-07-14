@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ef4e0f6d32843d4395d466bf26f568a, type: 3}
+  m_Script: {fileID: 11500000, guid: 35624b90ccab5704fb46bf8e47ecd686, type: 3}
   m_Name: SO_Condition_Sprint
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: HelloDev.Conditions.Types::HelloDev.Conditions.Types.ConditionVoid_SO
   _description: Describe what this scriptable object represents
   _isInverted: 0
-  gameEvent: {fileID: 11400000, guid: b9b4923cb8433224bb502d8a4b6f3d40, type: 2}
+  gameEvent: {fileID: 11400000, guid: 57a810b60d1ad63469ebc7553ad8a91b, type: 2}
