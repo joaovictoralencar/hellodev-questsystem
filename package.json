@@ -1,10 +1,10 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "3.12.0",
+  "version": "1.0.0",
   "displayName": "Quest System",
   "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, save/load persistence, and a visual Quest Graph Editor using Unity Graph Toolkit. Includes optional Tutorial and Achievement systems.",
-  "unity": "6000.1",
-  "unityRelease": "1f1",
+  "unity": "6000.5",
+  "unityRelease": "3f1",
   "keywords": [
     "quest",
     "questline",
@@ -28,16 +28,16 @@
     "achievements"
   ],
   "dependencies": {
-    "com.hellodev.utils": "1.5.0",
-    "com.hellodev.saving": "1.1.0",
-    "com.hellodev.events": "1.1.0",
-    "com.hellodev.conditions": "1.7.0",
-    "com.hellodev.ids": "1.1.0",
-    "com.unity.localization": "1.5.2"
+    "com.hellodev.utils": ">=1.0.7",
+    "com.hellodev.saving": ">=1.1.0",
+    "com.hellodev.events": ">=1.1.0",
+    "com.hellodev.conditions": ">=1.7.0",
+    "com.hellodev.ids": ">=1.1.0",
+    "com.unity.localization": ">=1.5.2"
   },
   "author": {
     "name": "João Victor de Alencar Pascoal",
-    "email": "your.email@example.com",
+    "email": "hello.dev.tecnologia@gmail.com",
     "url": ""
   },
   "type": "library"
