@@ -23,6 +23,14 @@ The package is organized into modular assemblies:
 2. Click "+" > "Add package from disk"
 3. Navigate to this folder and select `package.json`
 
+**Via Package Manager (Git):**
+1. Open Unity Package Manager (Window > Package Manager)
+2. Click "+" > "Add package from git URL"
+3. Enter the repository URL (example):
+   `https://github.com/joaovictoralencar/hellodev-questsystem.git#v1.0.0`
+
+Note: HelloDev package dependencies are specified as git URLs. Installing this package via git will cause Unity to fetch its HelloDev dependencies from GitHub automatically. If you prefer a local editable setup, add file: entries for each HelloDev package to your project's `Packages/manifest.json` instead (e.g., `"com.hellodev.utils": "file:../Packages/com.hellodev.utils"`).
+
 **Dependencies:**
 - `com.hellodev.utils`
 - `com.hellodev.saving`
