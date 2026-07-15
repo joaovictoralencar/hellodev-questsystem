@@ -466,8 +466,7 @@ namespace HelloDev.QuestSystem.Quests
             string stageKey = $"stage_{CurrentStageIndex}";
             BranchDecisions[stageKey] = choice.ChoiceId;
 
-            QuestLogger.Log(LogSubsystem.Choice,
-                $"Choice <b>'{choice.ChoiceId}'</b> selected in quest <b>'{QuestData.DevName}'</b>");
+            QuestLogger.Log(LogSubsystem.Choice,$"Choice <b>'{choice.ChoiceId}'</b> selected in quest <b>'{QuestData.DevName}'</b>");
 
             foreach (var task in CurrentTasks)
             {

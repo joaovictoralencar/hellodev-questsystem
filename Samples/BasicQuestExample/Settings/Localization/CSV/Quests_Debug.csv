@@ -1,0 +1,7 @@
+Key,Id,English(en),Portuguese (Brazil)(pt-BR)
+"Quests_Debug_Complete",315628765184,"Complete","Completar"
+"Quests_Debug_Fail",392803958784,"Fail","Falhar"
+"Quests_Debug_Increment",425414672384,"Increment","Incrementar"
+"Quests_Debug_Decrement",474777436160,"Decrement","Decrementar"
+"Quests_Debug_Reset",532839186432,"Reset","Reiniciar"
+"Quests_Debug_RaiseEvent",78779711012864,"Raise Event","Chamar Evento"

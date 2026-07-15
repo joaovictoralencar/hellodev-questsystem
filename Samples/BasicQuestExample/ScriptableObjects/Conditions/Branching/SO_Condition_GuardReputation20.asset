@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e20a96cd17d60e544bfdaea563435629, type: 3}
+  m_Name: SO_Condition_GuardReputation20
+  m_EditorClassIdentifier: HelloDev.Conditions.WorldFlags::HelloDev.Conditions.WorldFlags.WorldFlagEventModifierInt_SO
+  _description: Describe what this scriptable object represents
+  modification:
+    flagLocator: {fileID: 0}
+    isBoolFlag: 1
+    boolFlag: {fileID: 0}
+    boolValue: 1
+    intFlag: {fileID: 0}
+    intOperation: 0
+    intValue: 0
+  filterByValue: 1
+  targetValue: 20
+  comparisonType: 0
+  gameEvent: {fileID: 0}
