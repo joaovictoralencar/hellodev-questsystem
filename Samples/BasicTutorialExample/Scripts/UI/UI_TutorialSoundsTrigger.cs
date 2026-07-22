@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Ami.BroAudio;
+using Cysharp.Threading.Tasks;
 using HelloDev.Objectives;
 using HelloDev.QuestSystem.Tutorials;
 using HelloDev.Utils;
@@ -26,11 +27,11 @@ namespace HelloDev.QuestSystem.BasicTutorialExample
         public bool SelfInitialize { get; set; } = false;
         public bool IsInitialized { get; }
 
-        public Task InitializeAsync()
+        public async UniTask InitializeAsync()
         {
             TutorialManager.Instance.OnStepCompleted.SafeSubscribe(OnStepCompleted);
             TutorialManager.Instance.OnStepStarted.SafeSubscribe(OnStepStarted);
-            return Task.CompletedTask;
+            return;
         }
 
         private void OnStepStarted(TutorialRuntime tutorialRuntime, TutorialStepRuntime stepRuntime)

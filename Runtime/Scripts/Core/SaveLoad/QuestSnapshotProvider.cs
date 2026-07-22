@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using HelloDev.Conditions.WorldFlags;
 using HelloDev.Objectives;
 using HelloDev.QuestSystem.ScriptableObjects;
@@ -62,11 +63,11 @@ namespace HelloDev.QuestSystem.SaveLoad
         }
 
         /// <inheritdoc />
-        public bool RestoreSnapshot(object snapshot)
+        public async UniTask<bool> RestoreSnapshot(object snapshot)
         {
             if (snapshot is QuestSystemSnapshot questSnapshot)
             {
-                return RestoreQuestSnapshot(questSnapshot);
+                return await RestoreQuestSnapshot(questSnapshot);
             }
 
             QuestLogger.LogWarning(LogSubsystem.Save, $"Invalid snapshot type: {snapshot?.GetType().Name ?? "null"}");
@@ -125,6 +126,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 {
                     QuestLogger.LogWarning(LogSubsystem.Save, "Cannot capture snapshot during stage transition. Skipping save.");
                 }
+
                 return null;
             }
 
@@ -152,7 +154,7 @@ namespace HelloDev.QuestSystem.SaveLoad
         /// </summary>
         /// <param name="snapshot">The snapshot to restore.</param>
         /// <returns>True if restoration was successful.</returns>
-        public bool RestoreQuestSnapshot(QuestSystemSnapshot snapshot)
+        public async UniTask<bool> RestoreQuestSnapshot(QuestSystemSnapshot snapshot)
         {
             if (snapshot == null)
             {
@@ -170,7 +172,7 @@ namespace HelloDev.QuestSystem.SaveLoad
             if (_questManager.IsProcessingEvents)
             {
                 QuestLogger.LogError(LogSubsystem.Save, "Cannot restore snapshot while quest events are being processed. " +
-                    "Defer the load until event processing completes.");
+                                                        "Defer the load until event processing completes.");
                 return false;
             }
 
@@ -203,7 +205,7 @@ namespace HelloDev.QuestSystem.SaveLoad
                 // Evaluate database quests not in save data - they may now qualify to start
                 // (e.g., a quest whose start condition depends on a completed quest or world flag)
                 _questManager.EvaluateUnstartedDatabaseQuests();
-                
+
                 QuestLogger.Log(LogSubsystem.Save, $"Load from <b>'{snapshot.Timestamp}'</b> {true}");
                 return true;
             }

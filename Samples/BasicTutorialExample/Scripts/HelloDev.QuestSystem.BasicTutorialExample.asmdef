@@ -16,7 +16,8 @@
         "HelloDev.Conditions",
         "HelloDev.Input",
         "HelloDev.Input.InputSystem",
-        "BroAudio"
+        "BroAudio",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

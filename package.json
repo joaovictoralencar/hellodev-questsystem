@@ -1,6 +1,6 @@
 {
   "name": "com.hellodev.questsystem",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "displayName": "Hello Dev Quest System",
   "description": "A comprehensive quest system for Unity games with support for quests, questlines, stages, branching choices, objectives, rewards, progression tracking, save/load persistence, and a visual Quest Graph Editor using Unity Graph Toolkit. Includes optional Tutorial and Achievement systems.",
   "unity": "6000.5",
@@ -28,12 +28,13 @@
     "achievements"
   ],
   "dependencies": {
-    "com.hellodev.utils": "https://github.com/joaovictoralencar/hellodev-utils.git#v1.0.7",
-    "com.hellodev.saving": "https://github.com/joaovictoralencar/hellodev-saving.git#v1.1.1",
-    "com.hellodev.events": "https://github.com/joaovictoralencar/hellodev-events.git#v1.1.0",
-    "com.hellodev.conditions": "https://github.com/joaovictoralencar/hellodev-conditions.git#v1.7.1",
-    "com.hellodev.ids": "https://github.com/joaovictoralencar/hellodev-ids.git#v1.1.1",
-    "com.unity.localization": ">=1.5.2"
+    "com.hellodev.utils": "1.1.1",
+    "com.hellodev.saving": "1.1.2",
+    "com.hellodev.events": "1.2.1",
+    "com.hellodev.conditions": "1.8.1",
+    "com.hellodev.ids": "1.2.1",
+    "com.unity.localization": "1.5.2",
+    "com.hellodev.bootstrap": "2.2.2"
   },
   "author": {
     "name": "HelloDev",

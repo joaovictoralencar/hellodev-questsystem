@@ -12,7 +12,8 @@
         "QuestSystem.Utils",
         "HelloDev.Conditions.Types",
         "HelloDev.QuestSystem.BasicQuestExample.GameEvents",
-        "HelloDev.Bootstrap"
+        "HelloDev.Bootstrap",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

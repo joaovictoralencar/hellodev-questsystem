@@ -7,7 +7,8 @@
         "HelloDev.Saving",
         "QuestSystem.Utils",
         "Unity.Localization",
-        "HelloDev.Conditions"
+        "HelloDev.Conditions",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

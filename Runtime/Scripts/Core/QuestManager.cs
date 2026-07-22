@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using HelloDev.Bootstrap;
 using HelloDev.Conditions;
 using HelloDev.Conditions.WorldFlags;
@@ -424,10 +425,10 @@ namespace HelloDev.QuestSystem
         #region Core Manager Lifecycle
 
         /// <inheritdoc />
-        public Task InitializeAsync()
+        public async UniTask InitializeAsync()
         {
             if (_isInitialized)
-                return Task.CompletedTask;
+                return;
 
             QuestLogger.Log(LogSubsystem.Manager, "Starting initialization...");
 
@@ -458,8 +459,6 @@ namespace HelloDev.QuestSystem
             CreateAndRegisterSnapshotProvider();
 
             _isInitialized = true;
-
-            return Task.CompletedTask;
         }
 
         /// <summary>

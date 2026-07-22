@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using HelloDev.Logging;
 using HelloDev.QuestSystem.SaveLoad;
 using HelloDev.QuestSystem.Utils;
@@ -58,7 +59,7 @@ namespace HelloDev.QuestSystem.Tutorials.SaveLoad
         }
 
         /// <inheritdoc />
-        public bool RestoreSnapshot(object snapshot)
+        public async UniTask<bool> RestoreSnapshot(object snapshot)
         {
             if (_tutorialManager == null)
             {

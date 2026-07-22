@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using HelloDev.Logging;
 using HelloDev.Objectives;
 using HelloDev.QuestSystem.Tutorials.SaveLoad;
@@ -188,9 +189,9 @@ namespace HelloDev.QuestSystem.Tutorials
         /// <summary>
         /// Initializes the tutorial manager.
         /// </summary>
-        public Task InitializeAsync()
+        public async UniTask InitializeAsync()
         {
-            if (_isInitialized) return Task.CompletedTask;
+            if (_isInitialized) return;
 
             Logger.Log("Tutorial", "TutorialManager starting initialization...", this);
 
@@ -198,7 +199,7 @@ namespace HelloDev.QuestSystem.Tutorials
 
             Logger.Log("Tutorial", "TutorialManager initialized.", this);
 
-            return Task.CompletedTask;
+            return;
         }
 
         /// <summary>
