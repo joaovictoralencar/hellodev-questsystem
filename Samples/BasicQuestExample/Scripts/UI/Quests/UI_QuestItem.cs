@@ -77,9 +77,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 _originalColor = selectableImage.color;
 
             // Subscribe to toggle events
-            toggle.OnToggleOn.SafeSubscribe(HandleToggleOn);
-            toggle.OnShowVisualFeedback.AddListener(ShowSelectionVisual);
-            toggle.OnHideVisualFeedback.AddListener(HideSelectionVisual);
+            toggle.OnValueChanged.SafeSubscribe(HandleToggleValueChanged);
         }
 
         private void OnDestroy()
@@ -120,7 +118,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         {
             if (_quest == null || toggle == null) return;
 
-            toggle.SetIsOn(true);
+            toggle.IsOn = true;
             toggle.Toggle.Select();
         }
 
@@ -148,15 +146,30 @@ namespace HelloDev.QuestSystem.BasicQuestExample
         public void SetToggleIsOn(bool isOn)
         {
             if (toggle != null)
-                toggle.SetIsOn(isOn);
+                toggle.IsOn = isOn;
         }
 
         #endregion
 
         #region Private Methods - Selection
 
+        private void HandleToggleValueChanged(bool value)
+        {
+            if (value)
+                HandleToggleOn();
+            else
+                HandleToggleOff();
+        }
+
         private void HandleToggleOn()
         {
+            ShowSelectionVisual();
+            _onQuestSelectedCallback?.Invoke(_quest);
+        }
+        
+        private void HandleToggleOff()
+        {
+            HideSelectionVisual();
             _onQuestSelectedCallback?.Invoke(_quest);
         }
 

@@ -254,7 +254,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (_taskItems.Count > 0)
             {
                 var firstItem = _taskItems[0];
-                EventSystem.current?.SetSelectedGameObject(firstItem.Toggle.Toggle.gameObject);
+                EventSystem.current?.SetSelectedGameObject(firstItem.Toggle.gameObject);
             }
         }
 

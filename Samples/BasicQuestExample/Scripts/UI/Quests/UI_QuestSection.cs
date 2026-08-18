@@ -58,17 +58,23 @@ namespace HelloDev.QuestSystem.BasicQuestExample
             // Subscribe to expand/collapse if toggle exists
             if (expandToggle != null)
             {
-                expandToggle.OnToggleOn.SafeSubscribe(HandleExpand);
-                expandToggle.OnToggleOff.SafeSubscribe(HandleCollapse);
+                expandToggle.OnValueChanged.SafeSubscribe(OnValueChanged);
             }
+        }
+
+        private void OnValueChanged(bool isOn)
+        {
+            if (isOn)
+                HandleExpand();
+            else
+                HandleCollapse();
         }
 
         private void OnDestroy()
         {
             if (expandToggle != null)
             {
-                expandToggle.OnToggleOn.SafeUnsubscribe(HandleExpand);
-                expandToggle.OnToggleOff.SafeUnsubscribe(HandleCollapse);
+                expandToggle.OnValueChanged.SafeUnsubscribe(OnValueChanged);
             }
         }
 
@@ -230,7 +236,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 contentContainer.SetActive(true);
 
             if (expandToggle != null)
-                expandToggle.SetIsOn(true);
+                expandToggle.IsOn = true;
 
             _isExpanded = true;
         }
@@ -244,7 +250,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample
                 contentContainer.SetActive(false);
 
             if (expandToggle != null)
-                expandToggle.SetIsOn(false);
+                expandToggle.IsOn = false;
 
             _isExpanded = false;
         }

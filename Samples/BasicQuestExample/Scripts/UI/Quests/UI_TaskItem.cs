@@ -58,13 +58,13 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
             if (toggle == null) TryGetComponent(out toggle);
 
             // Subscribe to toggle events
-            toggle.OnToggleOn.AddListener(HandleToggleOn);
-            toggle.OnShowVisualFeedback.AddListener(ShowSelectionVisual);
-            toggle.OnHideVisualFeedback.AddListener(HideSelectionVisual);
+            toggle.OnValueChanged.AddListener(HandleToggleValueChanged);
         }
 
         private void OnDestroy()
         {
+            if (toggle != null)
+                toggle.OnValueChanged.RemoveListener(HandleToggleValueChanged);
             UnsubscribeFromTaskEvents();
             if (selectedBackground != null)
                 Tween.StopAll(selectedBackground);
@@ -110,7 +110,7 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
         {
             if (_task == null || toggle == null) return;
 
-            toggle.SetIsOn(true);
+            toggle.IsOn = true;
             toggle.Toggle.Select();
         }
 
@@ -127,8 +127,23 @@ namespace HelloDev.QuestSystem.BasicQuestExample.UI
 
         #region Private Methods - Selection
 
+        private void HandleToggleValueChanged(bool value)
+        {
+            if (value)
+                HandleToggleOn();
+            else
+                HandleToggleOff();
+        }
+        
+        private void HandleToggleOff()
+        {
+            HideSelectionVisual();
+            _onTaskSelectedCallback?.Invoke(_task);
+        }
+
         private void HandleToggleOn()
         {
+            ShowSelectionVisual();
             _onTaskSelectedCallback?.Invoke(_task);
         }
 
